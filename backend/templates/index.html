@@ -1,0 +1,135 @@
+{% extends "base.html" %}  
+
+{% block style %}
+{% endblock %}
+
+{% block h1 %}
+Twoja Stara with AI
+{% endblock %}
+
+{% block content %}
+
+{% for i in queryset %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow" data-card-id="{{ i.id }}">
+                <div class="card-icons">
+                    {% csrf_token %}
+                    {% if not i.ftp_user %}
+                    <i class="fas fa-plus-circle icon" id="create"></i>
+                    {% endif %}
+                    <i class="fas fa-pen icon" id="write"></i>
+                    <i class="fas fa-trash icon" id="delete"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ i.domain }}</h5>
+                    <p class="card-text">Click to view additional details</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered additional-attributes" style="display: none;">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Attribute</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for k, v in i.items %}
+                                <tr>
+                                    <td>{{ k }}</td>
+                                    <td>{{ v }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endfor %}
+{% endblock %}
+
+{% block script %}
+
+<script>
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Add event listener to toggle table visibility
+    $(document).ready(function() {
+        // Handle delete icon click
+        $('i#delete').on('click', function(event) {
+            event.preventDefault();
+            
+            var cardId = $(this).closest('.card').data('card-id');
+            var deleteUrl = '/api/' + cardId + '/';
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                type: 'DELETE',
+                url: deleteUrl,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function(response) {
+                    alert(response.res);
+                    window.location.href = '/';
+                },
+                error: function(error) {
+                    alert('Error deleting: ' + JSON.stringify(error));
+                }
+            });
+        });
+        //Handle create icon click 
+        $('i#create').on('click', function(event) {
+            event.preventDefault();
+            
+            var cardId = $(this).closest('.card').data('card-id');
+            var url = '/api/create/' + cardId + '/';
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function(response) {
+                    alert(response.res);
+                    window.location.href = '/'+cardId;
+                },
+                error: function(error) {
+                    console.log(JSON.stringify(error));
+                    alert('Error deleting: ' + JSON.stringify(error));
+                }
+            });
+        });
+        $('i#write').on('click', function(event) {
+            var cardId = $(this).closest('.card').data('card-id');
+            window.location.href = '/'+cardId;
+        });
+        $('.card').on('click', function() {
+            var table = $(this).find('.additional-attributes');
+            table.toggle();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+/* Common Styles */
+
+body {
+    background-color: #0a0a0a;
+    color: #ccc;
+    font-family: Arial, sans-serif;
+}
+
+a {
+    color: #66ccff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #3399ff;
+}
+
+/* Header Styles */
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #00ffcc;
+    padding-top: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: text-shadow 0.3s ease-in-out;
+    text-align: center;
+}
+
+h1:hover {
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Styles */
+
+.card {
+    cursor: pointer;
+    transition: transform 0.2s;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    color: #ccc;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-icons {
+    position: absolute;
+    display: flex;
+    padding: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.card-icons i {
+    margin-left: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+}
+
+.card-icons #create,
+.card-icons #write,
+.card-icons #delete {
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.card-icons #create {
+    background-color: #33cc33;
+}
+
+.card-icons #write {
+    background-color: #3399ff;
+}
+
+.card-icons #delete {
+    background-color: #ff3333;
+}
+
+/* Slider Styles */
+
+.range-slider {
+    width: 80%;
+    margin: 10px 0;
+    background-color: transparent;
+}
+
+.slider-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.range-value {
+    font-size: 14px;
+    margin-left: 10px;
+    width: 30px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    color: #66ccff;
+}
+
+/* Button Styles */
+
+button {
+    background-color: #3399ff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #66ccff;
+}
+
+/* Form Styles */
+
+.form-container {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.form-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #66ccff;
+}
+
+.form-control {
+    margin-bottom: 15px;
+    background-color: #333;
+    color: #ccc;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Table Styles */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+table, th, td {
+    border: 1px solid #333;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    color: #ccc;
+}
+
+th {
+    background-color: #1a1a1a;
+}
+
+/* Link Styles */
+
+.link {
+    color: #66ccff;
+    text-decoration: underline;
+    transition: color 0.3s;
+}
+
+.link:hover {
+    color: #3399ff;
+}

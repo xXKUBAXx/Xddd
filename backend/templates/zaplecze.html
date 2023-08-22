@@ -1,0 +1,213 @@
+{% extends "base.html" %}  
+
+{% block style %}
+<style>
+    .card{
+        margin-bottom: 65px;
+    }
+</style>
+{% endblock %}
+
+{% block h1 %}
+Twoja Stara with AI
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow" data-card-id="{{ data.id }}">
+                <div class="card-icons">
+                    {% csrf_token %}
+                    {% if not data.ftp_user %}
+                    <i class="fas fa-plus-circle icon" id="create"></i>
+                    {% endif %}
+                    <i class="fas fa-pen icon" id="write"></i>
+                    <i class="fas fa-trash icon" id="delete"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ data.domain }}</h5>
+                    <p class="card-text">Click to view additional details</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered additional-attributes" style="display: none;">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Attribute</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for k, v in data.items %}
+                                <tr>
+                                    <td>{{ k }}</td>
+                                    <td>{{ v }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Utwórz kategorie</h5>
+                </div>
+                <div class="additional-attributes" style="display: none; padding: 20px;">
+                    <form id="catForm" type="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label" for="openai_api_key">OpenAI API key:</label>
+                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key">
+                        </div>
+                        <h6>Categories</h6>
+                        <div class="slider-container">
+                            <input type="range" id="CatSlider" class="range-slider" min="2" max="7" value="4" name="cat_num">
+                            <input type="text" id="CatSliderValue" class="range-value" value="4" readonly>
+                        </div>
+                        <h6>Subcategories</h6>
+                        <div class="slider-container">
+                            <input type="range" id="SubCatSlider" class="range-slider" min="2" max="7" value="4" name="subcat_num">
+                            <input type="text" id="SubCatSliderValue" class="range-value" value="4" readonly>
+                        </div>
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+
+<script>
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Add event listener to toggle table visibility
+    $(document).ready(function() {
+        const catSlider = document.getElementById('CatSlider');
+        const catSliderValue = document.getElementById('CatSliderValue');
+
+        catSlider.addEventListener('input', function () {
+            catSliderValue.value = catSlider.value;
+        });
+        const subCatSlider = document.getElementById('SubCatSlider');
+        const subCatSliderValue = document.getElementById('SubCatSliderValue');
+
+        subCatSlider.addEventListener('input', function () {
+            subCatSliderValue.value = subCatSlider.value;
+        });
+        // Handle delete icon click
+        $('i#delete').on('click', function(event) {
+            event.preventDefault();
+            
+            var cardId = $(this).closest('.card').data('card-id');
+            var deleteUrl = '/api/' + cardId + '/';
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                type: 'DELETE',
+                url: deleteUrl,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function(response) {
+                    alert(response.res);
+                    window.location.href = '/';
+                },
+                error: function(error) {
+                    alert('Error deleting: ' + JSON.stringify(error));
+                }
+            });
+        });
+        //Handle create icon click 
+        $('i#create').on('click', function(event) {
+            event.preventDefault();
+            
+            var cardId = $(this).closest('.card').data('card-id');
+            var url = '/api/create/' + cardId + '/';
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function(response) {
+                    alert(response.res);
+                    window.location.href = '/api/'+cardId;
+                },
+                error: function(error) {
+                    alert('Error deleting: ' + JSON.stringify(error));
+                }
+            });
+        });
+        $('.card-body').on('click', function() {
+            var table = $(this).parent().find('.additional-attributes');
+            table.toggle();
+        });
+        $('#catForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+            
+            // Serialize form data
+            var formData = $(this).serialize();
+            console.log(formData);
+
+            // Check if any field is empty
+            var emptyFields = false;
+            $(this).find('input').each(function() {
+                if ($(this).val() === '') {
+                    emptyFields = true;
+                    return false; // Exit the loop early
+                }
+            });
+            
+            if (emptyFields) {
+                alert('Please fill in all fields.');
+                return; // Do not proceed with submission
+            }
+
+            // Send POST request to the /api/all/ endpoint
+            $.ajax({
+                type: 'POST',
+                url: '/api/structure/{{data.id}}/',
+                data: formData,
+                success: function(response) {
+                    // Handle success response here
+                    window.location.href = '/';
+                },
+                error: function(error) {
+                    // Handle error response here
+                    console.log(error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
