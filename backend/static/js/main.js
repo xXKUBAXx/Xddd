@@ -47,27 +47,8 @@ $(document).ready(function() {
 
     //Handle create icon click 
     $('i#create').on('click', function(event) {
-        event.preventDefault();
-        
         var cardId = $(this).closest('.card').data('card-id');
-        var url = '/api/create/' + cardId + '/';
-
-        var csrftoken = getCookie('csrftoken');
-
-        $.ajax({
-            type: 'POST',
-            url: url,
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            success: function(response) {
-                alert(response.res);
-                window.location.href = '/api/'+cardId;
-            },
-            error: function(error) {
-                alert('Error deleting: ' + JSON.stringify(error));
-            }
-        });
+        window.location.href = '/'+cardId;
     });
 
     //zaplecze card onclick toggle

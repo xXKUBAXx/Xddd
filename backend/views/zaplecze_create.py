@@ -17,62 +17,138 @@ from ..src.CreateWPblog.setup_wp import Setup_WP
     4. Setup WP
     5. Change WP params
     6. Get WP API key
-'''   
-
-class ZapleczeAPICreate(APIView):
-
+'''
+class ZapleczeCreate(APIView):
     def get_object(self, zaplecze_id):
         try:
             return Zaplecze.objects.get(id=zaplecze_id)
         except Zaplecze.DoesNotExist:
             return None
 
-    def post(self, request, zaplecze_id, *args, **kwargs):
+class ZapleczeCreateDomain(ZapleczeCreate):
+    def post(self, request, zaplecze_id):
         zaplecze = self.get_object(zaplecze_id)
-
         if not zaplecze:
             return Response(
                 {"res": "Object with this id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         serializer = ZapleczeSerializer(zaplecze)
-
         data = serializer.data
-
-        print(data['domain'])
-
         domain = data['domain']
+        if data['ftp_user']:
+            return Response({"res": "This zaplecze alredy has FTP"}, status=status.HTTP_200_OK)
+        create = Create(data)
+        create.login()
+        create.add_domain(domain)
+        create.add_ip(domain)
+        create.add_ssl()
+        return Response(data, status=status.HTTP_200_OK)
 
-        if not data['db_user']:
-            create = Create(data)
-            data['db_user'], data['db_pass'], data['ftp_user'], data['ftp_pass'] = create.do_stuff(domain)
 
-            serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
-            if serializer.is_valid():
-                serializer.save()
-
-            print("Connecting to FTP")
-            f = UploadFTP(domain, data['ftp_user'], data['ftp_pass'], "backend/src/CreateWPblog/files")
-
-            print("Initilazing WP setup")
-        wp = Setup_WP(domain)
-
-        if not data['wp_user'] == '':
-            data['wp_user'], data['wp_password'] = wp.install(data['db_user'], data['db_pass'], domain.partition(".")[0])
-            print("Tweaking WP options")
-            wp.setup(data['wp_user'], data['wp_password'])
-            serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
-            if serializer.is_valid():
-                serializer.save()
-
-        if not data['wp_api_key'] == '':
-            data['wp_api_key'] = wp.get_api_key(data['wp_user'], data['wp_password'])
-
+class ZapleczeCreateDB(ZapleczeCreate):
+    def post(self, request, zaplecze_id):
+        zaplecze = self.get_object(zaplecze_id)
+        if not zaplecze:
+            return Response(
+                {"res": "Object with this id does not exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = ZapleczeSerializer(zaplecze)
+        data = serializer.data
+        domain = data['domain']
+        if data['db_user']:
+            return Response({"res": "This zaplecze alredy has DB"}, status=status.HTTP_200_OK)
+        create = Create(data)
+        create.login()
+        data['db_user'], data['db_pass'] = create.add_db(domain)
         serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
         if serializer.is_valid():
             serializer.save()
-            return Response(data, status=status.HTTP_200_OK)
+            return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class ZapleczeCreateFTP(ZapleczeCreate):
+    def post(self, request, zaplecze_id):
+        zaplecze = self.get_object(zaplecze_id)
+        if not zaplecze:
+            return Response(
+                {"res": "Object with this id does not exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = ZapleczeSerializer(zaplecze)
+        data = serializer.data
+        domain = data['domain']
+        if data['ftp_user']:
+            return Response({"res": "This zaplecze alredy has FTP"}, status=status.HTTP_200_OK)
+        create = Create(data)
+        create.login()
+        data['ftp_user'], data['ftp_pass'] = create.add_ftp()
+        serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+        UploadFTP(domain, data['ftp_user'], data['ftp_pass'], "backend/src/CreateWPblog/files")
+        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ZapleczeCreateSetupWP(ZapleczeCreate):
+    def post(self, request, zaplecze_id):
+        zaplecze = self.get_object(zaplecze_id)
+        if not zaplecze:
+            return Response(
+                {"res": "Object with this id does not exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = ZapleczeSerializer(zaplecze)
+        data = serializer.data
+        domain = data['domain']
+        if data['wp_user'] and data['wp_user'] != "":
+            return Response({"res": "This zaplecze alredy has WP"}, status=status.HTTP_200_OK)
+        wp = Setup_WP(domain)
+        data['wp_user'], data['wp_password'] = wp.install(data['db_user'], data['db_pass'], domain.partition(".")[0])
+        serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ZapleczeCreateTweakWP(ZapleczeCreate):
+    def post(self, request, zaplecze_id):
+        zaplecze = self.get_object(zaplecze_id)
+        if not zaplecze:
+            return Response(
+                {"res": "Object with this id does not exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = ZapleczeSerializer(zaplecze)
+        data = serializer.data
+        domain = data['domain']
+        wp = Setup_WP(domain)
+        wp.setup(data['wp_user'], data['wp_password'])
+        return Response(data, status=status.HTTP_200_OK)
+
+class ZapleczeCreateWPapi(ZapleczeCreate):
+    def post(self, request, zaplecze_id):
+        zaplecze = self.get_object(zaplecze_id)
+        if not zaplecze:
+            return Response(
+                {"res": "Object with this id does not exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = ZapleczeSerializer(zaplecze)
+        data = serializer.data
+        domain = data['domain']
+        wp = Setup_WP(domain)
+        if data['wp_api_key']:
+            return Response({"res": "This zaplecze alredy has WP API key"}, status=status.HTTP_200_OK)
+        
+        data['wp_api_key'] = wp.get_api_key(data['wp_user'], data['wp_password'])
+        serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

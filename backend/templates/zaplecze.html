@@ -1,5 +1,5 @@
 {% extends "base.html" %}  
-
+{% load static %}
 {% block style %}
 <style>
     .card{
@@ -53,7 +53,7 @@ Twoja Stara with AI
     <div class="row">
         <div class="col-md-6">
             <div class="card shadow">
-                {% if data.ftp_user %}
+                {% if data.wp_api_key %}
                 <div class="card-body">
                     <h5 class="card-title">Utwórz kategorie</h5>
                 </div>
@@ -77,13 +77,21 @@ Twoja Stara with AI
                         <button type="submit">Submit</button>
                     </form>
                 </div>
+                <script src="{% static 'js/zaplecze.js' %}"></script>
                 {% else %}
                 <div class="card-body">
                     <h5 class="card-title">Postaw zaplecze</h5>
                 </div>
                 <div class="additional-attributes" style="display: none; padding: 20px;">
-                    <button type="submit">Napierdalaj</button>
+                    <button id="start" type="submit" data-card-id="{{ data.id }}">Napierdalaj</button>
+                    <ul id="progress" style="display: none;">
+                        <li class="spinner-container">
+                            <div class="spinner"></div>
+                            <span class="spinner-text"></span>
+                        </li>
+                    </ul>
                 </div>
+                <script src="{% static 'js/new_zaplecze.js' %}"></script>
                 {% endif %}
             </div>
         </div>
@@ -96,11 +104,5 @@ Twoja Stara with AI
     </div>
 </div>
 {% endblock %}
-
 {% block script %}
-
-<script>
-    $(document).ready(function() {
-    });
-</script>
 {% endblock %}

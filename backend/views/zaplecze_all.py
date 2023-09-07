@@ -3,6 +3,7 @@ from ..models import Zaplecze
 from ..serializers import ZapleczeSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 
 
 class ZapleczeAPIView(APIView):

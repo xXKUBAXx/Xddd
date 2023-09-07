@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
     const catSlider = document.getElementById('CatSlider');
     const catSliderValue = document.getElementById('CatSliderValue');
 
@@ -50,4 +49,5 @@ $(document).ready(function() {
             }
         });
     });
+
 });
