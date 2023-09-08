@@ -20,7 +20,7 @@ class ZapleczeAPIView(APIView):
             'login': request.data.get('login'),
             'password': request.data.get('password'),
             'lang': request.data.get('lang'),
-            'topic': request.data.get('topic')
+            'email': request.data.get('email')
         }
 
         serializer = ZapleczeSerializer(data=data)
