@@ -35,21 +35,8 @@ class ZapleczeAPIDetail(APIView):
                 {"res": "Object with todo id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        data = {
-            "domain": request.data.get("domain"),
-            "url": request.data.get("url"),
-            "login": request.data.get("login"),
-            "password": request.data.get("password"),
-            "db_user": request.data.get("db_user"),
-            "db_pass": request.data.get("db_pass"),
-            "ftp_user": request.data.get("ftp_user"),
-            "ftp_pass": request.data.get("ftp_pass"),
-            "wp_user": request.data.get("wp_user"),
-            "wp_api_key": request.data.get("wp_api_key")
-        }
 
-        serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
+        serializer = ZapleczeSerializer(instance = zaplecze, data=request.data, partial = True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -60,7 +47,7 @@ class ZapleczeAPIDetail(APIView):
 
         if not zaplecze:
             return Response(
-                {"res": "Object with todo id does not exists"},
+                {"res": "Object with this id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
