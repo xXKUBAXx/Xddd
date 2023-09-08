@@ -4,6 +4,7 @@ from django.db import models
 class Zaplecze(models.Model):
     #basic
     domain = models.CharField(max_length=64, blank=True, null=True)
+    email = models.CharField(max_length=64, blank=True, null=True)
 
     #Admin
     url = models.CharField(max_length=64, blank=True, null=True)
