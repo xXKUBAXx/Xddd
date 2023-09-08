@@ -9,6 +9,7 @@ class ZapleczeSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "lang": {"required": False, "allow_null": True, "allow_blank": True},
             "topic": {"required": False, "allow_null": True, "allow_blank": True},
+            "email": {"required": False, "allow_null": True, "allow_blank": True},
             "ftp_user": {"required": False, "allow_null": True, "allow_blank": True},
             "ftp_pass": {"required": False, "allow_null": True, "allow_blank": True},
             "db_user": {"required": False, "allow_null": True, "allow_blank": True},
