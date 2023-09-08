@@ -15,6 +15,11 @@ function getCookie(name) {
 }
 //functions performed after document load
 $(document).ready(function() {
+    //Handle create icon click 
+    $('i#create').on('click', function(event) {
+        var cardId = $(this).closest('.card').data('card-id');
+        window.location.href = '/'+cardId;
+    });
     //Write icon onclick action
     $('i#write').on('click', function(event) {
         var cardId = $(this).closest('.card').data('card-id');
@@ -43,12 +48,6 @@ $(document).ready(function() {
                 alert('Error deleting: ' + JSON.stringify(error));
             }
         });
-    });
-
-    //Handle create icon click 
-    $('i#create').on('click', function(event) {
-        var cardId = $(this).closest('.card').data('card-id');
-        window.location.href = '/'+cardId;
     });
 
     //zaplecze card onclick toggle

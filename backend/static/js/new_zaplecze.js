@@ -22,6 +22,8 @@ async function make_request(url, text1, text2) {
 
         return response;
     } catch (error) {
+        document.querySelector(".spinner-container").insertAdjacentHTML("beforebegin", "<li>&#10007;" + text1 + "</li>");
+        $(".spinner-container").remove();
         console.error(error);
         throw error; // Rethrow the error to handle it outside the function if needed.
     }
@@ -39,9 +41,10 @@ $(document).ready(function() {
             await make_request('/api/create/' + cardId + '/domain/', "Domain + IP + SSL", "DataBase");
             await make_request('/api/create/' + cardId + '/db/', "DataBase", "FTP");
             await make_request('/api/create/' + cardId + '/ftp/', "FTP", "WordPress Setup");
-            let res = await make_request('/api/create/' + cardId + '/setup/', "WordPress Setup", "Tweaking WordPress");
-            res.code == 201 ? await make_request('/api/create/' + cardId + '/tweak/', "Tweaking WordPress", "WordPress API Key") : null;
-            res = await make_request('/api/create/' + cardId + '/wp_api/', "WordPress API Key", "");
+            await make_request('/api/create/' + cardId + '/setup/', "WordPress Setup", "Tweaking WordPress");
+            await make_request('/api/create/' + cardId + '/tweak/', "Tweaking WordPress", "WordPress API Key");
+            const res = await make_request('/api/create/' + cardId + '/wp_api/', "WordPress API Key", "");
+            console.log(res);
             res.code == 201 ? location.reload() : null;
         } catch (error) {
             // Handle any errors that occurred during the requests here.
