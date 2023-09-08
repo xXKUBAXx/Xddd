@@ -16,7 +16,7 @@ Twoja Stara with AI
             <div class="card shadow" data-card-id="{{ i.id }}">
                 <div class="card-icons">
                     {% csrf_token %}
-                    {% if not i.ftp_user %}
+                    {% if not i.wp_api_key %}
                     <i class="fas fa-plus-circle icon" id="create"></i>
                     {% endif %}
                     <i class="fas fa-pen icon" id="write"></i>
