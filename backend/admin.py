@@ -4,7 +4,7 @@ from .models import Zaplecze
 
 
 class ZapleczeAdmin(admin.ModelAdmin):
-    list_display = ['domain', 'url', 'login', 'password', 'lang']
+    list_display = ['domain', 'email', 'url', 'login', 'password', 'topic']
 
 
 admin.site.register(Zaplecze, ZapleczeAdmin)
