@@ -18,6 +18,7 @@ $(document).ready(function() {
         
         // Serialize form data
         var formData = $(this).serialize();
+        var cardId = $('#main').data('card-id');
         console.log(formData);
 
         // Check if any field is empty
@@ -34,14 +35,29 @@ $(document).ready(function() {
             return; // Do not proceed with submission
         }
 
+        if ($("#topic")){
+            //PUT request to update DB
+            $.ajax({
+                type: 'PUT',
+                url: '/api/' + cardId + '/',
+                data: {"topic": $("#topic").val()},
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(response) {
+                    console.error(response);
+                }
+            })
+        }
+        
+
         // Send POST request to the /api/all/ endpoint
         $.ajax({
             type: 'POST',
-            url: '/api/structure/{{data.id}}/',
+            url: '/api/structure/'+ cardId +'/',
             data: formData,
             success: function(response) {
-                // Handle success response here
-                window.location.href = '/';
+                alert("Utworzono kategorie" + response);
             },
             error: function(error) {
                 // Handle error response here

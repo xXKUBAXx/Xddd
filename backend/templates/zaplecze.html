@@ -16,10 +16,10 @@ Twoja Stara with AI
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
-            <div class="card shadow" data-card-id="{{ data.id }}">
+            <div class="card shadow" id="main" data-card-id="{{ data.id }}">
                 <div class="card-icons">
                     {% csrf_token %}
-                    {% if not data.ftp_user %}
+                    {% if not data.wp_api_key %}
                     <i class="fas fa-plus-circle icon" id="create"></i>
                     {% endif %}
                     <i class="fas fa-pen icon" id="write"></i>
@@ -64,6 +64,12 @@ Twoja Stara with AI
                             <label class="form-label" for="openai_api_key">OpenAI API key:</label>
                             <input type="text" class="form-control" id="openai_api_key" name="openai_api_key">
                         </div>
+                        {% if not data.topic %}
+                        <div class="form-group">
+                            <label class="form-label" for="topic">Tematyka zaplecza:</label>
+                            <input type="text" class="form-control" id="topic" name="topic">
+                        </div>
+                        {% endif %}
                         <h6>Categories</h6>
                         <div class="slider-container">
                             <input type="range" id="CatSlider" class="range-slider" min="2" max="7" value="4" name="cat_num">
