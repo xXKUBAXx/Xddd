@@ -106,7 +106,7 @@ class ZapleczeCreateSetupWP(ZapleczeCreate):
         domain = data['domain']
         if data['wp_user'] and data['wp_user'] != "":
             return Response({"res": "This zaplecze alredy has WP"}, status=status.HTTP_200_OK)
-        wp = Setup_WP(domain)
+        wp = Setup_WP(domain, data['email'], data['lang'])
         data['wp_user'], data['wp_password'] = wp.install(data['db_user'], data['db_pass'], domain.partition(".")[0])
         serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
         if serializer.is_valid():
