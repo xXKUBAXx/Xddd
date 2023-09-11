@@ -2,11 +2,7 @@ from django.shortcuts import render
 from ..models import Zaplecze
 from ..serializers import ZapleczeSerializer
 from django.views.generic import View
-<<<<<<< HEAD
 from allauth.socialaccount.models import SocialAccount
-=======
-
->>>>>>> master
 
 
 class Front(View):
