@@ -4,6 +4,7 @@ from ..serializers import ZapleczeSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from django.http import JsonResponse
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
 from ..src.CreateWPblog.wp_api import WP_API
@@ -29,9 +30,10 @@ class ZapleczeAPIStructure(APIView):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         wp_api = WP_API(data['domain'], data['wp_user'], data['wp_api_key'])
-        return Response(
+        return JsonResponse(
             wp_api.get_categories(),
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
+            safe=False
             )
         
     def post(self, request, zaplecze_id):
