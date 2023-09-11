@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
+from ..src.CreateWPblog.wp_api import WP_API
 
 
 class ZapleczeAPIStructure(APIView):
@@ -15,6 +16,23 @@ class ZapleczeAPIStructure(APIView):
             return Zaplecze.objects.get(id=zaplecze_id)
         except Zaplecze.DoesNotExist:
             return None
+        
+    def get(self, request, zaplecze_id):
+        zaplecze = self.get_object(zaplecze_id)
+
+        if not zaplecze:
+            return Response(
+                {"res": "Object with todo id does not exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = ZapleczeSerializer(zaplecze)
+        data = serializer.data
+        wp_api = WP_API(data['domain'], data['wp_user'], data['wp_api_key'])
+        return Response(
+            wp_api.get_categories(),
+            status=status.HTTP_200_OK
+            )
         
     def post(self, request, zaplecze_id):
         zaplecze = self.get_object(zaplecze_id)

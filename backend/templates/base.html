@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,19 +37,24 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/create">Create</a>
                 </li>
+                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Services</a>
+                    <a class="nav-link" href="#">Witaj, {{user.username}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
+                    <a class="nav-link" href="/logout">Logout</a>
                 </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% provider_login_url 'google' action="reauthenticate" %}">Login</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>
 </nav>
 
 <h1 class="">{%block h1 %}{% endblock %}</h1>
-  
 
 {% block content %}
 {% endblock %}

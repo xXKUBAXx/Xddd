@@ -16,5 +16,6 @@ class ZapleczeSerializer(serializers.ModelSerializer):
             "db_pass": {"required": False, "allow_null": True, "allow_blank": True},
             "wp_user": {"required": False, "allow_null": True, "allow_blank": True},
             "wp_password": {"required": False, "allow_null": True, "allow_blank": True},
-            "wp_api_key": {"required": False, "allow_null": True, "allow_blank": True}
+            "wp_api_key": {"required": False, "allow_null": True, "allow_blank": True},
+            "wp_post_count": {"required": False, "allow_null": True}
             }
