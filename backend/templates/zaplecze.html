@@ -102,24 +102,57 @@ Twoja Stara with AI
             </div>
         </div>
         <div class="col-md-6">
+            <script src="{% static 'js/zaplecze_categories.js' %}"></script>
             <div class="card shadow">
                 <div class="card-body">
                     <h5 class="card-title">Kategorie</h5>
                 </div>
                 <div class="additional-attributes" style="display: none; padding: 20px;">
-                    <div id="cat_table" class="table-responsive" style="display: none;">
-                        <table class="table table-bordered">
-                            <thead class="thead-gray">
-                                <tr>
-                                    <th>Wpisy</th>
-                                    <th>Kategoria</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+                    <div>
+                        <button id="categories" type="submit" data-card-id="{{ data.id }}">Napierdalaj</button>
+                        <div class="table-responsive" style="display: none;">
+                            <table class="table table-bordered" id="cat_table">
+                                <thead class="thead-gray">
+                                    <tr>
+                                        <th>Wpisy</th>
+                                        <th>Kategoria</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button id="articles" type="submit" data-card-id="{{ data.id }}" style="display: none;">Wypierdalaj</button>
                     </div>
-                    <button id="categories" type="submit" data-card-id="{{ data.id }}">Napierdalaj</button>
+                    <form id="writeForm" type="post" style="display: none;">
+                        {% csrf_token %}
+                        {% if not data.topic %}
+                        <div class="form-group">
+                            <label class="form-label" for="topic">Tematyka zaplecza:</label>
+                            <input type="text" class="form-control" id="topic" name="topic">
+                        </div>
+                        {% endif %}
+                        <h6>Articles</h6>
+                        <div class="slider-container">
+                            <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1" name="art_num">
+                            <input type="text" id="ArtSliderValue" class="range-value" value="1" readonly>
+                        </div>
+                        <h6>Paragraphs per article</h6>
+                        <div class="slider-container">
+                            <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4" name="p_num">
+                            <input type="text" id="ParagraphsSliderValue" class="range-value" value="4" readonly>
+                        </div>
+                        <h6>Days between articles</h6>
+                        <div class="slider-container">
+                            <input type="range" id="DaysSlider" class="range-slider" min="2" max="14" value="7" name="days_num">
+                            <input type="text" id="DaysSliderValue" class="range-value" value="7" readonly>
+                        </div>
+                        <div class="checkbox-container">
+                            <label>Publish forward</label>
+                            <input type="checkbox" id="publish" class="checkbox" name="publish">
+                        </div>
+                        <button type="submit">Submit</button>
+                    </form>
                 </div>
             </div>
 
