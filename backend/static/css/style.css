@@ -83,6 +83,13 @@ h1:hover {
     background-color: #ff3333;
 }
 
+.date-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    margin: 12px 0 12px 0;
+}
+
 /* Slider Styles */
 
 .range-slider {
