@@ -83,7 +83,6 @@ Twoja Stara with AI
                         <button type="submit">Submit</button>
                     </form>
                 </div>
-                <script src="{% static 'js/zaplecze.js' %}"></script>
                 {% else %}
                 <div class="card-body">
                     <h5 class="card-title">Postaw zaplecze</h5>
@@ -97,12 +96,10 @@ Twoja Stara with AI
                         </li>
                     </ul>
                 </div>
-                <script src="{% static 'js/new_zaplecze.js' %}"></script>
                 {% endif %}
             </div>
         </div>
         <div class="col-md-6">
-            <script src="{% static 'js/zaplecze_categories.js' %}"></script>
             <div class="card shadow">
                 <div class="card-body">
                     <h5 class="card-title">Kategorie</h5>
@@ -161,4 +158,7 @@ Twoja Stara with AI
 </div>
 {% endblock %}
 {% block script %}
+<script src="{% static 'js/zaplecze.js' %}"></script>
+<script src="{% static 'js/new_zaplecze.js' %}"></script>
+<script src="{% static 'js/zaplecze_categories.js' %}"></script>
 {% endblock %}

@@ -1,15 +1,17 @@
 $(document).ready(function() {
-    const catSlider = document.getElementById('CatSlider');
-    const catSliderValue = document.getElementById('CatSliderValue');
+    // Select sliders and value elements 
+    const cat_slider = $("#CatSlider");
+    const cat_value = $("#CatSliderValue");
+    const scat_slider = $("#SubCatSlider");
+    const scat_value = $("#SubCatSliderValue");
 
-    catSlider.addEventListener('input', function () {
-        catSliderValue.value = catSlider.value;
+    // Add an input event listener 
+    cat_slider.on('input', function() {
+        cat_value.val(cat_slider.val());
     });
-    const subCatSlider = document.getElementById('SubCatSlider');
-    const subCatSliderValue = document.getElementById('SubCatSliderValue');
 
-    subCatSlider.addEventListener('input', function () {
-        subCatSliderValue.value = subCatSlider.value;
+    scat_slider.on('input', function() {
+        scat_value.val(scat_slider.val());
     });
 
 
