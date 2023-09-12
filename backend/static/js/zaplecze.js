@@ -19,11 +19,11 @@ $(document).ready(function() {
         event.preventDefault(); // Prevent form from submitting normally
         
         // Serialize form data
-        var formData = $(this).serialize();
-        var cardId = $('#main').data('card-id');
+        const formData = $(this).serialize();
+        const cardId = $('#main').data('card-id');
 
         // Check if any field is empty
-        var emptyFields = false;
+        let emptyFields = false;
         $(this).find('input').each(function() {
             if ($(this).val() === '') {
                 emptyFields = true;
