@@ -42,11 +42,11 @@ h1:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     color: #ccc;
 }
-
+/*disable hover animation to save sanity
 .card:hover {
     transform: scale(1.05);
 }
-
+*/
 .card-icons {
     position: absolute;
     display: flex;

@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block h1 %}
-Twoja Stara with AI
+{{data.domain}}
 {% endblock %}
 
 {% block content %}
@@ -55,7 +55,7 @@ Twoja Stara with AI
             <div class="card shadow">
                 {% if data.wp_api_key %}
                 <div class="card-body">
-                    <h5 class="card-title">Utwórz kategorie</h5>
+                    <h5 class="card-title">Create categories</h5>
                 </div>
                 <div class="additional-attributes" style="display: none; padding: 20px;">
                     <form id="catForm" type="post">
@@ -66,7 +66,7 @@ Twoja Stara with AI
                         </div>
                         {% if not data.topic %}
                         <div class="form-group">
-                            <label class="form-label" for="topic">Tematyka zaplecza:</label>
+                            <label class="form-label" for="topic">Zapleczes topic:</label>
                             <input type="text" class="form-control" id="topic" name="topic">
                         </div>
                         {% endif %}
@@ -85,7 +85,7 @@ Twoja Stara with AI
                 </div>
                 {% else %}
                 <div class="card-body">
-                    <h5 class="card-title">Postaw zaplecze</h5>
+                    <h5 class="card-title">Create zaplecze</h5>
                 </div>
                 <div class="additional-attributes" style="display: none; padding: 20px;">
                     <button id="start" type="submit" data-card-id="{{ data.id }}">Napierdalaj</button>
@@ -102,30 +102,30 @@ Twoja Stara with AI
         <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-body">
-                    <h5 class="card-title">Kategorie</h5>
+                    <h5 class="card-title">Categoires</h5>
                 </div>
                 <div class="additional-attributes" style="display: none; padding: 20px;">
                     <div>
-                        <button id="categories" type="submit" data-card-id="{{ data.id }}">Napierdalaj</button>
+                        <button id="categories" type="submit" data-card-id="{{ data.id }}">Get categories</button>
                         <div class="table-responsive" style="display: none;">
                             <table class="table table-bordered" id="cat_table">
                                 <thead class="thead-gray">
                                     <tr>
-                                        <th>Wpisy</th>
-                                        <th>Kategoria</th>
+                                        <th>Write</th>
+                                        <th>Category</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 </tbody>
                             </table>
                         </div>
-                        <button id="articles" type="submit" data-card-id="{{ data.id }}" style="display: none;">Wypierdalaj</button>
+                        <button id="articles" type="submit" data-card-id="{{ data.id }}" style="display: none;">Select</button>
                     </div>
                     <form id="writeForm" type="post" style="display: none;">
                         {% csrf_token %}
                         {% if not data.topic %}
                         <div class="form-group">
-                            <label class="form-label" for="topic">Tematyka zaplecza:</label>
+                            <label class="form-label" for="topic">Zapleczes topic:</label>
                             <input type="text" class="form-control" id="topic" name="topic">
                         </div>
                         {% endif %}
