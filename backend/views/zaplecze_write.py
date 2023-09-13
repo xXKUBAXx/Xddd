@@ -56,4 +56,3 @@ class ZapleczeWrite(APIView):
         response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/")
 
         return Response(json.dumps(response), status=status.HTTP_201_CREATED)
-    

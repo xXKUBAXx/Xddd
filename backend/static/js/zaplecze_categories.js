@@ -94,7 +94,6 @@ $(document).ready(function() {
         $(this).remove();
         $("#writeForm").show();
     });
-
     $("#writeForm").on('submit', function(event) {
         event.preventDefault();
         let formData = $(this).serialize();
