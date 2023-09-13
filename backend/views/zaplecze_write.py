@@ -27,11 +27,12 @@ class ZapleczeWrite(APIView):
             )
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
-        categories, openai_key, a, p = \
+        categories, openai_key, a, p, links = \
                 request.data.get('categories'), \
                 str(request.data.get('openai_api_key')), \
                 int(request.data.get('a_num')), \
-                int(request.data.get('p_num'))
+                int(request.data.get('p_num')), \
+                request.data.get('links')
         
 
         params = {
@@ -52,7 +53,7 @@ class ZapleczeWrite(APIView):
             params['forward_delta'] = False
         
         o = OpenAI_article(**params)
-
-        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/")
+        
+        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
 
         return Response(json.dumps(response), status=status.HTTP_201_CREATED)
