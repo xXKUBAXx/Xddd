@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.views.generic import View
+import json
 
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
@@ -26,9 +27,8 @@ class ZapleczeWrite(APIView):
             )
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
-        category, id, openai_key, a, p = \
-                str(request.data.get('category')), \
-                request.data.get('cat_id'), \
+        categories, openai_key, a, p = \
+                request.data.get('categories'), \
                 str(request.data.get('openai_api_key')), \
                 int(request.data.get('a_num')), \
                 int(request.data.get('p_num'))
@@ -47,16 +47,13 @@ class ZapleczeWrite(APIView):
         if 'days_delta' in request.data:
             params['days_delta'] = int(request.data.get('days_delta'))
         if 'forward_delta' in request.data:
-            params['forward_delta'] = bool(request.data.get('forward_delta'))
+            params['forward_delta'] = True
+        else:
+            params['forward_delta'] = False
         
         o = OpenAI_article(**params)
 
-        titles, cat_id = o.create_titles(category, a, id)
-        print(category+" - created titles: \n - " + "\n - ".join(titles))
+        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/")
 
-        urls = []
-        for t in titles:
-            urls.append(o.create_article(p, t, cat_id, True, "backend/src/CreateWPblog/"))
-
-        return Response({"urls": urls, "id": id}, status=status.HTTP_201_CREATED)
+        return Response(json.dumps(response), status=status.HTTP_201_CREATED)
     

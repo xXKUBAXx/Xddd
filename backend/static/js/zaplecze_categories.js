@@ -98,10 +98,6 @@ $(document).ready(function() {
     $("#writeForm").on('submit', function(event) {
         event.preventDefault();
         let formData = $(this).serialize();
-        formData = formData.slice(0, formData.indexOf("start_date")) + formData.slice(formData.indexOf("start_date")+formData.slice(formData.indexOf("start_date")).indexOf("&")+1);
-        let start_date = Date.parse($("#writeForm > div > [name='start_date']").val());
-        // start_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
-        days_delta = $("#writeForm > div > [name='days_delta']").val();
         const cardId = $('#main').data('card-id');
         const cats = document.getElementById("selected_cats").getElementsByTagName("li");
 
@@ -109,32 +105,35 @@ $(document).ready(function() {
         spin.classList.add("spinner");
         $(this).parent().append(spin);
         $(this).remove();
+        let data = [];
         for (i of cats) {
-            cat_data = formData;
-            cat_data += "&cat_id="+i.getAttribute("data-id");
-            cat_data += "&category="+i.getAttribute("data-name");
-            cat_data += "&start_date="+start_date;
-            start_date += days_delta;
-            console.log(cat_data);
-            last_id = i.getAttribute("data-id");
-            $.ajax({
-                type: 'POST',
-                url: '/api/write/'+ cardId +'/',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                data: cat_data,
-                success: function(response) {
-                    response.urls.forEach(function(e){
-                        $("#selected_cats > [data-id=\'"+response.id+"\'] > ul")
-                        .append("<li><a href=\""+e+"\">"+e+"</a></li>");
-                        response.id == last_id ? $("div.spinner").remove() : null;
-                    })
-                },
-                error: function(response) {
-                    console.error(response);
-                }
-            })
+            let cat_data = {};
+            cat_data['id'] = i.getAttribute("data-id");
+            cat_data['name'] = i.getAttribute("data-name");
+            data.push(cat_data);
+            last_id = cat_data['id'];
         }
+        
+        formData += "&categories="+JSON.stringify(data);
+        $.ajax({
+            type: 'POST',
+            url: '/api/write/'+ cardId +'/',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: formData,
+            success: function(response) {
+                for (const [id, urls] of Object.entries(JSON.parse(response))) {
+                    urls.forEach(function(e){
+                        $("#selected_cats > [data-id=\'"+id+"\'] > ul")
+                        .append("<li><a href=\""+e+"\">"+e+"</a></li>");
+                        id == last_id ? $("div.spinner").remove() : null;
+                    })
+                }
+            },
+            error: function(response) {
+                console.error(response);
+            }
+        })
     });
 });
