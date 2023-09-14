@@ -1,0 +1,14 @@
+name: Deploy on Rasberry
+
+
+on:
+  push:
+    branches: [master,main]
+
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: self-hosted
+      - uses: actions/checkout@v3
