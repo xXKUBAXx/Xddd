@@ -15,5 +15,3 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: python --version
-      - run: pip install -r requiremnts.txt
-      - run: python manage.py runserver 
