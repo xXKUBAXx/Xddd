@@ -15,5 +15,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: python --version
-      - run: git submodule init
-      - run: git submodule update 
+      - run: git rm --cached backend/src/CreateWPblog
+      - run: git submodule update --init
