@@ -1,3 +1,3 @@
-[submodule "backend/src/CreateWPblog"]
-	path = backend/src/CreateWPblog
+[submodule "backend/src"]
+	path = backend/src
 	url = https://github.com/RedHot099/CreateWPblog.git
