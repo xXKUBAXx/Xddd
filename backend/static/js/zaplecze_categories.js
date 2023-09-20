@@ -94,11 +94,108 @@ $(document).ready(function() {
         $(this).remove();
         $("#writeForm").show();
     });
+    $("#addlinks").on('click', function(event) {
+        event.preventDefault();
+        if (!$("div#linki-form-group").length) {
+            console.log('0');
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.flexWrap = 'wrap';
+            div.setAttribute('id', 'linki-form-group');
+            div.classList.add('form-group');
+
+            const inputs = document.createElement('div');
+            inputs.style.display = 'flex';
+
+            const input_url = document.createElement('input');
+            input_url.classList.add('form-control');
+            input_url.setAttribute('type', 'text');
+            input_url.setAttribute('placeholder', 'url');
+            input_url.setAttribute('name', 'url');
+            input_url.style.width = "50%";
+            inputs.appendChild(input_url);
+
+            const input_keyword = document.createElement('input');
+            input_keyword.classList.add('form-control');
+            input_keyword.setAttribute('type', 'text');
+            input_keyword.setAttribute('placeholder', 'keyword');
+            input_keyword.setAttribute('name', 'keyword');
+            input_keyword.style.width = "50%";
+            inputs.appendChild(input_keyword);
+
+            div.appendChild(inputs);
+            
+            const btn = document.createElement('button');
+            btn.classList.add('btn');
+            btn.classList.add('btn-outline-primary');
+            btn.classList.add('btn-floating');
+            btn.setAttribute('type','button');
+            btn.setAttribute('id','addlinksrow');
+            const icon = document.createElement('i');
+            icon.classList.add('fas');
+            icon.classList.add('fa-plus');
+            btn.appendChild(icon);
+            btn.style.height = "38px";
+
+            btn.addEventListener('click', function(event) {
+                event.preventDefault();
+                if ($("div#linki-form-group").length) {
+                    const inputs = document.createElement('div');
+                    inputs.style.display = 'flex';
+
+                    const input_url = document.createElement('input');
+                    input_url.classList.add('form-control');
+                    input_url.setAttribute('type', 'text');
+                    input_url.setAttribute('placeholder', 'url');
+                    input_url.setAttribute('name', 'url');
+                    input_url.style.width = "50%";
+                    inputs.appendChild(input_url);
+
+                    const input_keyword = document.createElement('input');
+                    input_keyword.classList.add('form-control');
+                    input_keyword.setAttribute('type', 'text');
+                    input_keyword.setAttribute('placeholder', 'keyword');
+                    input_keyword.setAttribute('name', 'keyword');
+                    input_keyword.style.width = "50%";
+                    inputs.appendChild(input_keyword);
+                    document.querySelector("#addlinksrow").insertAdjacentElement("beforebegin", inputs);
+                }
+            })
+
+            div.appendChild(btn);
+
+            document.querySelector("#writeForm > button").insertAdjacentElement("beforebegin", div);
+            $(this).remove()
+        }
+    });
+
     $("#writeForm").on('submit', function(event) {
         event.preventDefault();
+        
+        //check if api key provided
+        if ($(this).find("input#openai_api_key").val() === "") {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        $('[name="url"], this').prop('disabled', true);
+        $('[name="keyword"], this').prop('disabled', true);
+
         let formData = $(this).serialize();
         const cardId = $('#main').data('card-id');
         const cats = document.getElementById("selected_cats").getElementsByTagName("li");
+        if ($(this).find("#linki-form-group").length) {
+            const links = document.getElementById("linki-form-group").getElementsByTagName("div");  
+            let link_data = [];
+            for (div of links){
+                let tmp = {};
+                for (link of div.getElementsByTagName("input")){
+                    tmp[link.getAttribute('name')] = link.value;
+                }
+                link_data.push(tmp);
+            }
+            formData += "&links="+JSON.stringify(link_data);
+        }
 
         const spin = document.createElement("div");
         spin.classList.add("spinner");
@@ -112,8 +209,10 @@ $(document).ready(function() {
             data.push(cat_data);
             last_id = cat_data['id'];
         }
-        
         formData += "&categories="+JSON.stringify(data);
+
+        
+        console.log(formData);
         $.ajax({
             type: 'POST',
             url: '/api/write/'+ cardId +'/',
