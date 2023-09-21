@@ -190,7 +190,9 @@ $(document).ready(function() {
             for (div of links){
                 let tmp = {};
                 for (link of div.getElementsByTagName("input")){
-                    tmp[link.getAttribute('name')] = link.value;
+                    if (!link.value ===""){
+                        tmp[link.getAttribute('name')] = link.value;
+                    }
                 }
                 link_data.push(tmp);
             }
