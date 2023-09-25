@@ -35,8 +35,8 @@ $(document).ready(function() {
             alert('Please fill in all fields.');
             return; // Do not proceed with submission
         }
-
-        if ($("#topic").val()){
+        
+        if ($("input#topic").val()){
             //PUT request to update DB
             $.ajax({
                 type: 'PUT',
@@ -44,7 +44,7 @@ $(document).ready(function() {
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
                 },
-                data: {"topic": $("#topic").val()},
+                data: {"topic": $("input#topic").val()},
                 success: function(response) {
                     console.log(response);
                 },
@@ -59,7 +59,7 @@ $(document).ready(function() {
         $(this).parent().append(spin);
         $(this).remove();
 
-        // Send POST request to the /api/all/ endpoint
+        // Send POST request
         $.ajax({
             type: 'POST',
             url: '/api/structure/'+ cardId +'/',
