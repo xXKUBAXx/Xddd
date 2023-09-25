@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/create/<int:zaplecze_id>/wp_api/', views.ZapleczeCreateWPapi.as_view()),
     path('api/structure/<int:zaplecze_id>/', views.ZapleczeAPIStructure.as_view()),
     path('api/write/<int:zaplecze_id>/', views.ZapleczeWrite.as_view()),
+    path('api/write/', views.AnyZapleczeWrite.as_view()),
     path('', views.Front.as_view()),
     path('logout', views.logout_view),
     path('<int:zaplecze_id>/', views.ZapleczeUnit.as_view()),
