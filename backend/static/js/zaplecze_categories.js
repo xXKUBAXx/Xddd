@@ -190,11 +190,13 @@ $(document).ready(function() {
             for (div of links){
                 let tmp = {};
                 for (link of div.getElementsByTagName("input")){
-                    if (!link.value ===""){
+                    if (link.value != ""){
                         tmp[link.getAttribute('name')] = link.value;
                     }
                 }
-                link_data.push(tmp);
+                if (link.value != ""){
+                    link_data.push(tmp);
+                }
             }
             formData += "&links="+JSON.stringify(link_data);
         }
