@@ -6,11 +6,13 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.views.generic import View
 import json
+import random
+from datetime import datetime
 
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
 from ..src.CreateWPblog.setup_wp import Setup_WP
-from datetime import datetime
+from ..src.CreateWPblog.wp_api import WP_API
 
 class ZapleczeWrite(APIView):
     def get_object(self, zaplecze_id):
@@ -98,6 +100,13 @@ class AnyZapleczeWrite(APIView):
                 params['forward_delta'] = False
         else:
             params['forward_delta'] = False
+
+        
+        if type(categories) == int:
+            wp = WP_API(domain, wp_user, wp_api_key)
+            wp_cats = wp.get_categories()
+            random.shuffle(wp_cats)
+            categories = wp_cats[:categories]
         
         
         o = OpenAI_article(**params)
