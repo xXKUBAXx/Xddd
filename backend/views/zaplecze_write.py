@@ -69,14 +69,13 @@ class AnyZapleczeWrite(APIView):
                 request.data.get('links'), \
                 request.data.get('domain'), \
                 request.data.get('wp_user'), \
-                request.date.get('lang')
+                request.data.get('lang')
         
         if 'wp_api_key' in request.data:
             wp_api_key = request.data.get('wp_api_key')
         elif 'wp_password': 
             s = Setup_WP(url=domain)
-            s.login(login=wp_user, pwd=request.data.get('wp_password'))
-            wp_api_key = s.get_api_key
+            wp_api_key = s.get_api_key(login=wp_user, pwd=request.data.get('wp_password'))
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -93,9 +92,13 @@ class AnyZapleczeWrite(APIView):
         if 'days_delta' in request.data:
             params['days_delta'] = int(request.data.get('days_delta'))
         if 'forward_delta' in request.data:
-            params['forward_delta'] = True
+            if request.data.get('forward_delta'):
+                params['forward_delta'] = True
+            else:
+                params['forward_delta'] = False
         else:
             params['forward_delta'] = False
+        
         
         o = OpenAI_article(**params)
         
