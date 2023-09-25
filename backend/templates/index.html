@@ -14,20 +14,39 @@ Dostępne zaplecza dla {{user.username}}
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
-            <div class="card shadow" data-card-id="{{ i.id }}">
-                <div class="card-icons">
-                    {% csrf_token %}
-                    {% if not i.wp_api_key %}
-                    <i class="fas fa-plus-circle icon" id="create"></i>
-                    {% endif %}
-                    <i class="fas fa-pen icon" id="write"></i>
-                    <i class="fas fa-trash icon" id="delete"></i>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ i.domain }}</h5>
-                    <p class="card-text">Click to view additional details</p>
-                </div>
-                <div class="table-responsive">
+            <a href="/{{i.id}}/">
+                <div class="card shadow" data-card-id="{{ i.id }}">
+                    <div class="card-icons">
+                        {% csrf_token %}
+                        {% if not i.wp_api_key %}
+                        <i class="fas fa-plus-circle icon" id="create"></i>
+                        {% endif %}
+                        <i class="fas fa-pen icon" id="write"></i>
+                        <i class="fas fa-trash icon" id="delete"></i>
+                    </div>
+                    <div class="card-body index-card">
+                        <h5 class="card-title">{{ i.domain }}</h5>
+                        {% if i.email == social_data.email or user.is_staff %}
+                            <h6>{{ i.email }}</h6>
+                        {% endif %}
+                        {% if i.ftp_pass %}
+                        <h6>FTP &#10003;</h6>
+                        {% else %}
+                        <h6>FTP &#10007;</h6>
+                        {% endif %}
+                        {% if i.db_pass %}
+                        <h6>DB &#10003;</h6>
+                        {% else %}
+                        <h6>DB &#10007;</h6>
+                        {% endif %}
+                        {% if i.wp_user %}
+                        <h6>WP &#10003;</h6>
+                        {% else %}
+                        <h6>WP &#10007;</h6>
+                        {% endif %}
+                    </div>
+                </a>
+                {% comment %} <div class="table-responsive">
                     <table class="table table-bordered additional-attributes" style="display: none;">
                         <thead class="thead-light">
                             <tr>
@@ -44,7 +63,7 @@ Dostępne zaplecza dla {{user.username}}
                             {% endfor %}
                         </tbody>
                     </table>
-                </div>
+                </div> {% endcomment %}
             </div>
         </div>
     </div>

@@ -83,6 +83,14 @@ h1:hover {
     background-color: #ff3333;
 }
 
+.index-card {
+    display: flex;
+    align-content: stretch;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 4em;
+}
+
 .date-container {
     display: flex;
     justify-content: flex-start;
