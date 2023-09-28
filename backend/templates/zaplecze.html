@@ -101,6 +101,7 @@
         </div>
         <div class="col-md-6">
             <div class="card shadow">
+            {% if data.wp_api_key %}
                 <div class="card-body">
                     <h5 class="card-title">Categoires</h5>
                 </div>
@@ -160,6 +161,7 @@
                         <button type="button" id="addlinks">Add links</button>
                     </form>
                 </div>
+                {% endif %}
             </div>
 
         </div>
