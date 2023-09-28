@@ -43,6 +43,11 @@ class ZapleczeAPIStructure(APIView):
 
         data = serializer.data
 
+        if "topic" in request.data:
+            topic = request.data.get("topic")
+        else:
+            topic = serializer.data["topic"]
+
         o = OpenAI_article(
             api_key=request.data.get("openai_api_key"),
             domain_name=data['domain'],
@@ -51,6 +56,6 @@ class ZapleczeAPIStructure(APIView):
             lang=data['lang']
         )
 
-        structure = o.create_structure(data['topic'], request.data.get('cat_num'), request.data.get('subcat_num'))
+        structure = o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
 
         return Response(structure, status=status.HTTP_201_CREATED)
