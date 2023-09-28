@@ -59,11 +59,14 @@
 
 <h1 class="">{%block h1 %}{% endblock %}</h1>
 
+{% if user.is_authenticated %}
 {% block content %}
 {% endblock %}
 
 
+
 <script src="{% static 'js/main.js' %}"></script>
 {%block script %}{% endblock %}
+{% endif %}
 </body>
 </html>
