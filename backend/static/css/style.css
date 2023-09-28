@@ -226,3 +226,24 @@ th {
     display: block;
     
 }
+
+.spinner-text {
+    display: block;
+    
+}
+
+.scrollable-table {
+    max-height: 300px; 
+    overflow-y: auto;
+}
+
+.scrollable-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.expanded-card {
+    width: 80vw;
+    margin: 0 auto;
+}

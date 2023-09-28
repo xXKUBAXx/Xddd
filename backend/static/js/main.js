@@ -55,4 +55,52 @@ $(document).ready(function() {
         var table = $(this).parent().find('.additional-attributes');
         table.toggle();
     });
+
+    $(document).ready(function() {
+        $('#tsvInput').on('paste', function() {
+            setTimeout(() => {
+                const tsvData = $(this).val();
+                if (tsvData) {
+                    createTableFromTSV(tsvData);
+                    $(this).hide();
+                    $('#resetButton').show();
+    
+                    $('.card').addClass('expanded-card');
+                }
+            }, 50);
+        });
+    
+        $('#resetButton').on('click', function() {
+            $('.table-container').empty();
+            $('#tsvInput').val('').show();
+            $(this).hide();
+    
+            $('.card').removeClass('expanded-card');
+        });
+    });
+    
+    function createTableFromTSV(tsvData) {
+        const rows = tsvData.trim().split("\n");
+        let tableHtml = '<table class="table table-bordered scrollable-table">';
+    
+        rows.forEach((row, index) => {
+            const cells = row.split("\t");
+            if (index === 0) {
+                tableHtml += '<thead><tr>';
+                cells.forEach(cell => {
+                    tableHtml += `<th>${cell}</th>`;
+                });
+                tableHtml += '</tr></thead><tbody>';
+            } else {
+                tableHtml += '<tr>';
+                cells.forEach(cell => {
+                    tableHtml += `<td contenteditable="true">${cell}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+        });
+    
+        tableHtml += '</tbody></table>';
+        $('.table-container').html(tableHtml).addClass('scrollable-table').show();
+    }
 });

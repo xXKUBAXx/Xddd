@@ -165,6 +165,71 @@
             </div>
 
         </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Zapleczara el classico</h5>
+                </div>
+                <div class="additional-attributes" style="display: none; padding: 20px;">
+                    <div class="form-group">
+                        <label for="tsvInput">Zlecenie dla zapleczary:</label>
+                            <textarea class="form-control" id="tsvInput" rows="4" placeholder="Wklej tutaj tsv za pomocą ctrl+v"></textarea>
+                            <button id="resetButton" style="display: none;">Clear table</button>
+                            <div class="table-container" style="display: none;"></div>
+                    </div>
+
+                    
+            
+                    <div class="form-group">
+                        <label>Grafiki:</label>
+                        <div class="checkbox-container">
+                            <input type="radio" id="pixabay" name="graphicSource" value="pixabay"> 
+                            <label for="pixabay">Pixabay</label>
+                            <input type="radio" id="unsplash" name="graphicSource" value="unsplash">
+                            <label for="unsplash">Unsplash</label>
+                            <input type="radio" id="ai" name="graphicSource" value="ai">
+                            <label for="ai">AI</label>
+                        </div>
+                    </div>
+            
+                    <div class="form-group">
+                        <label>Nakładka?:</label>
+                        <div class="checkbox-container">
+                            <input type="radio" id="withOverlay" name="overlayOption" value="withOverlay"> 
+                            <label for="withOverlay">Z nakładką</label>
+                            <input type="radio" id="withoutOverlay" name="overlayOption" value="withoutOverlay">
+                            <label for="withoutOverlay">Bez nakładki</label>
+                        </div>
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="dateInput">Wybierz datę dla początku publikacji:</label>
+                        <input type="date" id="dateInput" class="form-control" pattern="\d{2}-\d{2}-\d{4}" placeholder="DD-MM-YYYY">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="publishIntervalInput">Co ile mają publikować się wpisy?:</label>
+                        <input type="number" id="publishInterval" class="form-control" min="1" max="99">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="withFaq">Czy chcesz wygenerować FAQ dla tekstów?</label>
+                        <input type="radio" id="withFaq" name="faqOption" value="withFaq"> 
+                        <label for="withFaq">Tak</label>
+                        <input type="radio" id="withoutFaq" name="faqOption" value="withoutFaq">
+                        <label for="withoutFaq">Nie</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="openai_api_key_classic">OpenAI API key:</label>
+                        <input type="text" class="form-control" id="openai_api_key_classic" name="openai_api_key_classic">
+                    </div>
+            
+                    <button type="submit_tsv" data-card-id="{{ data.id }}" id="classic_main">Submit</button>
+                    <div id="graphicSpace" data-src="{% static 'temp-image.webp' %}"></div>
+                    <div id="responseOutput"></div>
+                </div>
+            </div>
     </div>
 </div>
 {% endblock %}
@@ -172,4 +237,5 @@
 <script src="{% static 'js/zaplecze.js' %}"></script>
 <script src="{% static 'js/new_zaplecze.js' %}"></script>
 <script src="{% static 'js/zaplecze_categories.js' %}"></script>
+<script src="{% static 'js/zaplecze_classic.js' %}"></script>
 {% endblock %}
