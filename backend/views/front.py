@@ -3,6 +3,7 @@ from ..models import Zaplecze
 from ..serializers import ZapleczeSerializer
 from django.views.generic import View
 from allauth.socialaccount.models import SocialAccount
+from ..src.CreateWPblog.openai_api import OpenAI_API
 
 
 class Front(View):
@@ -22,7 +23,8 @@ class CreateZaplecze(View):
             data = SocialAccount.objects.get(user=request.user).extra_data
         except:
             data = {}
-        context = {'social_data': data}
+        langs = OpenAI_API("").get_langs()
+        context = {'social_data': data, 'langs': langs}
         return render(request, 'create.html', context)
     
 
