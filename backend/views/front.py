@@ -26,6 +26,20 @@ class CreateZaplecze(View):
         return render(request, 'create.html', context)
     
 
+class UpdateZaplecze(View):        
+    def get(self, request, zaplecze_id):
+        if zaplecze_id:
+            serializer = ZapleczeSerializer(Zaplecze.objects.get(id=zaplecze_id))
+        else:
+            serializer.data = {}
+        try:
+            data = SocialAccount.objects.get(user=request.user).extra_data
+        except:
+            data = {}
+        context = {'social_data': data, 'data': serializer.data}
+        return render(request, 'update.html', context)
+    
+
 class ZapleczeUnit(View):
     def get(self, request, zaplecze_id):
         serializer = ZapleczeSerializer(Zaplecze.objects.get(id=zaplecze_id))

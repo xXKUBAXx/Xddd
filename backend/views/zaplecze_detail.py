@@ -20,7 +20,7 @@ class ZapleczeAPIDetail(APIView):
 
         if not zaplecze:
             return Response(
-                {"res": "Object with todo id does not exists"},
+                {"res": "Object with this id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -32,7 +32,7 @@ class ZapleczeAPIDetail(APIView):
 
         if not zaplecze:
             return Response(
-                {"res": "Object with todo id does not exists"},
+                {"res": "Object with this id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

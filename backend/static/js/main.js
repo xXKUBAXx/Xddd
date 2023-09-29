@@ -23,7 +23,7 @@ $(document).ready(function() {
     //Write icon onclick action
     $('i#write').on('click', function(event) {
         var cardId = $(this).closest('.card').data('card-id');
-        window.location.href = '/'+cardId;
+        window.location.href = '/'+cardId+'/update/';
     });
     // Handle delete icon click
     $('i#delete').on('click', function(event) {
