@@ -1,0 +1,79 @@
+{% extends "base.html" %}  
+
+{% block style %}
+{% endblock %}
+
+{% block h1 %}
+Stwórz nowe zaplecze
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 form-container">
+            <form id="updateForm" method="put">
+                {% csrf_token %}
+                {% for k,v in data.items %}
+                {% if k != 'id' %}
+                <div class="form-group">
+                    <label class="form-label" for="{{k}}">{{k}}:</label>
+                    <input type="text" class="form-control" id="{{k}}" name="{{k}}" value="{{v}}">
+                </div>
+                {% endif %}
+                {% endfor %}
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+        $('#updateForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+            
+            // Serialize form data
+            var formData = $(this).serialize();
+            // get csrf token
+            var csrftoken = getCookie('csrftoken');
+
+            // Check if any field is empty
+            var emptyFields = false;
+            $(this).find('input').each(function() {
+                if ($(this).val() === '') {
+                    emptyFields = true;
+                    return false; // Exit the loop early
+                }
+            });
+            
+            if (emptyFields) {
+                alert('Please fill in all fields.');
+                return; // Do not proceed with submission
+            }
+            
+            // Send POST request to the /api/all/ endpoint
+            $.ajax({
+                type: 'PUT',
+                url: '/api/{{data.id}}/',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: formData,
+                success: function(response) {
+                    // Handle success response here
+                    window.location.href = '/' + response.id;
+                },
+                error: function(error) {
+                    // Handle error response here
+                    console.log(error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
