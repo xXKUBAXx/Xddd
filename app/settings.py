@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-p^ar*%)gw3pne6%k%hxac*k-zh*g#acyk+=n^lxtjg3llh96!f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['zapleczara.pl', '0.0.0.0']
+ALLOWED_HOSTS = ['zapleczara.pl', '0.0.0.0', '127.0.0.1']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://192.168.100.30', 
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'backend.apps.BackendConfig',
     'rest_framework',
+    'drf_yasg',
     'django.contrib.sites',
     'allauth',
     'allauth.account',
