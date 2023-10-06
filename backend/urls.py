@@ -18,6 +18,7 @@ urlpatterns = [
     path('', views.Front.as_view()),
     path('logout', views.logout_view),
     path('create/', views.CreateZaplecze.as_view()),
+    path('link/', views.WriteLink.as_view()),
     path('<int:zaplecze_id>/', views.ZapleczeUnit.as_view()),
     path('<int:zaplecze_id>/update/', views.UpdateZaplecze.as_view())
 ]

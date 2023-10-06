@@ -49,3 +49,14 @@ class ZapleczeUnit(View):
         context = {'data': serializer.data}
 
         return render(request, 'zaplecze.html', context)
+    
+
+class WriteLink(View):
+    def get(self, request):
+        try:
+            data = SocialAccount.objects.get(user=request.user).extra_data
+        except:
+            data = {}
+        langs = OpenAI_API("").get_langs()
+        context = {'social_data': data, 'langs': langs}
+        return render(request, 'links.html', context)
