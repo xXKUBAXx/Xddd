@@ -203,8 +203,25 @@ $(document).ready(function() {
 
         const spin = document.createElement("div");
         spin.classList.add("spinner");
+        spin.setAttribute("id", "spinner")
         $(this).parent().append(spin);
         $(this).remove();
+
+        const cats_num = $("ul#selected_cats li").length;
+        const arts_num = $("#ArtSliderValue").val();
+        const pars_num = $("#ParagraphsSliderValue").val();
+
+        let deadline = new Date();
+        console.log(5*cats_num*arts_num*pars_num);
+        deadline.setSeconds(deadline.getSeconds() + 5*cats_num*arts_num*pars_num);
+        let x = setInterval(() => {
+            let now = new Date();
+            let dist = deadline - now;
+            $("div#spinner").innerHTML = dist;
+            console.log(dist);
+            if (dist < 0) $("div#spinner").innerHTML = "";
+        }, 1000)
+
         let data = [];
         for (i of cats) {
             let cat_data = {};
