@@ -80,6 +80,11 @@ class AnyZapleczeWrite(APIView):
             wp_api_key = s.get_api_key(login=wp_user, pwd=request.data.get('wp_password'))
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        if 'nofollow' in request.data:
+            nofollow = request.data.get('nofollow')
+        else:
+            nofollow = 0
 
         params = {
             "api_key" : openai_key,
@@ -111,6 +116,6 @@ class AnyZapleczeWrite(APIView):
         
         o = OpenAI_article(**params)
         
-        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
+        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links, nofollow)
 
         return Response(json.dumps(response), status=status.HTTP_201_CREATED)
