@@ -1,4 +1,5 @@
 {% extends "base.html" %}  
+{% load static %}
 
 {% block style %}
 {% endblock %}
@@ -12,83 +13,81 @@ Stwórz nowe zaplecze
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6 form-container">
-            <form id="createForm" method="post">
+            <form id="writeForm" type="post">
                 {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="openai_api_key">OpenAI API key:</label>
+                    <input type="text" class="form-control" id="openai_api_key" name="openai_api_key">
+                </div>
                 <div class="form-group">
                     <label class="form-label" for="domain">Domain:</label>
                     <input type="text" class="form-control" id="domain" name="domain">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="lang">Language:</label>
-                    <select class="form-control" id="lang" name="lang">
-                        {% for l in langs %}
-                        <option value="{{l}}">{{l}}</option>
-                        {% endfor %}
-                    </select>
-                </div>                
-                <div class="form-group">
-                    <label class="form-label" for="email">Email:</label>
-                    <input type="text" class="form-control" id="email" name="email" value="{{social_data.email}}">
+                    <label class="form-label" for="wp_user">Wordpress username:</label>
+                    <input type="text" class="form-control" id="wp_user" name="wp_user">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="url">URL:</label>
-                    <input type="text" class="form-control" id="url" name="url">
+                    <label class="form-label" for="wp_password">Wordpress password:</label>
+                    <input type="text" class="form-control" id="wp_password" name="wp_password">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="login">Login:</label>
-                    <input type="text" class="form-control" id="login" name="login">
+                    <label class="form-label" for="topic">Topic:</label>
+                    <input type="text" class="form-control" id="topic" name="topic">
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="password">Password:</label>
-                    <input type="password" class="form-control" id="password" name="password">
+                <div id="linki-form-group" class="form-group" style="display: flex; flex-wrap: wrap; ">
+                    <label class="form-label" for="links">Links:</label>
+                    <div style="display: flex; width: 100%;">
+                        <input class="form-control" type="text" placeholder="url" name="url" style="width: 50%;">
+                        <input class="form-control" type="text" placeholder="keyword" name="keyword" style="width: 50%;">
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                <div style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label" for="lang">Language:</label>
+                        <select class="form-control" id="lang" name="lang">
+                            {% for l in langs %}
+                            <option value="{{l}}">{{l}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <h6>Articles</h6>
+                    <div class="slider-container">
+                        <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1" name="a_num">
+                        <input type="text" id="ArtSliderValue" class="range-value" value="1" readonly>
+                    </div>
+                    <h6>Paragraphs per article</h6>
+                    <div class="slider-container">
+                        <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4" name="p_num">
+                        <input type="text" id="ParagraphsSliderValue" class="range-value" value="4" readonly>
+                    </div>
+                    <div class="date-container">
+                        <label>Start date</label>
+                        <input type="date" value="2005-04-02" id="start_date" name="start_date" style="margin-left: 12px;"/>
+                    </div>
+                    <h6>Days between articles</h6>
+                    <div class="slider-container">
+                        <input type="range" id="DaysSlider" class="range-slider" min="2" max="14" value="7" name="days_delta">
+                        <input type="text" id="DaysSliderValue" class="range-value" value="7" readonly>
+                    </div>
+                    <div class="checkbox-container">
+                        <label>Publish forward</label>
+                        <input type="checkbox" id="forward_delta" class="checkbox" name="forward_delta">
+                    </div>
+                    <h6>Nofollow probability</h6>
+                    <div class="slider-container">
+                        <input type="range" id="NoFollowSlider" class="range-slider" min="0" max="100" value="20" name="nofollo">
+                        <input type="text" id="NoFollowSliderValue" class="range-value" value="20" readonly>
+                    </div>
+                </div>
+                <button type="submit">Submit</button>
             </form>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
-
 {% block script %}
-<script>
-    $(document).ready(function() {
-        $('#createForm').on('submit', function(event) {
-            event.preventDefault(); // Prevent form from submitting normally
-            
-            // Serialize form data
-            var formData = $(this).serialize();
-
-            // Check if any field is empty
-            var emptyFields = false;
-            $(this).find('input').each(function() {
-                if ($(this).val() === '') {
-                    emptyFields = true;
-                    return false; // Exit the loop early
-                }
-            });
-            
-            if (emptyFields) {
-                alert('Please fill in all fields.');
-                return; // Do not proceed with submission
-            }
-            
-            // Send POST request to the /api/all/ endpoint
-            $.ajax({
-                type: 'POST',
-                url: '/api/all/',
-                data: formData,
-                success: function(response) {
-                    // Handle success response here
-                    window.location.href = '/' + response.id;
-                },
-                error: function(error) {
-                    // Handle error response here
-                    console.log(error);
-                }
-            });
-        });
-    });
-</script>
+<script src="{% static 'js/zaplecze.js' %}"></script>
+<script src="{% static 'js/links.js' %}"></script>
 {% endblock %}
