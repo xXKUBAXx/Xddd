@@ -106,12 +106,15 @@ class AnyZapleczeWrite(APIView):
         else:
             params['forward_delta'] = False
 
-        
-        if type(categories) == int:
+
+        try:
+            categories = int(categories)
             wp = WP_API(domain, wp_user, wp_api_key)
             wp_cats = wp.get_categories()
             random.shuffle(wp_cats)
             categories = wp_cats[:categories]
+        except:
+            pass
         
         
         o = OpenAI_article(**params)
