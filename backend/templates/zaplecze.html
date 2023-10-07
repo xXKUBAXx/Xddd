@@ -62,7 +62,7 @@
                         {% csrf_token %}
                         <div class="form-group">
                             <label class="form-label" for="openai_api_key">OpenAI API key:</label>
-                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key">
+                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
                         </div>
                         {% if not data.topic %}
                         <div class="form-group">
@@ -132,7 +132,7 @@
                         {% endif %}
                         <div class="form-group">
                             <label class="form-label" for="openai_api_key">OpenAI API key:</label>
-                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key">
+                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
                         </div>
                         <h6>Articles</h6>
                         <div class="slider-container">
@@ -222,7 +222,7 @@
 
                     <div class="form-group">
                         <label class="form-label" for="openai_api_key_classic">OpenAI API key:</label>
-                        <input type="text" class="form-control" id="openai_api_key_classic" name="openai_api_key_classic">
+                        <input type="text" class="form-control" id="openai_api_key_classic" name="openai_api_key_classic" value="{{user.account.openai_api_key}}">
                     </div>
             
                     <button type="submit_tsv" data-card-id="{{ data.id }}" id="classic_main">Submit</button>
