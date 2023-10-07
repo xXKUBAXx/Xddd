@@ -144,21 +144,6 @@ $(document).ready(function() {
         spin.setAttribute("id", "spinner")
         $(this).parent().append(spin);
         $(this).remove();
-
-        const cats_num = 1;
-        const arts_num = $("#ArtSliderValue").val();
-        const pars_num = $("#ParagraphsSliderValue").val();
-
-        let deadline = new Date();
-        console.log(5*cats_num*arts_num*pars_num);
-        deadline.setSeconds(deadline.getSeconds() + 5*cats_num*arts_num*pars_num);
-        let x = setInterval(() => {
-            let now = new Date();
-            let dist = deadline - now;
-            $("div#spinner").innerHTML = dist;
-            console.log(dist);
-            if (dist < 0) $("div#spinner").innerHTML = "";
-        }, 1000)
         
         formData += "&categories=1";
 
@@ -172,13 +157,15 @@ $(document).ready(function() {
             },
             data: formData,
             success: function(response) {
+                list = ""
                 for (const [id, urls] of Object.entries(JSON.parse(response))) {
                     urls.forEach(function(e){
-                        $("#selected_cats > [data-id=\'"+id+"\'] > ul")
-                        .append("<li><a href=\""+e+"\">"+e+"</a></li>");
-                        id == last_id ? $("div.spinner").remove() : null;
+                        list += "<li><a href=\""+e+"\">"+e+"</a></li>";
+                        console.log(id, e);
                     })
                 }
+                $("#spinner").parent().append("<ul>"+list+"</ul>");
+                $("#spinner").remove();
             },
             error: function(response) {
                 console.error(response);
