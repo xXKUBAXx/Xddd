@@ -1,8 +1,10 @@
 from django.shortcuts import render
-from ..models import Zaplecze
-from ..serializers import ZapleczeSerializer
+from ..models import Zaplecze, Account
+from ..serializers import ZapleczeSerializer, AccountSerializer
+from rest_framework.views import APIView
 from django.views.generic import View
 from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth.models import User
 from ..src.CreateWPblog.openai_api import OpenAI_API
 
 
@@ -59,4 +61,24 @@ class WriteLink(View):
             data = {}
         langs = OpenAI_API("").get_langs()
         context = {'social_data': data, 'langs': langs}
+        
         return render(request, 'links.html', context)
+    
+
+class UpdateProfile(APIView):
+    def get(self, request):
+        return render(request, 'user.html')
+    
+    def post(self, request):
+        user = Account.objects.get(id=request.user.id)
+        print(user.openai_api_key)
+        user.openai_api_key = request.data.get("openai_api_key")
+        user.save()
+        serializer = AccountSerializer(user)
+        data = serializer.data
+        data['openai_api_key'] = request.data.get("openai_api_key")
+        serializer = AccountSerializer(instance=user, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+
+        return render(request, 'user.html')

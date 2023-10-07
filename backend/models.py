@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Zaplecze(models.Model):
@@ -24,3 +25,11 @@ class Zaplecze(models.Model):
     wp_password = models.CharField(max_length=64, blank=True, null=True)
     wp_api_key = models.CharField(max_length=128, blank=True, null=True)
     wp_post_count = models.IntegerField(default=0)
+
+
+class Account(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    openai_api_key = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.user.username

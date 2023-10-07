@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Zaplecze
+from .models import Zaplecze, Account
 
 
 class ZapleczeSerializer(serializers.ModelSerializer):
@@ -19,3 +19,9 @@ class ZapleczeSerializer(serializers.ModelSerializer):
             "wp_api_key": {"required": False, "allow_null": True, "allow_blank": True},
             "wp_post_count": {"required": False, "allow_null": True}
             }
+
+
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = '__all__'
