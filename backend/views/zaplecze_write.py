@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from ..models import Zaplecze
-from ..serializers import ZapleczeSerializer
+from ..serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from drf_yasg.utils import swagger_auto_schema
 from django.views.generic import View
 import json
 import random
@@ -21,6 +22,12 @@ class ZapleczeWrite(APIView):
         except Zaplecze.DoesNotExist:
             return None
 
+    serializer_class = WriteSerializer
+    @swagger_auto_schema(
+            operation_description="Write article for any Zaplecze", 
+            request_body=WriteSerializer, 
+            responses={201:ResponseSerializer, 400:"Bad Request"}
+            )
     def post(self, request, zaplecze_id):
         zaplecze = self.get_object(zaplecze_id)
         if not zaplecze:
@@ -62,6 +69,12 @@ class ZapleczeWrite(APIView):
         return Response(json.dumps(response), status=status.HTTP_201_CREATED)
 
 class AnyZapleczeWrite(APIView):
+    serializer_class = WriteSerializer
+    @swagger_auto_schema(
+            operation_description="Write article for any Zaplecze", 
+            request_body=WriteSerializer, 
+            responses={201:ResponseSerializer, 400:"Bad Request"}
+            )
     def post(self, request):
         categories, openai_key, a, p, links, domain, wp_user, lang = \
                 request.data.get('categories'), \
