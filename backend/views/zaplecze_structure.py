@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from ..models import Zaplecze
-from ..serializers import ZapleczeSerializer
+from ..serializers import ZapleczeSerializer, StructireSerializer, CategorySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from django.http import JsonResponse
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
@@ -11,13 +13,17 @@ from ..src.CreateWPblog.wp_api import WP_API
 
 
 class ZapleczeAPIStructure(APIView):
-    
+    serializer_class = ZapleczeSerializer
     def get_object(self, zaplecze_id):
         try:
             return Zaplecze.objects.get(id=zaplecze_id)
         except Zaplecze.DoesNotExist:
             return None
         
+    @swagger_auto_schema(
+            operation_description="Get Zaplecze categories", 
+            responses={200:CategorySerializer, 400:"Bad Request"}
+            )
     def get(self, request, zaplecze_id):
         zaplecze = self.get_object(zaplecze_id)
 
@@ -36,6 +42,11 @@ class ZapleczeAPIStructure(APIView):
             safe=False
             )
         
+    @swagger_auto_schema(
+            operation_description="Create categories on Zaplecze", 
+            request_body=StructireSerializer,
+            responses={201:CategorySerializer}
+            )
     def post(self, request, zaplecze_id):
         zaplecze = self.get_object(zaplecze_id)
 
