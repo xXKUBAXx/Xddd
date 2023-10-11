@@ -99,9 +99,9 @@
                 {% endif %}
             </div>
         </div>
+        {% if data.wp_api_key %}
         <div class="col-md-6">
             <div class="card shadow">
-            {% if data.wp_api_key %}
                 <div class="card-body">
                     <h5 class="card-title">Categoires</h5>
                 </div>
@@ -161,7 +161,7 @@
                         <button type="button" id="addlinks">Add links</button>
                     </form>
                 </div>
-                {% endif %}
+                <script src="{% static 'js/zaplecze_categories.js' %}"></script>
             </div>
 
         </div>
@@ -230,12 +230,13 @@
                     <div id="responseOutput"></div>
                 </div>
             </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
 {% block script %}
 <script src="{% static 'js/zaplecze.js' %}"></script>
 <script src="{% static 'js/new_zaplecze.js' %}"></script>
-<script src="{% static 'js/zaplecze_categories.js' %}"></script>
 <script src="{% static 'js/zaplecze_classic.js' %}"></script>
 {% endblock %}
