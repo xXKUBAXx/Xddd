@@ -98,6 +98,9 @@ class AnyZapleczeWrite(APIView):
             nofollow = request.data.get('nofollow')
         else:
             nofollow = 0
+        
+        if 'topic' in request.data:
+            topic = request.data.get('topic')
 
         params = {
             "api_key" : openai_key,
@@ -125,13 +128,18 @@ class AnyZapleczeWrite(APIView):
             wp = WP_API(domain, wp_user, wp_api_key)
             wp_cats = wp.get_categories()
             random.shuffle(wp_cats)
-            categories = wp_cats[:categories]
+            if len(wp_cats) >= categories:
+                cats = wp_cats[:categories]
+            else:
+                cats = wp_cats
+                for _ in range(categories - len(wp_cats)):
+                    cats.append({"id":1, "name": topic})
         except:
             pass
         
         
         o = OpenAI_article(**params)
         
-        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links, nofollow)
+        response = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
 
         return Response(json.dumps(response), status=status.HTTP_201_CREATED)
