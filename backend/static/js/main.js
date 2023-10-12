@@ -64,6 +64,7 @@ $(document).ready(function() {
                     createTableFromTSV(tsvData);
                     $(this).hide();
                     $('#resetButton').show();
+                    $('#comp-card').hide();
     
                     $('.card').addClass('expanded-card');
                 }
@@ -74,7 +75,7 @@ $(document).ready(function() {
             $('.table-container').empty();
             $('#tsvInput').val('').show();
             $(this).hide();
-    
+            $('#comp-card').show();
             $('.card').removeClass('expanded-card');
         });
     });

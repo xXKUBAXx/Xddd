@@ -20,7 +20,7 @@ import os
 from ..src.CreateWPblog.wp_api import WP_API
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ZapleczeClassic(View):
+class ZapleczeComp(View):
     def get_object(self, zaplecze_id):
         try:
             return Zaplecze.objects.get(id=zaplecze_id)
@@ -40,41 +40,64 @@ class ZapleczeClassic(View):
         publishInterval = data.get("publishInterval") #2
         openai.api_key = data.get("openai_api_key") #sk
         faq_option = data.get("faqOption") #withFaq, withoutFaq
-        tsv_input = data.get("tsvInput")        
         
-        # gathers data from tsv_input
-        rows = tsv_input.strip().split("\n")
-        headers = ["title", "graphic_theme", "graphic_theme2", "category", "length", "isfaq"]
-        if all(header in rows[0] for header in headers):
-            rows = rows[1:]
-        
+        compSelect = data.get("compSelect") # mouse / keyboard
+        compQuant = data.get("compQuant")  # int
+
+        keyboardData = '''
+name,url,price,score,reviews,Producent,Rodzaj,Interfejs,Komunikacja,Typ klawiatury,Model,Kolor,Długość przewodu,Podświetlenie klawiszy,Obsługa makr,Podpórka pod nadgarstki,Regulowany kąt pochylenia,Szerokość,Wysokość,Popularne,Liczba klawiszy,Głębokość,Kolor podświetlenia klawiatury,Dystrybucja
+Logitech MX Keys Czarny (920-009415),https://www.ceneo.pl/85936012,429,4.79,75,Logitech,Klawiatura,Bluetooth,Bezprzewodowa,Mechaniczna,MX Keys,Czarne,Nie dotyczy,Tak,Nie,Nie,Nie,430 mm,205 mm,,Nie dotyczy,Nie dotyczy,Nie dotyczy,Nie dotyczy
+SteelSeries Apex PRO TKL OmniPoint,https://www.ceneo.pl/89677853,599,4.85,13,Steelseries,Klawiatura,USB,Przewodowa,Mechaniczna,Apex PRO TKL OmniPoint,Czarne,Nie dotyczy,Tak,Nie dotyczy,Tak,Nie dotyczy,Nie dotyczy,Nie dotyczy,,Nie dotyczy,Nie dotyczy,Nie dotyczy,Nie dotyczy
+        '''
+
+        mouseData = '''
+        name,url,price,score,reviews,Producent,Rodzaj,Liczba przycisków,Podświetlenie myszy,Kolor,Komunikacja,Interfejs,Rozdzielczość,Zasięg,Liczba rolek,Programowalne przyciski,Waga,Model,Popularne,Dystrybucja,Typ urządzenia
+Razer Viper Ultimate (RZ01-03050100-R3G1),https://www.ceneo.pl/89714621,349,4.82,17,Razer,Mysz optyczna,8 przycisków,Tak,Czarne,Bezprzewodowa,USB,20000dpi,15m,1,Tak,74 g,Viper Ultimate,,Nie dotyczy,Nie dotyczy
+Logitech G Pro X Superlight Czarny (910005880),https://www.ceneo.pl/100911747,470,5.00,12,Logitech,Mysz optyczna,5 przycisków,Nie,Czarne,Bezprzewodowa,USB (Radio 2.4 GHz),24500dpi,10m,1,Tak,63 g,G Pro X Superlight,,Nie dotyczy,Nie dotyczy
+'''
+
+        if compSelect == 'mouse':
+            textData = mouseData
+            graphic_theme = "computer mouse"
+            graphic_theme2 = "computer"
+            category = "Myszki komputerowe&Porównania myszek"
+            length = 4000
+            title = "Porównanie myszek"
+            isfaq = 0
+        elif compSelect == 'keyboard':
+            textData = keyboardData
+            graphic_theme = "computer keyboard"
+            graphic_theme2 = "computer"
+            category = "Klawiatury komputerowe&Porównania klawiatur"
+            length = 4000
+            title = "Porównanie klawiatur"
+            isfaq = 0
         # print(settings.STATICFILES_DIRS[0])
         # makes texts, graphics, faqs and publish all to wp
 
         wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
         date_controller = 0
-        for row in rows:
-            print(f"Wykonuję\n{row}")
-            category_array = []
-            title, graphic_theme, graphic_theme2, category, length, isfaq = row.split("\t")
-            article, opening = get_text(title, category, length, isfaq, language=zaplecze.lang)
-            image_save_path = get_image(graphic_theme, title, overlay_option, graphicSource, image_key, graphic_theme2)
-            publish_date = get_publish_date(date_input, publishInterval, date_controller)
-            image_id = wp_api.upload_img(image_save_path)
-            
-            if '&' in category:
-                categories = list(category.split('&'))
-                for cat in categories:
-                    category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, language=zaplecze.lang)))
-            else:
+        
+       
+        category_array = []
+
+        new_title, text, opening = get_text(title, textData, category, length, isfaq, language=zaplecze.lang)
+        image_save_path = get_image(graphic_theme, title, overlay_option, graphicSource, image_key, graphic_theme2)
+        publish_date = get_publish_date(date_input, publishInterval, date_controller)
+        image_id = wp_api.upload_img(image_save_path)
+        
+        if '&' in category:
+            categories = list(category.split('&'))
+            for cat in categories:
                 category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, language=zaplecze.lang)))
+        else:
+            category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, language=zaplecze.lang)))
 
-            category_array = [cat['id'] for cat in category_array]
-            wp_api.post_article(title, article, opening, image_id, datetime.datetime.now(), category_array, author_id=1)
-            date_controller += 1
+        category_array = [cat['id'] for cat in category_array]
+        wp_api.post_article(new_title, text, opening, image_id, datetime.datetime.now(), category_array, author_id=1)
+        date_controller += 1
 
-            # rows.remove(row)
-            print(rows)
+         
 
             # publish_article(article, featured_image, publish_date, zaplecze.wp_user, zaplecze.wp_api_key)
             
@@ -93,34 +116,33 @@ class ZapleczeClassic(View):
         return JsonResponse({"error": "Nieprawidłowa metoda żądania."}, status=400)
     
     
+def get_text(title, textData, category, length, isfaq, language):
+    print(title)
+    text = get_comparison(title, textData, language)
+
     
-def get_text(title, category, length, isfaq, language):
-    headers = get_headers(title, language)
-    print(headers)
-    opening = get_opening(title, language)
-    text = f'<h1>{title}</h1>\n{opening}'
-    for header in headers:
-        section = get_section(header, language)
-        text += f'\n<h2>{header}</h2>\n{section}'
-        print(text)
-        print(f"\n\nobecna długość to {len(text)}\n\n")
-        if len(text) > int(length):
-            break
 
-    if str(isfaq) == '1':
-        faq = get_faq(title, language)
-        text += f'\n{faq}'
+    pattern = re.compile(r'<h1>(.*?)<\/h1>', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
 
+    if match:
+        new_title = match.group(1)
+    else:
+        new_title = None
+
+    opening = get_opening(new_title, language)
+
+    print(new_title)
     print(text)
-    return text, opening
+    return new_title, text, opening
 
 
-def get_headers(title, language):
+def get_comparison(title, textData, language):
     while True:
         if language.lower() == 'pl':
             prompt = [
-            {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe i bogate w informacje artykuły."},
-            {"role": "user", "content": f'Stwórz 10 nagłówków h2 dla artykułu pod tytułem "{title}", zawrzyj je w tagach <h2>'}
+            {"role": "system", "content": "Jesteś wnikliwym redaktorem strony technologicznej, który zajmuje się pisaniem porównań elektroniki i wyciąganiem wniosków, dzięki czemu konsumenci mogą podejmować lepsze decyzje zakupowe."},
+            {"role": "user", "content": f'Na podstawie następujących danych: {textData}, napisz tytuł (zamieść go w h1) i artykuł-porównanie produktów. Tekst zamieść w tagach html (<h1>, <h2>, <p>). W treści zamieść także tabelkę html, którą stworzysz na podstawie danych o produktach.'}
             ]
         elif language.lower() == 'en':
             prompt = [
@@ -137,23 +159,29 @@ def get_headers(title, language):
             {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
             {"role": "user", "content": f'Vytvořte nadpisy 10 h2 pro článek s názvem "{title}", zahrňte je do značek <h2>'}
             ]
-        response = callBot(prompt, 300)
+        response = callBigBot(prompt, 10000)
 
         content = response["choices"][0]["message"]["content"]
 
+        prompt = [
+        {"role": "system", "content": "Jesteś wnikliwym redaktorem strony technologicznej, który zajmuje się pisaniem porównań elektroniki i wyciąganiem wniosków, dzięki czemu konsumenci mogą podejmować lepsze decyzje zakupowe."},
+        {"role": "user", "content": f'Rozwiń tekst, który otrzymasz. Rozwiń treść w taki sposób, aby stworzyć długi na 6000 znaków artykuł, dodaj śródtytuły w <h2>. Całość zapisz w tagach html (<h1>, <h2>, <p>). Tekst: {content}. Zoptymalizuj też tabelkę, dodaj pierwszą kolumnę do tagów <th>.'}
+        ]
 
-        header_list = re.findall(r'<h2>(.+?)</h2>', content)
-        if not header_list:
-            continue
-        else:
-            return header_list
+        response = callBigBot(prompt, 10000)
 
-def get_opening(title, language):
+        content = response["choices"][0]["message"]["content"]
+
+        if len(content) >= 4000:
+            return content
+
+
+def get_opening(new_title, language):
     while True:
         if language.lower() == 'pl':
             prompt = [
             {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe i bogate w informacje artykuły."},
-            {"role": "user", "content": f'Stwórz wstęp do artykułu pod tytułem "{title}", i zawrzyj go w tagach <p>'}
+            {"role": "user", "content": f'Stwórz wstęp do artykułu pod tytułem "{new_title}", i zawrzyj go w tagach <p>'}
             ]
         elif language.lower() == 'en':
             prompt = [
@@ -269,6 +297,24 @@ def ask_bot_faq(question, language):
                 continue
             else:
                 return answer
+            
+def callBigBot(prompt, price):
+    while True:
+        try:
+            response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k",
+            messages=prompt,
+            max_tokens=price,
+            n=1,
+            stop=None,
+            temperature=0.8,
+            )
+            return response
+
+        except (openai.error.RateLimitError, openai.error.ServiceUnavailableError, openai.error.APIError) as e:
+            print(f"Rate limit error: {e}")
+            print('Funkcja odczeka 60 sekund i spróbuje ponownie')
+            time.sleep(60)
         
 
 def get_image(graphic_theme, title, overlay_option, graphicSource, image_key, graphic_theme2=None):

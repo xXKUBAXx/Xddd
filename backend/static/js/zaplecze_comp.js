@@ -1,22 +1,23 @@
 $(document).ready(function() {
-    var cardId = $('#classic_main').data('card-id');
+    var cardId = $('#classic_comp').data('card-id');
 
-    $('button[type="submit_tsv"]').on('click', function(event) {
+    $('button[type="submit_comp"]').on('click', function(event) {
         event.preventDefault();
         console.log('Zaliczyło!');
 
         const data = {
-            tsvInput: $('#tsvInput').val(),
-            graphicSource: $('input[name="graphicSource"]:checked').val(),
-            overlayOption: $('input[name="overlayOption"]:checked').val(),
-            dateInput: $('#dateInput').val(),
-            publishInterval: $('#publishInterval').val(),
-            openai_api_key: $('#openai_api_key_classic').val(),
-            faqOption: $('input[name="faqOption"]:checked').val()
+            compSelect: $('#comparisonSelect').val(),
+            compQuant: $('#compQuant').val(),
+            graphicSource: $('input[name="graphicSource_comp"]:checked').val(),
+            overlayOption: $('input[name="overlayOption_comp"]:checked').val(),
+            dateInput: $('#dateInput_comp').val(),
+            publishInterval: $('#publishInterval_comp').val(),
+            openai_api_key: $('#openai_api_key_comp').val(),
+            faqOption: $('input[name="faqOption_comp"]:checked').val()
         };
 
         $.ajax({
-            url: '/api/create/' + cardId + '/zaplecze_classic/',
+            url: '/api/create/' + cardId + '/zaplecze_comp/',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

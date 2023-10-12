@@ -4,6 +4,7 @@ from .zaplecze_structure import *
 from .zaplecze_create import *
 from .zaplecze_write import *
 from .zaplecze_classic import *
+from .zaplecze_comp import *
 from .front import *
 
 from django.contrib.auth import logout
