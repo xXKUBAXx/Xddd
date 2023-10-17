@@ -24,11 +24,11 @@ SECRET_KEY = 'django-insecure-p^ar*%)gw3pne6%k%hxac*k-zh*g#acyk+=n^lxtjg3llh96!f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['zapleczara.pl', '0.0.0.0', '127.0.0.1']
+ALLOWED_HOSTS = ['zapleczara.pl', '0.0.0.0', '127.0.0.1', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://192.168.100.30', 
-    'http://77.254.52.104'
+    'http://185.180.207.191'
     ]
 
 
@@ -103,7 +103,8 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': '/actions-runner/work/django/db.sqlite3',
     }
 }
 
@@ -148,7 +149,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'backend/static')
 ]
 # STATIC_ROOT=os.path.join(BASE_DIR,'staticfiles')
-STATIC_ROOT='/home/admin/actions-runner/work/django/static/'
+STATIC_ROOT='/actions-runner/work/django/static/'
 
 
 # Default primary key field type
