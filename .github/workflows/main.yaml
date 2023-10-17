@@ -17,7 +17,6 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.CI_TOKEN }}
-          submodules: true
       - run: git rm --cached backend/src/CreateWPblog
       - run: git submodule init
       - run: git submodule update --init --recursive
