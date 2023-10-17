@@ -242,13 +242,14 @@ $(document).ready(function() {
             },
             data: formData,
             success: function(response) {
-                for (const [id, urls] of Object.entries(JSON.parse(response))) {
+                for (const [id, urls] of Object.entries(response.data)) {
                     urls.forEach(function(e){
                         $("#selected_cats > [data-id=\'"+id+"\'] > ul")
                         .append("<li><a href=\""+e+"\">"+e+"</a></li>");
                         id == last_id ? $("div.spinner").remove() : null;
                     })
                 }
+                $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
             },
             error: function(response) {
                 console.error(response);

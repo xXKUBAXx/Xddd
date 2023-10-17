@@ -64,9 +64,9 @@ class ZapleczeWrite(APIView):
         
         o = OpenAI_article(**params)
         
-        response = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
+        response, tokens = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
 
-        return Response(json.dumps(response), status=status.HTTP_201_CREATED)
+        return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
 class AnyZapleczeWrite(APIView):
     serializer_class = WriteSerializer
@@ -140,6 +140,7 @@ class AnyZapleczeWrite(APIView):
         
         o = OpenAI_article(**params)
         
-        response = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
+        response, tokens = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
+        print(response)
 
-        return Response(json.dumps(response), status=status.HTTP_201_CREATED)
+        return Response({"data": json.dump(response), "tokens": tokens}, status=status.HTTP_201_CREATED)

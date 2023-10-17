@@ -67,6 +67,6 @@ class ZapleczeAPIStructure(APIView):
             lang=data['lang']
         )
 
-        structure = o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
+        structure, tokens = o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
 
-        return Response(structure, status=status.HTTP_201_CREATED)
+        return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)

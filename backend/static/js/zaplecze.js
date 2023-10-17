@@ -70,11 +70,11 @@ $(document).ready(function() {
                     .appendChild(document.createElement("h3"))
                     .textContent = "Utworzono kategorie";
                 const ul = document.createElement("ul");
-                Object.keys(response).forEach((e) => {
+                Object.keys(response.data).forEach((e) => {
                     const li = document.createElement("li");
                     li.textContent = e;
                     const inner_ul = document.createElement("ul");
-                    response[e].forEach((i) => {
+                    response.data[e].forEach((i) => {
                         const inner_li = document.createElement("li");
                         inner_li.textContent = i;
                         inner_ul.appendChild(inner_li);
@@ -84,6 +84,7 @@ $(document).ready(function() {
                 })
                 fragment.appendChild(ul);
                 $("div.spinner").parent().append(fragment);
+                $("div.spinner").parent().append("<p>Tokens used: "+response.tokens+"</p>");
                 $("div.spinner").remove();
             },
             error: function(error) {
