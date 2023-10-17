@@ -19,4 +19,4 @@ jobs:
           submodules: recursive
       - run: git rm --cached backend/src/CreateWPblog
       - run: git submodule init
-      - run: git submodule update --init --recursive
+      - run: git submodule update --force --recursive --init --remote
