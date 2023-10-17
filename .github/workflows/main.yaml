@@ -15,8 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
           submodules: recursive
-          token: ${{ secrets.CI_TOKEN }}
       - run: git rm --cached backend/src/CreateWPblog
       - run: git submodule init
       - run: git submodule update --init --recursive
