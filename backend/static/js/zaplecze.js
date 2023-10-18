@@ -74,7 +74,7 @@ $(document).ready(function() {
                     const li = document.createElement("li");
                     li.textContent = e;
                     const inner_ul = document.createElement("ul");
-                    response.data[e].forEach((i) => {
+                    response.data[0][e].forEach((i) => {
                         const inner_li = document.createElement("li");
                         inner_li.textContent = i;
                         inner_ul.appendChild(inner_li);
