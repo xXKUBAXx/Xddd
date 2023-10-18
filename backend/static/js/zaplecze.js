@@ -55,6 +55,7 @@ $(document).ready(function() {
         }
 
         const spin = document.createElement("div");
+        spin.setAttribute("id", "class_spinner");
         spin.classList.add("spinner");
         $(this).parent().append(spin);
         $(this).remove();
@@ -83,9 +84,9 @@ $(document).ready(function() {
                     ul.appendChild(li);
                 })
                 fragment.appendChild(ul);
-                $("div.spinner").parent().append(fragment);
-                $("div.spinner").parent().append("<p>Tokens used: "+response.tokens+"</p>");
-                $("div.spinner").remove();
+                $("div#class_spinner").parent().append(fragment);
+                $("div#class_spinner").parent().append("<p>Tokens used: "+response.tokens+"</p>");
+                $("div#class_spinner").remove();
             },
             error: function(error) {
                 // Handle error response here

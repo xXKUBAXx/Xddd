@@ -203,7 +203,7 @@ $(document).ready(function() {
 
         const spin = document.createElement("div");
         spin.classList.add("spinner");
-        spin.setAttribute("id", "spinner")
+        spin.setAttribute("id", "articles_spinner")
         $(this).parent().append(spin);
         $(this).remove();
 
@@ -217,9 +217,9 @@ $(document).ready(function() {
         let x = setInterval(() => {
             let now = new Date();
             let dist = deadline - now;
-            $("div#spinner").innerHTML = dist;
+            $("div#articles_spinner").innerHTML = dist;
             console.log(dist);
-            if (dist < 0) $("div#spinner").innerHTML = "";
+            if (dist < 0) $("div#articles_spinner").innerHTML = "";
         }, 1000)
 
         let data = [];
@@ -246,7 +246,7 @@ $(document).ready(function() {
                     urls.forEach(function(e){
                         $("#selected_cats > [data-id=\'"+id+"\'] > ul")
                         .append("<li><a href=\""+e+"\">"+e+"</a></li>");
-                        id == last_id ? $("div.spinner").remove() : null;
+                        id == last_id ? $("div#articles_spinner").remove() : null;
                     })
                 }
                 $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
