@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-p^ar*%)gw3pne6%k%hxac*k-zh*g#acyk+=n^lxtjg3llh96!f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['zapleczara.pl', '0.0.0.0', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['zapleczara.pl', '0.0.0.0', '127.0.0.1', 'localhost', '185.180.207.191']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://192.168.100.30', 
