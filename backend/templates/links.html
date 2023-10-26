@@ -5,57 +5,81 @@
 {% endblock %}
 
 {% block h1 %}
-Write linked article
+Write linked article for {{umowa.domena}}
 {% endblock %}
 
 {% block content %}
 
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 form-container">
-            <form id="writeForm" type="post">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label class="form-label" for="openai_api_key">OpenAI API key:</label>
-                    <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3>Frazy z panelu</h3>
+                    <p>Click for additional details</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="domain">Domain:</label>
-                    <input type="text" class="form-control" id="domain" name="domain">
+                <div class="additional-attributes">
+                    <table>
+                        <tr>
+                            <th>URL</th>
+                            <th>Fraza</th>
+                            <th>Linki</th>
+                        </tr>
+                        {% for r in umowa.podstrony %}
+                            {% if forloop.counter0|divisibleby:2  %}
+                            <tr>
+                                <td>{{r}}</td>
+                            {% else %}
+                                <td>{{r}}</td>
+                                <td><input type="number" min="0" max="5" value="0"></td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="wp_user">Wordpress username:</label>
-                    <input type="text" class="form-control" id="wp_user" name="wp_user">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="wp_password">Wordpress password:</label>
-                    <input type="text" class="form-control" id="wp_password" name="wp_password">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="topic">Topic:</label>
-                    <input type="text" class="form-control" id="topic" name="topic">
-                </div>
-                <div id="linki-form-group" class="form-group" style="display: flex; flex-wrap: wrap; ">
-                    <label class="form-label" for="links">Links:</label>
-                    <div style="display: flex; width: 100%;">
-                        <input class="form-control" type="text" placeholder="url" name="url" style="width: 50%;">
-                        <input class="form-control" type="text" placeholder="keyword" name="keyword" style="width: 50%;">
-                    </div>
-                </div>
-                <div style="display: none;">
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="card-title">Links</h3>
+                <p>Click for additional details</p>
+            </div>
+            <div class="additional-attributes">
+                <button type="button" id="addlinks">Add links</button>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="card-title">Details</h3>
+            </div>
+            <div class="additional-attributes">
+                <form id="writeForm" type="post">
+                    {% csrf_token %}
+                    {% if not data.topic %}
                     <div class="form-group">
-                        <label class="form-label" for="lang">Language:</label>
-                        <select class="form-control" id="lang" name="lang">
-                            {% for l in langs %}
-                            <option value="{{l}}">{{l}}</option>
-                            {% endfor %}
-                        </select>
+                        <label class="form-label" for="topic">Articles topic:</label>
+                        <input type="text" class="form-control" id="topic" name="topic">
                     </div>
-                    <h6>Articles</h6>
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="form-label" for="openai_api_key">OpenAI API key:</label>
+                        <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+                    </div>
+                    {% comment %} <h6>Articles</h6>
                     <div class="slider-container">
                         <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1" name="a_num">
                         <input type="text" id="ArtSliderValue" class="range-value" value="1" readonly>
-                    </div>
+                    </div> {% endcomment %}
                     <h6>Paragraphs per article</h6>
                     <div class="slider-container">
                         <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4" name="p_num">
@@ -74,17 +98,15 @@ Write linked article
                         <label>Publish forward</label>
                         <input type="checkbox" id="forward_delta" class="checkbox" name="forward_delta">
                     </div>
-                    <h6>Nofollow probability</h6>
-                    <div class="slider-container">
-                        <input type="range" id="NoFollowSlider" class="range-slider" min="0" max="100" value="20" name="nofollow">
-                        <input type="text" id="NoFollowSliderValue" class="range-value" value="20" readonly>
-                    </div>
-                </div>
-                <button type="submit">Submit</button>
-            </form>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+            <script src="{% static 'js/zaplecze_categories.js' %}"></script>
         </div>
     </div>
 </div>
+
+
 {% endblock %}
 
 {% block script %}

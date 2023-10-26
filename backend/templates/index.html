@@ -9,9 +9,9 @@ Dostępne zaplecza dla {{user.username}}
 
 {% block content %}
 
+<div class="container mt-5">
 {% for i in queryset %}
 {% if i.email == social_data.email or user.is_staff %}
-<div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
             <a href="/{{i.id}}/">
@@ -67,10 +67,10 @@ Dostępne zaplecza dla {{user.username}}
             </div>
         </div>
     </div>
-</div>
 
 {% endif %}
 {% endfor %}
+</div>
 {% endblock %}
 
 {% block script %}

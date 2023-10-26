@@ -101,6 +101,7 @@ $(document).ready(function() {
             const div = document.createElement('div');
             div.style.display = 'flex';
             div.style.flexWrap = 'wrap';
+            div.style.paddingTop = '20px';
             div.setAttribute('id', 'linki-form-group');
             div.classList.add('form-group');
 
@@ -164,7 +165,7 @@ $(document).ready(function() {
 
             div.appendChild(btn);
 
-            document.querySelector("#writeForm > button").insertAdjacentElement("beforebegin", div);
+            document.querySelector("button#addlinks").insertAdjacentElement("beforebegin", div);
             $(this).remove()
         }
     });

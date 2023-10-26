@@ -7,6 +7,7 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from ..src.CreateWPblog.openai_api import OpenAI_API
 
+import json
 
 class Front(View):
     def get(self, request):
@@ -54,15 +55,23 @@ class ZapleczeUnit(View):
     
 
 class WriteLink(View):
-    def get(self, request):
-        try:
-            data = SocialAccount.objects.get(user=request.user).extra_data
-        except:
-            data = {}
-        langs = OpenAI_API("").get_langs()
-        context = {'social_data': data, 'langs': langs}
+    def get(self, request, umowa_id):
+        umowy = json.load(open("../frazy.json"))
+        for u in umowy["data"]:
+            if u["id"] == umowa_id:
+                umowa = u
+                break
+        context = {'umowa': umowa}
         
         return render(request, 'links.html', context)
+    
+
+class LinksPanel(View):
+    def get(self, request):
+        umowy = json.load(open("../umowy.json"))
+        context = {"umowy": umowy['data'].values()}
+
+        return render(request, 'links_panel.html', context)
     
 
 class UpdateProfile(APIView):

@@ -41,6 +41,12 @@ h1:hover {
     border: 1px solid #333;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     color: #ccc;
+    margin-bottom: 65px;
+}
+
+.additional-attributes {
+    padding: 1.25rem; 
+    display: none;
 }
 /*disable hover animation to save sanity
 .card:hover {

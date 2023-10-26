@@ -22,7 +22,8 @@ urlpatterns = [
     path('logout', views.logout_view),
     path('user/', views.UpdateProfile.as_view()),
     path('create/', views.CreateZaplecze.as_view()),
-    path('link/', views.WriteLink.as_view()),
+    path('links_panel/', views.LinksPanel.as_view()),
+    path('links/<int:umowa_id>/', views.WriteLink.as_view()),
     path('<int:zaplecze_id>/', views.ZapleczeUnit.as_view()),
     path('<int:zaplecze_id>/update/', views.UpdateZaplecze.as_view())
 ]
