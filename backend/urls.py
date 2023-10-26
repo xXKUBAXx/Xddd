@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('api/all/', views.ZapleczeAPIView.as_view()),
     path('api/<int:zaplecze_id>/', views.ZapleczeAPIDetail.as_view()),
+    path('api/create/', views.ZapleczeCreateAll.as_view()),
     path('api/create/<int:zaplecze_id>/domain/', views.ZapleczeCreateDomain.as_view()),
     path('api/create/<int:zaplecze_id>/db/', views.ZapleczeCreateDB.as_view()),
     path('api/create/<int:zaplecze_id>/ftp/', views.ZapleczeCreateFTP.as_view()),
@@ -14,6 +15,7 @@ urlpatterns = [
     path('api/create/<int:zaplecze_id>/zaplecze_classic/', views.ZapleczeClassic.as_view()),
     path('api/create/<int:zaplecze_id>/zaplecze_comp/', views.ZapleczeComp.as_view()),
     path('api/structure/<int:zaplecze_id>/', views.ZapleczeAPIStructure.as_view()),
+    path('api/structure/', views.AnyZapleczeAPIStructure.as_view()),
     path('api/write/<int:zaplecze_id>/', views.ZapleczeWrite.as_view()),
     path('api/write/', views.AnyZapleczeWrite.as_view()),
     path('', views.Front.as_view()),
