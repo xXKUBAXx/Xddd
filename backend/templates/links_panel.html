@@ -1,0 +1,37 @@
+{% extends "base.html" %}  
+
+{% block style %}
+{% endblock %}
+
+{% block h1 %}
+Umowy {{user.username}}
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <table>
+                <tr>
+                    <th>Umowa</th>
+                    <th>Data rozpoczęcia</th>
+                    <th>Czas trwania umowy</th>
+                </tr>
+                {% for u in umowy %}
+                    {% if not u.wypowiedziana and u.pozycjoner.mail == user.email %}
+                            <tr>
+                                <td><a href="/links/{{u.id_seo}}/">{{u.domena}}</a></td>
+                                <td>{{u.od}}</td>
+                                <td>{{u.okres_umowy}}</td>
+                            </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
