@@ -15,7 +15,7 @@ class Front(View):
             data = SocialAccount.objects.get(user=request.user).extra_data
         except:
             data = {}
-        context = {'queryset': queryset, 'social_data': data}
+        context = {'queryset': queryset[::-1], 'social_data': data}
         return render(request, 'index.html', context)
     
 
