@@ -17,5 +17,6 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
           submodules: recursive
+      - run: git rm --cached backend/src/CreateWPblog
       - run: git submodule init
       - run: git submodule update --force --recursive --init --remote
