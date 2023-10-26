@@ -135,12 +135,12 @@ class AnyZapleczeWrite(APIView):
                 for _ in range(categories - len(wp_cats)):
                     cats.append({"id":1, "name": topic})
         except:
-            pass
+            cats = categories
         
         
         o = OpenAI_article(**params)
         
         response, tokens = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
-        print(response)
+        print({"data": response, "tokens": tokens})
 
-        return Response({"data": json.dump(response), "tokens": tokens}, status=status.HTTP_201_CREATED)
+        return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
