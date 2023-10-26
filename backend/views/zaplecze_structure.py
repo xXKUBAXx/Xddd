@@ -56,6 +56,10 @@ class ZapleczeAPIStructure(APIView):
 
         if "topic" in request.data:
             topic = request.data.get("topic")
+            data["topic"] = topic
+            serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
+            if serializer.is_valid():
+                serializer.save()
         else:
             topic = serializer.data["topic"]
 
@@ -68,5 +72,26 @@ class ZapleczeAPIStructure(APIView):
         )
 
         structure, tokens = o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
+
+        return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
+
+
+
+class AnyZapleczeAPIStructure(APIView):
+    @swagger_auto_schema(
+            operation_description="Create categories on Zaplecze", 
+            request_body=StructireSerializer,
+            responses={201:CategorySerializer}
+            )
+    def post(self, request):
+        o = OpenAI_article(
+            api_key=request.data.get("openai_api_key"),
+            domain_name=request.data.get('domain'),
+            wp_login=request.data.get('wp_user'),
+            wp_pass=request.data.get('wp_api_key'),
+            lang=request.data.get('lang')
+        )
+
+        structure, tokens = o.create_structure(request.data.get("topic"), request.data.get('cat_num'), request.data.get('subcat_num'))
 
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
