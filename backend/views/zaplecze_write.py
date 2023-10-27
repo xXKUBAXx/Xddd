@@ -144,3 +144,69 @@ class AnyZapleczeWrite(APIView):
         print({"data": response, "tokens": tokens})
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
+
+
+class ManyZapleczesWrite(APIView):
+    serializer_class = WriteSerializer
+    @swagger_auto_schema(
+            operation_description="Write article for any Zaplecze", 
+            request_body=WriteSerializer, 
+            responses={201:ResponseSerializer, 400:"Bad Request"}
+            )
+    def post(self, request):
+        topic, lang, openai_key, p_num, start_date, days_delta, zapleczas, links = \
+            request.data.get("topic"), \
+            request.data.get("lang"), \
+            request.data.get("openai_api_key"), \
+            int(request.data.get("p_num")), \
+            datetime.strptime(request.data.get('start_date'), "%Y-%m-%d"), \
+            int(request.data.get("days_delta")), \
+            json.loads(request.data.get("zapleczas")), \
+            json.loads(request.data.get("links"))
+            
+        
+        
+        articles = [links[i:i+len(zapleczas)] for i in range(0, len(links), len(zapleczas))]
+
+        response, tokens = {}, 0
+
+        for a, z in zip(articles, zapleczas):
+            params = {
+                "api_key" : openai_key,
+                "domain_name" : z["domain"], 
+                "wp_login" : z["wp_user"], 
+                "wp_pass" : z["wp_api_key"],
+                "lang" : lang,
+                "start_date": start_date, 
+                "days_delta": days_delta
+            }
+            if 'forward_delta' in request.data:
+                if request.data.get('forward_delta'):
+                    params['forward_delta'] = True
+                else:
+                    params['forward_delta'] = False
+            else:
+                params['forward_delta'] = False
+
+
+            categories = len(a)
+            wp = WP_API(z["domain"], z["wp_user"], z["wp_api_key"])
+            wp_cats = wp.get_categories()
+            random.shuffle(wp_cats)
+            if len(wp_cats) >= categories:
+                cats = wp_cats[:categories]
+            else:
+                cats = wp_cats
+                for _ in range(categories - len(wp_cats)):
+                    cats.append({"id":1, "name": topic})
+        
+        
+            o = OpenAI_article(**params)
+            
+            res, t = o.populate_structure(1, p_num, cats, "backend/src/CreateWPblog/", links, 0, topic)
+            response.update(res)
+            tokens += t
+            print({"data": res, "tokens": t})
+            print({"data": response, "tokens": tokens})
+
+        return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
