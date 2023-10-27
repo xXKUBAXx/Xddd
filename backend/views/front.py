@@ -61,7 +61,10 @@ class WriteLink(View):
             if u["id"] == umowa_id:
                 umowa = u
                 break
-        context = {'umowa': umowa}
+
+        zaplecza = [l.split("\t") for l in open("../zaplecza.tsv").read().split("\n") if len(l.split("\t")[-1])>20]
+
+        context = {'umowa': umowa, "zaplecza": zaplecza}
         
         return render(request, 'links.html', context)
     
