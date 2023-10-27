@@ -15,11 +15,43 @@ Write linked article for {{umowa.domena}}
         <div class="col-md-12">
             <div class="card shadow">
                 <div class="card-body">
+                    <h3>Dostępne zaplecza</h3>
+                    <p>Click for additional details</p>
+                </div>
+                <div class="additional-attributes" style="display: block;padding-top: 0;">
+                    <table id="zaplacza-table" data-order='[[ 1, "asc" ]]' style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Linkować</th>
+                                <th>Tematyka</th>
+                                <th>Adres</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for z in zaplecza %}
+                            <tr>
+                                <td><input type="checkbox" data-user="{{z.2}}" data-key="{{z.4}}"></td>
+                                <td>{{z.0}}</td>
+                                <td>{{z.1}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-body">
                     <h3>Frazy z panelu</h3>
                     <p>Click for additional details</p>
                 </div>
                 <div class="additional-attributes">
-                    <table>
+                    <table id="frazy-table">
                         <tr>
                             <th>URL</th>
                             <th>Fraza</th>
@@ -37,9 +69,9 @@ Write linked article for {{umowa.domena}}
                         {% endfor %}
                     </table>
                 </div>
+            </div>
         </div>
     </div>
-</div>
 
 
 
@@ -48,7 +80,6 @@ Write linked article for {{umowa.domena}}
         <div class="card shadow">
             <div class="card-body">
                 <h3 class="card-title">Links</h3>
-                <p>Click for additional details</p>
             </div>
             <div class="additional-attributes">
                 <button type="button" id="addlinks">Add links</button>
@@ -62,8 +93,8 @@ Write linked article for {{umowa.domena}}
             <div class="card-body">
                 <h3 class="card-title">Details</h3>
             </div>
-            <div class="additional-attributes">
-                <form id="writeForm" type="post">
+            <div class="additional-attributes" id="write-details">
+                <form id="writeLinks" type="post">
                     {% csrf_token %}
                     {% if not data.topic %}
                     <div class="form-group">
@@ -71,6 +102,7 @@ Write linked article for {{umowa.domena}}
                         <input type="text" class="form-control" id="topic" name="topic">
                     </div>
                     {% endif %}
+                    <input type="hidden" name="lang" value="{{umowa.lang}}">
                     <div class="form-group">
                         <label class="form-label" for="openai_api_key">OpenAI API key:</label>
                         <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
@@ -111,4 +143,15 @@ Write linked article for {{umowa.domena}}
 
 {% block script %}
 <script src="{% static 'js/links.js' %}"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+<script>
+    $(document).ready(function() {
+        let table = new DataTable('#zaplacza-table', {
+            paging: false,
+            scrollY: "40vh",
+            scrollCollapse: true
+        });
+        $('#zaplacza-table').DataTable().columns.adjust();
+    });
+</script>
 {% endblock %}
