@@ -85,7 +85,7 @@ class ZapleczeCreateFTP(ZapleczeCreate):
             return Response({"res": "This zaplecze alredy has FTP"}, status=status.HTTP_200_OK)
         create = Create(data)
         create.login()
-        data['ftp_user'], data['ftp_pass'] = create.add_ftp()
+        data['ftp_user'], data['ftp_pass'] = create.add_ftp(domain)
         serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
         if serializer.is_valid():
             serializer.save()
