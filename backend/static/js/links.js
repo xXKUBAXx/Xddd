@@ -8,7 +8,8 @@ $(document).ready(function() {
     const d_value = $("#DaysSliderValue");
     const f_slider = $("#NoFollowSlider");
     const f_value = $("#NoFollowSliderValue");
-
+    const z_slider = $("#zapleczaSlider");
+    const z_value = $("#zapleczaSliderValue");
     // Add an input event listener 
     art_slider.on('input', function() {
         art_value.val(art_slider.val());
@@ -26,6 +27,33 @@ $(document).ready(function() {
         f_value.val(f_slider.val());
     });
 
+    z_slider.on('input', function() {
+        z_value.val(z_slider.val());
+        document.getElementById("zapleczaCount").innerHTML = document.querySelectorAll('#zaplacza-table tbody input[type="checkbox"]:checked').length+parseInt(z_value.val());
+    });
+
+
+    const checkboxes = document.querySelectorAll('#zaplacza-table tbody input[type="checkbox"]');
+
+    checkboxes.forEach(box => {
+        box.addEventListener("click", (event) => {
+            document.getElementById("zapleczaCount").innerHTML = document.querySelectorAll('#zaplacza-table tbody input[type="checkbox"]:checked').length+parseInt(z_value.val());
+        });
+    });
+
+    const linki_values = document.querySelectorAll('#frazy-table tbody input[type="number"]');
+    function updateLinksSum() {
+        let sum = 0;
+        linki_values.forEach(l => {
+            sum += parseInt(l.value);
+        });
+        document.getElementById("linksCount").innerHTML = sum + parseInt(document.querySelectorAll("#linki-form-group div").length);
+    };
+    linki_values.forEach(box => {
+        box.addEventListener("change", updateLinksSum);
+    })
+    
+
     const today = new Date();
     let dd = today.getDate();
     let mm = today.getMonth() + 1;
@@ -37,10 +65,10 @@ $(document).ready(function() {
     $("#addlinks").on('click', function(event) {
         event.preventDefault();
         if (!$("div#linki-form-group").length) {
-            console.log('0');
             const div = document.createElement('div');
             div.style.display = 'flex';
             div.style.flexWrap = 'wrap';
+            div.style.paddingTop = '20px';
             div.setAttribute('id', 'linki-form-group');
             div.classList.add('form-group');
 
@@ -101,15 +129,17 @@ $(document).ready(function() {
                     document.querySelector("#addlinksrow").insertAdjacentElement("beforebegin", inputs);
                 }
             })
+            btn.addEventListener('click', updateLinksSum);  
 
             div.appendChild(btn);
 
-            document.querySelector("#writeForm > button").insertAdjacentElement("beforebegin", div);
+            document.querySelector("button#addlinks").insertAdjacentElement("beforebegin", div);
+            updateLinksSum();
             $(this).remove()
         }
     });
 
-    $("#writeForm").on('submit', function(event) {
+    $("#writeLinks").on('submit', function(event) {
         event.preventDefault();
         
         //check if api key provided
@@ -118,13 +148,31 @@ $(document).ready(function() {
             return;
         }
 
-        $('[name="url"], this').prop('disabled', true);
-        $('[name="keyword"], this').prop('disabled', true);
 
         let formData = $(this).serialize();
-        if ($(this).find("#linki-form-group").length) {
+
+        //get zapleczas data
+        const checkboxes_checked = document.querySelectorAll('#zaplacza-table tbody input[type="checkbox"]:checked');
+        const checkedRows = [];
+        checkboxes_checked.forEach(box => {
+            row = box.closest('tr');
+            checkedRows.push({
+                domain: row.cells[2].textContent,
+                wp_user: box.getAttribute("data-user"),
+                wp_api_key: box.getAttribute("data-key")
+            });
+        })
+        //check if any zaplecza selected
+        if(checkedRows.length == 0) {
+            alert("Please select zaplecza!");
+            return;
+        }
+        formData += "&zapleczas="+JSON.stringify(checkedRows);
+
+        //get links data
+        let link_data = [];
+        if ($("#linki-form-group").length) {
             const links = document.getElementById("linki-form-group").getElementsByTagName("div");  
-            let link_data = [];
             for (div of links){
                 let tmp = {};
                 for (link of div.getElementsByTagName("input")){
@@ -136,36 +184,52 @@ $(document).ready(function() {
                     link_data.push(tmp);
                 }
             }
-            formData += "&links="+JSON.stringify(link_data);
         }
 
+        linki_values.forEach(box => {
+            if(box.value > 0) {
+                row = box.closest('tr');
+                for (let i = 0; i < box.value; i++) {
+                    link_data.push({
+                        url: row.cells[0].textContent,
+                        keyword: row.cells[1].textContent
+                    });
+                }
+            };
+        })
+
+        if(link_data.length == 0) {
+            alert("Please select any links");
+            return;
+        }
+
+        
+        formData += "&links="+JSON.stringify(link_data);
+        //add spinner to make waiting more bearable
         const spin = document.createElement("div");
         spin.classList.add("spinner");
-        spin.setAttribute("id", "spinner")
+        spin.setAttribute("id", "articles_spinner")
         $(this).parent().append(spin);
         $(this).remove();
-        
-        formData += "&categories=1";
-
         
         console.log(formData);
         $.ajax({
             type: 'POST',
-            url: '/api/write/',
+            url: '/api/links/',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             },
             data: formData,
             success: function(response) {
-                list = ""
-                for (const [id, urls] of Object.entries(JSON.parse(response))) {
+                $("#write-details").append("<ul></ul>");
+                for (const [id, urls] of Object.entries(response.data)) {
                     urls.forEach(function(e){
-                        list += "<li><a href=\""+e+"\">"+e+"</a></li>";
-                        console.log(id, e);
+                        $("#write-details > ul")
+                        .append("<li><a href=\""+e+"\">"+e+"</a></li>");
                     })
                 }
-                $("#spinner").parent().append("<ul>"+list+"</ul>");
-                $("#spinner").remove();
+                $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
+                 $("div#articles_spinner").remove()
             },
             error: function(response) {
                 console.error(response);
