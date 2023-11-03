@@ -19,6 +19,11 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import os
 from ..src.CreateWPblog.wp_api import WP_API
 
+from ..src.CreateWPblog.openai_article import OpenAI_article
+from ..src.CreateWPblog.openai_api import OpenAI_API
+
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class ZapleczeClassic(View):
     def get_object(self, zaplecze_id):
@@ -34,13 +39,25 @@ class ZapleczeClassic(View):
 
         graphicSource = data.get("graphicSource") #pixabay, unsplash, pexels
         # image_key = data.get("image_key") #openai, pixa, or unsplash
-        image_key = "36043348-2f97c422170679f5ed532a796" #openai, pixa, or unsplash
+        pixabay_api_key = "36043348-2f97c422170679f5ed532a796" #openai, pixa, or unsplash
+        pexels_api_key = "K4INRjrCzmznTXPESmWi4PyvmoV9VRqj9c9RKq1huu5ouhb4BO23RfFS"
         overlay_option = data.get("overlayOption") #wihOverlay, withoutOverlay
         date_input = data.get("dateInput") #2021-01-01
         publishInterval = data.get("publishInterval") #2
         openai.api_key = data.get("openai_api_key") #sk
         faq_option = data.get("faqOption") #withFaq, withoutFaq
-        tsv_input = data.get("tsvInput")        
+        tsv_input = data.get("tsvInput")
+
+        if graphicSource is not None:
+            if graphicSource == "pixabay":
+                image_key = pixabay_api_key
+                emergency_key = pexels_api_key
+            elif graphicSource == "pexels":
+                image_key = pexels_api_key
+                emergency_key = pixabay_api_key
+            else:
+                image_key = None
+                emergency_key = None
         
         # gathers data from tsv_input
         rows = tsv_input.strip().split("\n")
@@ -52,29 +69,30 @@ class ZapleczeClassic(View):
         # makes texts, graphics, faqs and publish all to wp
 
         wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
+
         date_controller = 0
-        for row in rows:
-            print(f"Wykonuję\n{row}")
+        rows.reverse()
+        for row in rows[::-1]:
+            print(f"Executing row: {row}")
             category_array = []
             title, graphic_theme, graphic_theme2, category, length, isfaq = row.split("\t")
             article, opening = get_text(title, category, length, isfaq, language=zaplecze.lang)
-            image_save_path = get_image(graphic_theme, title, overlay_option, graphicSource, image_key, graphic_theme2)
+            image_save_path = get_image(graphic_theme, title, overlay_option, graphicSource, openai.api_key, zaplecze.lang, graphic_theme2, image_key, emergency_key)
             publish_date = get_publish_date(date_input, publishInterval, date_controller)
             image_id = wp_api.upload_img(image_save_path)
-            
             if '&' in category:
                 categories = list(category.split('&'))
                 for cat in categories:
                     category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, language=zaplecze.lang)))
             else:
-                category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, language=zaplecze.lang)))
+                category_array.append(wp_api.create_category(category, generate_cat_desc(category, language=zaplecze.lang)))
 
             category_array = [cat['id'] for cat in category_array]
-            wp_api.post_article(title, article, opening, image_id, datetime.datetime.now(), category_array, author_id=1)
+            wp_api.post_article(title, article, opening, image_id, publish_date, category_array, author_id=1)
             date_controller += 1
 
             # rows.remove(row)
-            print(rows)
+            rows.pop()
 
             # publish_article(article, featured_image, publish_date, zaplecze.wp_user, zaplecze.wp_api_key)
             
@@ -96,22 +114,22 @@ class ZapleczeClassic(View):
     
 def get_text(title, category, length, isfaq, language):
     headers = get_headers(title, language)
-    print(headers)
+    # print(headers)
     opening = get_opening(title, language)
-    text = f'<h1>{title}</h1>\n{opening}'
+    text = f'{opening}'
     for header in headers:
         section = get_section(header, language)
         text += f'\n<h2>{header}</h2>\n{section}'
-        print(text)
-        print(f"\n\nobecna długość to {len(text)}\n\n")
+        # print(text)
+        # print(f"\n\nobecna długość to {len(text)}\n\n")
         if len(text) > int(length):
             break
 
-    if str(isfaq) == '1':
+    if str(isfaq) == 'withFaq':
         faq = get_faq(title, language)
         text += f'\n{faq}'
 
-    print(text)
+    # print(text)
     return text, opening
 
 
@@ -220,9 +238,10 @@ def get_section(header, language):
 
 def get_faq(title, language):
     faq_questions = create_faq(title, language)
+    faq = f'\n<h2 class="faq-section">Najczęściej zadawane pytania (FAQ)</h2>'
     for question in faq_questions:
         answer = ask_bot_faq(question, language)
-        faq = f'\n<h2 class="faq-section">Najczęściej zadawane pytania (FAQ)</h2>\n<h3 class="faq-section">{question}</h3>\n<p>{answer}</p>'
+        faq += f'\n<h3 class="faq-section">{question}</h3>\n<p>{answer}</p>'
     
     return faq
 
@@ -271,15 +290,32 @@ def ask_bot_faq(question, language):
                 return answer
         
 
-def get_image(graphic_theme, title, overlay_option, graphicSource, image_key, graphic_theme2=None):
+def get_image(graphic_theme, title, overlay_option, graphicSource, ai_key, language, graphic_theme2=None, image_key=None, emergency_key=None):
     if graphicSource == "pixabay":
         return get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_theme2)
-    elif graphicSource == "unsplash":
-        # return get_unsplash_image(graphic_theme, graphic_theme2, overlay_option),
-        return get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_theme2) # temporary
+    elif graphicSource == "pexels":
+        return get_pexels_image(graphic_theme, title, overlay_option, image_key, emergency_key, graphic_theme2)
     elif graphicSource == "ai":
-        # return get_ai_image(graphic_theme, graphic_theme2, overlay_option)
-        return get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_theme2) # temporary
+        return  get_ai_image(graphic_theme, title, ai_key, language, overlay_option)
+
+
+def get_ai_image(graphic_theme, title, ai_key, language, overlay_option):
+    openai_api = OpenAI_API(ai_key, language)
+    image_url = openai_api.create_img(f'Generate feature image for article about {title}')
+    response = requests.get(image_url)
+    image = Image.open(BytesIO(response.content))
+    image = image.resize((1200, 628)).convert('RGB')
+
+    image_save_path = os.path.join(settings.STATICFILES_DIRS[0], "temp-image.webp")
+    print(image_save_path)
+    image.save(image_save_path, format='WEBP')
+    
+    if overlay_option == "withOverlay":
+        return addOverlay(image_save_path, title)
+    else:
+        return image_save_path
+
+
 
 
 def get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_theme2=None):
@@ -311,7 +347,73 @@ def get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_t
                     return image_save_path
         if for_loop_pixabay >= 3:
             keyword_list = generate_emergency_keywords(title, graphic_theme, graphic_theme2)
+
+def download_pixa_image(keyword, image_key):
+    response = requests.get(f"https://pixabay.com/api/?key={image_key}&q={clean_keyword(keyword)}&image_type=photo")
+    if response.status_code != 200:
+        return None
+    hits = response.json()["hits"]
+    if not hits:
+        return None
+    while True:
+        image_data = random.choice(hits)
+        image_url = image_data["largeImageURL"]
+        return image_url
+    
+def get_pexels_image(graphic_theme, title, overlay_option, pexels_api_key, emergency_key, graphic_theme2=None):
+    
+    keyword_list = [graphic_theme, graphic_theme2]
+
+    for_loop_pexels = 0
+    image_url = None
+    while True:
+        if image_url:
+            break
+        for keyword in keyword_list:
+            if not keyword:  # Skip if keyword is None
+                continue
+            for_loop_pexels += 1
+            image_url = download_pexels_image(keyword, pexels_api_key)
+            
+            if image_url:
+                response = requests.get(image_url)
+                image = Image.open(BytesIO(response.content))
+                image = image.resize((1200, 628)).convert('RGB')
+
+                image_save_path = os.path.join(settings.STATICFILES_DIRS[0], "temp-image.webp")
+                print(image_save_path)
+                image.save(image_save_path, format='WEBP')
+                
+                if overlay_option == "withOverlay":
+                    return addOverlay(image_save_path, title)
+                else:
+                    return image_save_path
+        if for_loop_pexels >= 3:
+            keyword_list = generate_emergency_keywords(title, graphic_theme, graphic_theme2)
+
+        if not image_url:
+            break
+
+def download_pexels_image(keyword, pexels_api_key, emergency_key):
+    headers = {
+        'Authorization': pexels_api_key
+    }
+
+    rate_limit_check_response = requests.head("https://api.pexels.com/v1/search", headers=headers)
+    if 'X-Ratelimit-Remaining' in rate_limit_check_response.headers:
+        rate_limit_remaining = int(rate_limit_check_response.headers['X-Ratelimit-Remaining'])
+        if rate_limit_remaining <= 0:
+            print("Rate limit exceeded.")
+            return get_pixabay_image(keyword, emergency_key)
         
+        else:
+            response = requests.get(f"https://api.pexels.com/v1/search?query={clean_keyword(keyword)}&per_page=1", headers=headers)
+            if response.status_code == 200:
+                results = response.json()
+                if results['photos']:
+                    first_result = results['photos'][0]
+                    return first_result['src']['original']
+
     
 def addOverlay(save_path, title, overlay_fill_preset=[168, 150, 50, 92]):
     pure_image = Image.open(save_path).convert('RGBA')
@@ -380,17 +482,7 @@ def wrap_text(text, font, max_width):
     lines.append(" ".join(current_line))
     return lines
 
-def download_pixa_image(keyword, image_key):
-    response = requests.get(f"https://pixabay.com/api/?key={image_key}&q={clean_keyword(keyword)}&image_type=photo")
-    if response.status_code != 200:
-        return None
-    hits = response.json()["hits"]
-    if not hits:
-        return None
-    while True:
-        image_data = random.choice(hits)
-        image_url = image_data["largeImageURL"]
-        return image_url
+
     
 def generate_emergency_keywords(title, graphic_theme, graphic_theme2=None):
     messages=[
@@ -430,7 +522,9 @@ def get_publish_date(date_input, publishInterval, date_controller):
     date = datetime.datetime.strptime(date_input, "%Y-%m-%d")
     if date_controller != 0:
         date += datetime.timedelta(days=int(publishInterval) * int(date_controller))
-    return f'{date.date()}T{get_time()}'
+
+    new_date = f'{date.date()}T{get_time()}'
+    return datetime.datetime.strptime(new_date, "%Y-%m-%dT%H:%M:%S")
 
 def generate_cat_desc(cat, language):
     while True:
