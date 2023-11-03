@@ -162,12 +162,30 @@ $(document).ready(function() {
                 wp_api_key: box.getAttribute("data-key")
             });
         })
+        let collection = document.getElementById("topics").selectedOptions;
+        const zaplecza = document.querySelectorAll("#zaplacza-table tbody tr");
+        let topic_list = [];
+        zaplecza.forEach(z => {
+            if (z.children[1].innerText == collection[0].value) {
+                topic_list.push(z);
+            }
+        })
+        topic_list.sort((a, b) => 0.5 - Math.random()).slice(0,parseInt(z_value.val())).forEach(e => {
+            checkedRows.push({
+                domain: e.children[2].innerText,
+                wp_user: e.children[0].children[0].getAttribute("data-user"),
+                wp_api_key: e.children[0].children[0].getAttribute("data-key"),
+            })
+        })
+
         //check if any zaplecza selected
         if(checkedRows.length == 0) {
             alert("Please select zaplecza!");
             return;
         }
         formData += "&zapleczas="+JSON.stringify(checkedRows);
+
+        
 
         //get links data
         let link_data = [];
@@ -202,6 +220,10 @@ $(document).ready(function() {
             alert("Please select any links");
             return;
         }
+        if(link_data.length < checkedRows.length) {
+            alert("There should be more links than zapleczas");
+            return;
+        }
 
         
         formData += "&links="+JSON.stringify(link_data);
@@ -221,15 +243,18 @@ $(document).ready(function() {
             },
             data: formData,
             success: function(response) {
-                $("#write-details").append("<ul></ul>");
-                for (const [id, urls] of Object.entries(response.data)) {
-                    urls.forEach(function(e){
-                        $("#write-details > ul")
-                        .append("<li><a href=\""+e+"\">"+e+"</a></li>");
-                    })
-                }
-                $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
-                 $("div#articles_spinner").remove()
+                let count = 0;
+                for (let i in response.data){
+                    $("#write-details").append("<h6>"+ i +"</h6>");
+                    $("#write-details").append("<ul id=\""+ ++count +"\"></ul>");
+                    for (let j in response.data[i]){
+                        for (let k in response.data[i][j]){
+                            $("#write-details > ul#"+count).append("<li><a href=\""+response.data[i][j][k]+"\" target=\"_blank\">"+response.data[i][j][k]+"</a></li>");
+                        };
+                    };
+                };
+                $("#write-details").parent().append("<p>Tokens used: "+response.tokens+"</p>");
+                $("div#articles_spinner").remove()
             },
             error: function(response) {
                 console.error(response);
