@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.views.generic import View
 import json
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
@@ -64,7 +64,7 @@ class ZapleczeWrite(APIView):
         
         o = OpenAI_article(**params)
         
-        response, tokens = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
+        response, tokens, _ = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
@@ -140,7 +140,7 @@ class AnyZapleczeWrite(APIView):
         
         o = OpenAI_article(**params)
         
-        response, tokens = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
+        response, tokens, _ = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
         print({"data": response, "tokens": tokens})
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
@@ -153,6 +153,45 @@ class ManyZapleczesWrite(APIView):
             request_body=WriteSerializer, 
             responses={201:ResponseSerializer, 400:"Bad Request"}
             )
+    
+    def do_zaplecze(self, a, z, openai_key, lang, start_date, days_delta, forward_delta, p_num, topic):
+        print(f"{len(a)} texts will be published on {z['domain']}")
+        if topic == "":
+            topic = a[0]["keyword"]
+        params = {
+                "api_key" : openai_key,
+                "domain_name" : z["domain"], 
+                "wp_login" : z["wp_user"], 
+                "wp_pass" : z["wp_api_key"],
+                "lang" : lang,
+                "start_date": start_date, 
+                "days_delta": days_delta,
+                "forward_delta": forward_delta
+            }
+        
+        if type(a)==dict:
+            categories = 1
+        else:
+            categories = len(a)
+        wp = WP_API(z["domain"], z["wp_user"], z["wp_api_key"])
+        wp_cats = wp.get_categories()
+        try:
+            random.shuffle(wp_cats)
+        except:
+            print("Cannot shuffle")
+            print(wp_cats)
+            return {0: "Wrong WordPress credentials"}, 0
+        if len(wp_cats) >= categories:
+            cats = wp_cats[:categories]
+        else:
+            cats = wp_cats
+            for _ in range(categories - len(wp_cats)):
+                cats.append({"id":1, "name": topic})
+
+        o = OpenAI_article(**params)
+        
+        return o.populate_structure(1, p_num, cats, "backend/src/CreateWPblog/", a, 0, topic)
+
     def post(self, request):
         topic, lang, openai_key, p_num, start_date, days_delta, zapleczas, links = \
             request.data.get("topic"), \
@@ -163,50 +202,39 @@ class ManyZapleczesWrite(APIView):
             int(request.data.get("days_delta")), \
             json.loads(request.data.get("zapleczas")), \
             json.loads(request.data.get("links"))
-            
         
-        
-        articles = [links[i:i+len(zapleczas)] for i in range(0, len(links), len(zapleczas))]
+        random.shuffle(links)
+        articles = [[] for _ in zapleczas]
+        if len(links) == len(zapleczas):
+            articles = [[l] for l in links]
+        else:
+            while len(links)>0:
+                for i in range(len(zapleczas)):
+                    try:
+                        articles[i].append(links.pop())
+                    except IndexError:
+                        break
 
+        if 'forward_delta' in request.data:
+            if request.data.get('forward_delta'):
+                forward_delta = True
+            else:
+                forward_delta = False
+        else:
+            forward_delta = False
+            
         response, tokens = {}, 0
-
-        for a, z in zip(articles, zapleczas):
-            params = {
-                "api_key" : openai_key,
-                "domain_name" : z["domain"], 
-                "wp_login" : z["wp_user"], 
-                "wp_pass" : z["wp_api_key"],
-                "lang" : lang,
-                "start_date": start_date, 
-                "days_delta": days_delta
-            }
-            if 'forward_delta' in request.data:
-                if request.data.get('forward_delta'):
-                    params['forward_delta'] = True
-                else:
-                    params['forward_delta'] = False
-            else:
-                params['forward_delta'] = False
+        start_dates = []
+        tmp_date = start_date
+        for a in articles:
+            start_dates.append(tmp_date)
+            tmp_date += timedelta(days=(days_delta * len(a) * (1 if forward_delta else -1)))
 
 
-            categories = len(a)
-            wp = WP_API(z["domain"], z["wp_user"], z["wp_api_key"])
-            wp_cats = wp.get_categories()
-            random.shuffle(wp_cats)
-            if len(wp_cats) >= categories:
-                cats = wp_cats[:categories]
-            else:
-                cats = wp_cats
-                for _ in range(categories - len(wp_cats)):
-                    cats.append({"id":1, "name": topic})
-        
-        
-            o = OpenAI_article(**params)
-            
-            res, t = o.populate_structure(1, p_num, cats, "backend/src/CreateWPblog/", links, 0, topic)
-            response.update(res)
+        for a, z, sd in zip(articles, zapleczas, start_dates):
+            res, t, dom = self.do_zaplecze(a, z, openai_key, lang, sd, days_delta, forward_delta, p_num, topic)
+            response[dom] = res
             tokens += t
-            print({"data": res, "tokens": t})
-            print({"data": response, "tokens": tokens})
+            print(response)
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
