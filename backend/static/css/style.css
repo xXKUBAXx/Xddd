@@ -249,7 +249,39 @@ th {
     z-index: 10;
 }
 
-.expanded-card {
+.narrow-card {
+    max-width:500px !important;
+}
+
+.tsv-expanded-card {
     width: 80vw;
     margin: 0 auto;
+    max-width: 1300px;
 }
+
+/* css snippets for status-column in tsv table */
+
+.loading-icon {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+  }
+
+.status-cell {
+    display: flex;
+    justify-content: center;
+}
+
+.checkmark {
+    color: lime;
+    font-size: 20px;
+    font-weight: bold;
+}
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

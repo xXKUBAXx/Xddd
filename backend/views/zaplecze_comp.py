@@ -19,6 +19,10 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import os
 from ..src.CreateWPblog.wp_api import WP_API
 
+from ..src.CreateWPblog.openai_article import OpenAI_article
+from ..src.CreateWPblog.openai_api import OpenAI_API
+import pandas as pd
+
 @method_decorator(csrf_exempt, name='dispatch')
 class ZapleczeComp(View):
     def get_object(self, zaplecze_id):
@@ -31,51 +35,61 @@ class ZapleczeComp(View):
         data = json.loads(request.body)
         zaplecze = self.get_object(zaplecze_id)
 
+        compSelect = data.get('compSelect')  # mouse / keyboard
+        compQuant = int(data.get('compQuant'))  # ilość porównań
+        graphicSource = data.get('graphicSource')  # pixabay, pexels, ai
+        pixabay_api_key = "36043348-2f97c422170679f5ed532a796" #openai, pixa, or unsplash
+        pexels_api_key = "K4INRjrCzmznTXPESmWi4PyvmoV9VRqj9c9RKq1huu5ouhb4BO23RfFS"
+        overlay_option = data.get('overlayOption')  # withOverlay, withoutOverlay
+        date_input = data.get('dateInput')  # 2021-01-01
+        publishInterval = data.get('publishInterval')  # 2
+        openai.api_key = data.get('openai_api_key')  # sk
+        faq_option = data.get('faqOption')  # withFaq, withoutFaq
+        overlay_color = data.get('overlayColor')
 
-        graphicSource = data.get("graphicSource") #pixabay, unsplash, pexels
-        # image_key = data.get("image_key") #openai, pixa, or unsplash
-        image_key = "36043348-2f97c422170679f5ed532a796" #openai, pixa, or unsplash
-        overlay_option = data.get("overlayOption") #wihOverlay, withoutOverlay
-        date_input = data.get("dateInput") #2021-01-01
-        publishInterval = data.get("publishInterval") #2
-        openai.api_key = data.get("openai_api_key") #sk
-        faq_option = data.get("faqOption") #withFaq, withoutFaq
+        rgb_fill_preset = overlay_color.split(",")
+        rgb_fill_preset = [int(channel) for channel in rgb_fill_preset]
+
+        if graphicSource is not None:
+            if graphicSource == "pixabay":
+                image_key = pixabay_api_key
+                emergency_key = pexels_api_key
+            elif graphicSource == "pexels":
+                image_key = pexels_api_key
+                emergency_key = pixabay_api_key
+            else:
+                image_key = None
+                emergency_key = None
+
+        wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
+
+        filename = '../mouses.csv' if compSelect == 'mouse' else '../keyboards.csv' if compSelect == 'keyboard' else None
         
-        compSelect = data.get("compSelect") # mouse / keyboard
-        compQuant = data.get("compQuant")  # int
-
-        keyboardData = '''
-name,url,price,score,reviews,Producent,Rodzaj,Interfejs,Komunikacja,Typ klawiatury,Model,Kolor,Długość przewodu,Podświetlenie klawiszy,Obsługa makr,Podpórka pod nadgarstki,Regulowany kąt pochylenia,Szerokość,Wysokość,Popularne,Liczba klawiszy,Głębokość,Kolor podświetlenia klawiatury,Dystrybucja
-Logitech MX Keys Czarny (920-009415),https://www.ceneo.pl/85936012,429,4.79,75,Logitech,Klawiatura,Bluetooth,Bezprzewodowa,Mechaniczna,MX Keys,Czarne,Nie dotyczy,Tak,Nie,Nie,Nie,430 mm,205 mm,,Nie dotyczy,Nie dotyczy,Nie dotyczy,Nie dotyczy
-SteelSeries Apex PRO TKL OmniPoint,https://www.ceneo.pl/89677853,599,4.85,13,Steelseries,Klawiatura,USB,Przewodowa,Mechaniczna,Apex PRO TKL OmniPoint,Czarne,Nie dotyczy,Tak,Nie dotyczy,Tak,Nie dotyczy,Nie dotyczy,Nie dotyczy,,Nie dotyczy,Nie dotyczy,Nie dotyczy,Nie dotyczy
-        '''
-
-        mouseData = '''
-        name,url,price,score,reviews,Producent,Rodzaj,Liczba przycisków,Podświetlenie myszy,Kolor,Komunikacja,Interfejs,Rozdzielczość,Zasięg,Liczba rolek,Programowalne przyciski,Waga,Model,Popularne,Dystrybucja,Typ urządzenia
-Razer Viper Ultimate (RZ01-03050100-R3G1),https://www.ceneo.pl/89714621,349,4.82,17,Razer,Mysz optyczna,8 przycisków,Tak,Czarne,Bezprzewodowa,USB,20000dpi,15m,1,Tak,74 g,Viper Ultimate,,Nie dotyczy,Nie dotyczy
-Logitech G Pro X Superlight Czarny (910005880),https://www.ceneo.pl/100911747,470,5.00,12,Logitech,Mysz optyczna,5 przycisków,Nie,Czarne,Bezprzewodowa,USB (Radio 2.4 GHz),24500dpi,10m,1,Tak,63 g,G Pro X Superlight,,Nie dotyczy,Nie dotyczy
-'''
+        list_of_pairs, pairs_titles = get_pairs(filename, compQuant)        
 
         if compSelect == 'mouse':
-            textData = mouseData
             graphic_theme = "computer mouse"
             graphic_theme2 = "computer"
             category = "Myszki komputerowe&Porównania myszek"
             length = 4000
-            title = "Porównanie myszek"
-            isfaq = 0
         elif compSelect == 'keyboard':
-            textData = keyboardData
             graphic_theme = "computer keyboard"
             graphic_theme2 = "computer"
             category = "Klawiatury komputerowe&Porównania klawiatur"
             length = 4000
-            title = "Porównanie klawiatur"
-            isfaq = 0
+
+        
+        # main function starts here4
+
+        for pair in list_of_pairs:
+            title = pairs_titles[list_of_pairs.index(pair)]
+            article, opening = get_comp_text(title, category, pair, length, faq_option, language=zaplecze.lang)
+
+
         # print(settings.STATICFILES_DIRS[0])
         # makes texts, graphics, faqs and publish all to wp
 
-        wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
+        
         date_controller = 0
         
        
@@ -114,30 +128,141 @@ Logitech G Pro X Superlight Czarny (910005880),https://www.ceneo.pl/100911747,47
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({"error": "Nieprawidłowa metoda żądania."}, status=400)
+
+def get_pairs(filename, compQuant):
+    list_of_pairs = []
+    pairs_titles = []
+
+    if filename is not None:
+        df = pd.read_csv(filename, converters={'compared_with': eval})
     
+        pairs = extract_pairs(df, compQuant)
+
+        if not pairs:
+            print("Nie można znaleźć żadnych par spełniających kryteria.")
+            return
+        else:
+            # uncomment for production
+            # df.to_csv(filename, index=False)
+            
+            exclude_keys = ['id', 'in_use', 'compared_with']
+            
+            for pair in pairs:
+                
+                column_titles = [key for key in pair['row1'].keys() if key not in exclude_keys]
+        
+                product_string = ','.join(column_titles) + '\n'
+                
+                product_string += ','.join(str(pair['row1'][key]) if key in pair['row1'] else '' for key in column_titles) + '\n'
+                
+                product_string += ','.join(str(pair['row2'][key]) if key in pair['row2'] else '' for key in column_titles)
+
+                product_names = [pair['row1']['name'], pair['row2']['name']]
+
+                pairs_titles.append(product_names)
+                list_of_pairs.append(product_string)
+                
+                product_string = ''
+                product_names = ''
     
-def get_text(title, textData, category, length, isfaq, language):
-    print(title)
-    text = get_comparison(title, textData, language)
+    return list_of_pairs, pairs_titles
 
+def extract_pairs(df, quantity):
+    pairs = []
+    attempts = 0
+    
+    while len(pairs) < quantity and attempts < 100 * quantity:
+        attempts += 1
+
+
+        available_products = df[df['in_use'] == 0]
+        
+
+        if len(available_products) < 2:
+            break
+
+
+        sample = available_products.sample(2)
+        if sample.empty:
+            continue
+        
+        row1, row2 = sample.iloc[0].to_dict(), sample.iloc[1].to_dict()
+        
+
+        if row2['id'] not in row1['compared_with'] and row1['id'] not in row2['compared_with']:
+
+            if abs(row1['price'] - row2['price']) <= 100:
+
+                df.at[sample.index[0], 'compared_with'].append(row2['id'])
+                df.at[sample.index[1], 'compared_with'].append(row1['id'])
+
+                df.at[sample.index[0], 'in_use'] += 1
+                df.at[sample.index[1], 'in_use'] += 1
+
+
+                pairs.append({'pair_id': (row1['id'], row2['id']), 'row1': row1, 'row2': row2})
+            else:
+
+                continue
+    
+    return pairs
     
 
-    pattern = re.compile(r'<h1>(.*?)<\/h1>', re.IGNORECASE | re.DOTALL)
-    match = pattern.search(text)
+def get_comp_text(title, category, pair, length, faq_option, language):
+    print(f'Generating comparison of: {title}')
+    comp_title, headers = get_comp_skeleton(title, language)
+    opening = get_opening(comp_title, language)
+    text = f'{opening}'
+    for header in headers:
+        section = get_comp_section(comp_title, pair, language, header)
+        text += f'\n<h2>{header}</h2>\n{section}'
+        if len(text) > int(length):
+            break
 
-    if match:
-        new_title = match.group(1)
-    else:
-        new_title = None
+    if str(faq_option) == 'withFaq':
+        faq = get_faq(title, language)
+        text += f'\n{faq}'
 
-    opening = get_opening(new_title, language)
+    return comp_title, text, opening
 
-    print(new_title)
-    print(text)
-    return new_title, text, opening
+def get_section(header, language):
+    while True:
+            if language.lower() == 'pl':
+                prompt = [
+                {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe artykuły."},
+                {"role": "user", "content": f'Napisz {random_pars(language)} paragrafy dla nagłówka {header} w języku polskim, każdy paragraf osadź pomiędzy tagami <p></p>.'}
+                ]
+            elif language.lower() == 'en':
+                prompt = [
+                {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
+                {"role": "user", "content": f'Write {random_pars(language)} paragraphs for the header {header}, settle each paragraph between the <p></p> tags.'}
+                ]
+            elif language.lower() == 'de':
+                prompt = [
+                {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
+                {"role": "user", "content": f'Schreiben Sie {random_pars(language)} Absätze für die Überschrift {header}, setzen Sie jeden Absatz zwischen die tags <p></p>.'}
+                ]                                           
+            elif language.lower() == 'cs':
+                prompt = [
+                {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
+                {"role": "user", "content": f'Napište {random_pars(language)} odstavce pro nadpis {header} v češtině, každý odstavec vložte mezi značky <p></p>.'}
+                ]                                           
+            
+            response = callBot(prompt, 600)
+            content = response["choices"][0]["message"]["content"]
+            content = re.sub(r'<br>', '', content)
+            content = re.sub(r'\n\n+', '\n\n', content)
+            content = content.replace("\n", " ")
+            paragraphsList = re.findall(r'<p>(.+?)</p>', content)        
+            paragraphs= ''
+            
+            for singlePar in paragraphsList:
+                paragraphs += f'<p>{singlePar}</p>'
+
+            return paragraphs
 
 
-def get_comparison(title, textData, language):
+def get_comparison(title, pair, language):
     while True:
         if language.lower() == 'pl':
             prompt = [
@@ -176,12 +301,12 @@ def get_comparison(title, textData, language):
             return content
 
 
-def get_opening(new_title, language):
+def get_comp_skeleton(title, language):
     while True:
         if language.lower() == 'pl':
             prompt = [
             {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe i bogate w informacje artykuły."},
-            {"role": "user", "content": f'Stwórz wstęp do artykułu pod tytułem "{new_title}", i zawrzyj go w tagach <p>'}
+            {"role": "user", "content": f'Stwórz nagłówki na podstawie produktów, o których będzie artykuł-porównanie - "{title}" i zawrzyj je w tagach <h1> i <h2>'}
             ]
         elif language.lower() == 'en':
             prompt = [
@@ -203,6 +328,42 @@ def get_opening(new_title, language):
         content = response["choices"][0]["message"]["content"]
 
 
+        comp_title = re.findall(r'<h1>(.*?)</h1>', content, re.DOTALL)
+        headers = re.findall(r'<h2>(.*?)</h2>', content, re.DOTALL)
+
+        if not comp_title or not headers:
+            continue
+        else:
+            comp_title = comp_title[0] if comp_title else ""
+            return comp_title, headers
+        
+def get_opening(comp_title, language):
+    while True:
+        if language.lower() == 'pl':
+            prompt = [
+            {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe i bogate w informacje artykuły."},
+            {"role": "user", "content": f'Stwórz wstęp do artykułu który porównuje produkty, pod tytułem "{comp_title}", i zawrzyj go w tagach <p>'}
+            ]
+        elif language.lower() == 'en':
+            prompt = [
+            {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
+            {"role": "user", "content": f'Create an introduction to the article with the title "{comp_title}", and include it in the <p> tag.'}
+            ]
+        elif language.lower() == 'de':
+            prompt = [
+            {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
+            {"role": "user", "content": f'Erstellen Sie eine Einleitung zum Artikel mit dem Titel "{comp_title}" und fügen Sie ihn in das <p> Tag ein.'}
+            ]
+        elif language.lower() == 'cs':
+            prompt = [
+            {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
+            {"role": "user", "content": f'Vytvořte úvod k článku s názvem "{comp_title}" a vložte jej do tagu <p>.'}
+            ]
+        response = callBot(prompt, 600)
+
+        content = response["choices"][0]["message"]["content"]
+
+
         opening_text = re.findall(r'<p>(.+?)</p>', content)
         if not opening_text:
             continue
@@ -210,12 +371,12 @@ def get_opening(new_title, language):
             opening_text = "\n".join(opening_text)
             return opening_text
         
-def get_section(header, language):
+def get_comp_section(comp_title, pair, language, header):
     while True:
             if language.lower() == 'pl':
                 prompt = [
-                {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe artykuły."},
-                {"role": "user", "content": f'Napisz {random_pars(language)} paragrafy dla nagłówka {header} w języku polskim, każdy paragraf osadź pomiędzy tagami <p></p>.'}
+                {"role": "system", "content": f"Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe artykuły porównujące produkty. W swojej pracy wykorzystaj następujące informacje o produktach: {pair}"},
+                {"role": "user", "content": f'Napisz {random_pars(language)} paragrafy dla nagłówka {header}, który zostanie zamieszczony w artykule pod tytułem {comp_title}, każdy paragraf osadź pomiędzy tagami <p></p>.'}
                 ]
             elif language.lower() == 'en':
                 prompt = [
@@ -233,7 +394,7 @@ def get_section(header, language):
                 {"role": "user", "content": f'Napište {random_pars(language)} odstavce pro nadpis {header} v češtině, každý odstavec vložte mezi značky <p></p>.'}
                 ]                                           
             
-            response = callBot(prompt, 600)
+            response = callBigBot(prompt, 5000)
             content = response["choices"][0]["message"]["content"]
             content = re.sub(r'<br>', '', content)
             content = re.sub(r'\n\n+', '\n\n', content)
@@ -248,9 +409,10 @@ def get_section(header, language):
 
 def get_faq(title, language):
     faq_questions = create_faq(title, language)
+    faq = f'\n<h2 class="faq-section">Najczęściej zadawane pytania (FAQ)</h2>'
     for question in faq_questions:
         answer = ask_bot_faq(question, language)
-        faq = f'\n<h2 class="faq-section">Najczęściej zadawane pytania (FAQ)</h2>\n<h3 class="faq-section">{question}</h3>\n<p>{answer}</p>'
+        faq += f'\n<h3 class="faq-section">{question}</h3>\n<p>{answer}</p>'
     
     return faq
 

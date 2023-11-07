@@ -42,11 +42,16 @@ class ZapleczeClassic(View):
         pixabay_api_key = "36043348-2f97c422170679f5ed532a796" #openai, pixa, or unsplash
         pexels_api_key = "K4INRjrCzmznTXPESmWi4PyvmoV9VRqj9c9RKq1huu5ouhb4BO23RfFS"
         overlay_option = data.get("overlayOption") #wihOverlay, withoutOverlay
+        overlay_color = data.get("overlayColor") 
         date_input = data.get("dateInput") #2021-01-01
         publishInterval = data.get("publishInterval") #2
         openai.api_key = data.get("openai_api_key") #sk
         faq_option = data.get("faqOption") #withFaq, withoutFaq
         tsv_input = data.get("tsvInput")
+        # print("color\n\n")
+        # print(overlay_color)
+        rgb_fill_preset = overlay_color.split(",")
+        rgb_fill_preset = [int(channel) for channel in rgb_fill_preset]
 
         if graphicSource is not None:
             if graphicSource == "pixabay":
@@ -76,8 +81,8 @@ class ZapleczeClassic(View):
             print(f"Executing row: {row}")
             category_array = []
             title, graphic_theme, graphic_theme2, category, length, isfaq = row.split("\t")
-            article, opening = get_text(title, category, length, isfaq, language=zaplecze.lang)
-            image_save_path = get_image(graphic_theme, title, overlay_option, graphicSource, openai.api_key, zaplecze.lang, graphic_theme2, image_key, emergency_key)
+            # article, opening = get_text(title, category, length, isfaq, language=zaplecze.lang)
+            image_save_path = get_image(graphic_theme, title, overlay_option, rgb_fill_preset, graphicSource, openai.api_key, zaplecze.lang, graphic_theme2, image_key, emergency_key)
             publish_date = get_publish_date(date_input, publishInterval, date_controller)
             image_id = wp_api.upload_img(image_save_path)
             if '&' in category:
@@ -290,16 +295,16 @@ def ask_bot_faq(question, language):
                 return answer
         
 
-def get_image(graphic_theme, title, overlay_option, graphicSource, ai_key, language, graphic_theme2=None, image_key=None, emergency_key=None):
+def get_image(graphic_theme, title, overlay_option, rgb_fill_preset, graphicSource, ai_key, language, graphic_theme2=None, image_key=None, emergency_key=None):
     if graphicSource == "pixabay":
-        return get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_theme2)
+        return get_pixabay_image(graphic_theme, title, overlay_option, rgb_fill_preset, image_key, graphic_theme2)
     elif graphicSource == "pexels":
-        return get_pexels_image(graphic_theme, title, overlay_option, image_key, emergency_key, graphic_theme2)
+        return get_pexels_image(graphic_theme, title, overlay_option, rgb_fill_preset, image_key, emergency_key, graphic_theme2)
     elif graphicSource == "ai":
-        return  get_ai_image(graphic_theme, title, ai_key, language, overlay_option)
+        return  get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fill_preset,)
 
 
-def get_ai_image(graphic_theme, title, ai_key, language, overlay_option):
+def get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fill_preset):
     openai_api = OpenAI_API(ai_key, language)
     image_url = openai_api.create_img(f'Generate feature image for article about {title}')
     response = requests.get(image_url)
@@ -311,14 +316,14 @@ def get_ai_image(graphic_theme, title, ai_key, language, overlay_option):
     image.save(image_save_path, format='WEBP')
     
     if overlay_option == "withOverlay":
-        return addOverlay(image_save_path, title)
+        return addOverlay(image_save_path, title, rgb_fill_preset)
     else:
         return image_save_path
 
 
 
 
-def get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_theme2=None):
+def get_pixabay_image(graphic_theme, title, overlay_option, rgb_fill_preset, image_key, graphic_theme2=None):
     
     keyword_list = [graphic_theme, graphic_theme2]
 
@@ -342,7 +347,7 @@ def get_pixabay_image(graphic_theme, title, overlay_option, image_key, graphic_t
                 image.save(image_save_path, format='WEBP')
                 
                 if overlay_option == "withOverlay":
-                    return addOverlay(image_save_path, title)
+                    return addOverlay(image_save_path, title, rgb_fill_preset)
                 else:
                     return image_save_path
         if for_loop_pixabay >= 3:
@@ -360,7 +365,7 @@ def download_pixa_image(keyword, image_key):
         image_url = image_data["largeImageURL"]
         return image_url
     
-def get_pexels_image(graphic_theme, title, overlay_option, pexels_api_key, emergency_key, graphic_theme2=None):
+def get_pexels_image(graphic_theme, title, overlay_option, rgb_fill_preset, pexels_api_key, emergency_key, graphic_theme2=None):
     
     keyword_list = [graphic_theme, graphic_theme2]
 
@@ -385,7 +390,7 @@ def get_pexels_image(graphic_theme, title, overlay_option, pexels_api_key, emerg
                 image.save(image_save_path, format='WEBP')
                 
                 if overlay_option == "withOverlay":
-                    return addOverlay(image_save_path, title)
+                    return addOverlay(image_save_path, title, rgb_fill_preset)
                 else:
                     return image_save_path
         if for_loop_pexels >= 3:
@@ -415,8 +420,12 @@ def download_pexels_image(keyword, pexels_api_key, emergency_key):
                     return first_result['src']['original']
 
     
-def addOverlay(save_path, title, overlay_fill_preset=[168, 150, 50, 92]):
+def addOverlay(save_path, title, overlay_fill_preset=[168, 150, 50, 90]):
+
+    overlay_fill_preset.append(90)
+
     pure_image = Image.open(save_path).convert('RGBA')
+    
     overlay_height = pure_image.size[1] // 2
     overlay = Image.new('RGBA', pure_image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)

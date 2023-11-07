@@ -66,7 +66,7 @@ $(document).ready(function() {
                     $('#resetButton').show();
                     $('#comp-card').hide();
     
-                    $('.card').addClass('expanded-card');
+                    $('.card').addClass('tsv-expanded-card');
                 }
             }, 50);
         });
@@ -76,7 +76,7 @@ $(document).ready(function() {
             $('#tsvInput').val('').show();
             $(this).hide();
             $('#comp-card').show();
-            $('.card').removeClass('expanded-card');
+            $('.card').removeClass('tsv-expanded-card');
         });
     });
     

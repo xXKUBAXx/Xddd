@@ -1,8 +1,8 @@
-{% extends "base.html" %}  
+{% extends "base.html" %}
 {% load static %}
 {% block style %}
 <style>
-    .card{
+    .card {
         margin-bottom: 65px;
     }
 </style>
@@ -26,7 +26,9 @@
                     <i class="fas fa-trash icon" id="delete"></i>
                 </div>
                 <div class="card-body">
-                    <a href="https://{{data.domain}}"><h5 class="card-title">{{ data.domain }}</h5></a>
+                    <a href="https://{{data.domain}}">
+                        <h5 class="card-title">{{ data.domain }}</h5>
+                    </a>
                     <p class="card-text">Click to view additional details</p>
                 </div>
                 <div class="table-responsive">
@@ -39,10 +41,10 @@
                         </thead>
                         <tbody>
                             {% for k, v in data.items %}
-                                <tr>
-                                    <td>{{ k }}</td>
-                                    <td id="{{k}}">{{ v }}</td>
-                                </tr>
+                            <tr>
+                                <td>{{ k }}</td>
+                                <td id="{{k}}">{{ v }}</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -52,7 +54,7 @@
     </div>
     <div class="row">
         <div class="col-md-6">
-            <div class="card shadow">
+            <div class="card shadow narrow-card">
                 {% if data.wp_api_key and data.wp_api_key != "None" %}
                 <div class="card-body">
                     <h5 class="card-title">Create categories</h5>
@@ -62,7 +64,8 @@
                         {% csrf_token %}
                         <div class="form-group">
                             <label class="form-label" for="openai_api_key">OpenAI API key:</label>
-                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key"
+                                value="{{user.account.openai_api_key}}">
                         </div>
                         {% if not data.topic %}
                         <div class="form-group">
@@ -72,12 +75,14 @@
                         {% endif %}
                         <h6>Categories</h6>
                         <div class="slider-container">
-                            <input type="range" id="CatSlider" class="range-slider" min="2" max="7" value="4" name="cat_num">
+                            <input type="range" id="CatSlider" class="range-slider" min="2" max="7" value="4"
+                                name="cat_num">
                             <input type="text" id="CatSliderValue" class="range-value" value="4" readonly>
                         </div>
                         <h6>Subcategories</h6>
                         <div class="slider-container">
-                            <input type="range" id="SubCatSlider" class="range-slider" min="2" max="7" value="4" name="subcat_num">
+                            <input type="range" id="SubCatSlider" class="range-slider" min="2" max="7" value="4"
+                                name="subcat_num">
                             <input type="text" id="SubCatSliderValue" class="range-value" value="4" readonly>
                         </div>
                         <button type="submit">Submit</button>
@@ -101,7 +106,7 @@
         </div>
         {% if data.wp_api_key and data.wp_api_key != "None" %}
         <div class="col-md-6">
-            <div class="card shadow">
+            <div class="card shadow narrow-card">
                 <div class="card-body">
                     <h5 class="card-title">Categoires</h5>
                 </div>
@@ -120,7 +125,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <button id="articles" type="submit" data-card-id="{{ data.id }}" style="display: none;">Select</button>
+                        <button id="articles" type="submit" data-card-id="{{ data.id }}"
+                            style="display: none;">Select</button>
                     </div>
                     <form id="writeForm" type="post" style="display: none;">
                         {% csrf_token %}
@@ -132,25 +138,30 @@
                         {% endif %}
                         <div class="form-group">
                             <label class="form-label" for="openai_api_key">OpenAI API key:</label>
-                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+                            <input type="text" class="form-control" id="openai_api_key" name="openai_api_key"
+                                value="{{user.account.openai_api_key}}">
                         </div>
                         <h6>Articles</h6>
                         <div class="slider-container">
-                            <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1" name="a_num">
+                            <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1"
+                                name="a_num">
                             <input type="text" id="ArtSliderValue" class="range-value" value="1" readonly>
                         </div>
                         <h6>Paragraphs per article</h6>
                         <div class="slider-container">
-                            <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4" name="p_num">
+                            <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4"
+                                name="p_num">
                             <input type="text" id="ParagraphsSliderValue" class="range-value" value="4" readonly>
                         </div>
                         <div class="date-container">
                             <label>Start date</label>
-                            <input type="date" value="2005-04-02" id="start_date" name="start_date" style="margin-left: 12px;"/>
+                            <input type="date" value="2005-04-02" id="start_date" name="start_date"
+                                style="margin-left: 12px;" />
                         </div>
                         <h6>Days between articles</h6>
                         <div class="slider-container">
-                            <input type="range" id="DaysSlider" class="range-slider" min="2" max="14" value="7" name="days_delta">
+                            <input type="range" id="DaysSlider" class="range-slider" min="2" max="14" value="7"
+                                name="days_delta">
                             <input type="text" id="DaysSliderValue" class="range-value" value="7" readonly>
                         </div>
                         <div class="checkbox-container">
@@ -173,17 +184,18 @@
                 <div class="additional-attributes" style="display: none; padding: 20px;">
                     <div class="form-group">
                         <label for="tsvInput">Zlecenie dla zapleczary:</label>
-                            <textarea class="form-control" id="tsvInput" rows="4" placeholder="Wklej tutaj tsv za pomocą ctrl+v"></textarea>
-                            <button id="resetButton" style="display: none;">Clear table</button>
-                            <div class="table-container" style="display: none;"></div>
+                        <textarea class="form-control" id="tsvInput" rows="4"
+                            placeholder="title \ graphic_theme \ graphic_theme2 \ category \ length \ isfaq&#10Wklej tutaj tsv za pomocą ctrl+v"></textarea>
+                        <button id="resetButton" style="display: none;">Clear table</button>
+                        <div class="table-container" style="display: none;"></div>
                     </div>
 
-                    
-            
+
+
                     <div class="form-group">
                         <label>Grafiki:</label>
                         <div class="checkbox-container">
-                            <input type="radio" id="pixabay" name="graphicSource" value="pixabay"> 
+                            <input type="radio" id="pixabay" name="graphicSource" value="pixabay">
                             <label for="pixabay">Pixabay</label>
                             <input type="radio" id="pexels" name="graphicSource" value="pexels">
                             <label for="pexels">Pexels</label>
@@ -191,22 +203,33 @@
                             <label for="ai">AI</label>
                         </div>
                     </div>
-            
+
                     <div class="form-group">
                         <label>Nakładka?:</label>
                         <div class="checkbox-container">
-                            <input type="radio" id="withOverlay" name="overlayOption" value="withOverlay"> 
+                            <input type="radio" id="withOverlay" name="overlayOption" value="withOverlay">
                             <label for="withOverlay">Z nakładką</label>
                             <input type="radio" id="withoutOverlay" name="overlayOption" value="withoutOverlay">
                             <label for="withoutOverlay">Bez nakładki</label>
                         </div>
                     </div>
-            
+
+
+                    <div class="color-picker-container">
+                        <label for="colorPicker">Wybierz kolor:</label>
+                        <input type="color" id="colorPicker" name="color" onchange="updateRGB(this.value)">
+                    </div>
+
+                    <div style="display:none;">
+                        <input type="hidden" id="rgbValue" name="rgbValue">
+                    </div>
+
                     <div class="form-group">
                         <label for="dateInput">Wybierz datę dla początku publikacji:</label>
-                        <input type="date" id="dateInput" class="form-control" pattern="\d{2}-\d{2}-\d{4}" placeholder="DD-MM-YYYY">
+                        <input type="date" id="dateInput" class="form-control" pattern="\d{2}-\d{2}-\d{4}"
+                            placeholder="DD-MM-YYYY">
                     </div>
-            
+
                     <div class="form-group">
                         <label for="publishIntervalInput">Co ile mają publikować się wpisy?:</label>
                         <input type="number" id="publishInterval" class="form-control" min="1" max="99">
@@ -214,7 +237,7 @@
 
                     <div class="form-group">
                         <label for="withFaq">Czy chcesz wygenerować FAQ dla tekstów?</label>
-                        <input type="radio" id="withFaq" name="faqOption" value="withFaq"> 
+                        <input type="radio" id="withFaq" name="faqOption" value="withFaq">
                         <label for="withFaq">Tak</label>
                         <input type="radio" id="withoutFaq" name="faqOption" value="withoutFaq">
                         <label for="withoutFaq">Nie</label>
@@ -222,17 +245,18 @@
 
                     <div class="form-group">
                         <label class="form-label" for="openai_api_key_classic">OpenAI API key:</label>
-                        <input type="text" class="form-control" id="openai_api_key_classic" name="openai_api_key_classic" value="{{user.account.openai_api_key}}">
+                        <input type="text" class="form-control" id="openai_api_key_classic"
+                            name="openai_api_key_classic" value="{{user.account.openai_api_key}}">
                     </div>
-            
+
                     <button type="submit_tsv" data-card-id="{{ data.id }}" id="classic_main">Submit</button>
                     <div id="graphicSpace" data-src="{% static 'temp-image.webp' %}"></div>
                     <div id="responseOutput"></div>
                 </div>
             </div>
         </div>
-        <div id="comp-card" class="col-md-6" style="display: none;">
-            <div class="card shadow">
+        <div id="comp-card" class="col-md-6">
+            <div class="card shadow narrow-card">
                 <div class="card-body">
                     <h5 class="card-title">Porównywarka</h5>
                 </div>
@@ -250,65 +274,78 @@
                         <input type="number" id="compQuant" class="form-control" min="1" max="99">
                     </div>
 
-                    
-            
+
+
                     <div class="form-group">
                         <label>Grafiki:</label>
                         <div class="checkbox-container">
-                            <input type="radio" id="pixabay" name="graphicSource_comp" value="pixabay"> 
+                            <input type="radio" id="pixabay_comp" name="graphicSource_comp" value="pixabay">
                             <label for="pixabay">Pixabay</label>
-                            <input type="radio" id="pexels" name="graphicSource_comp" value="pexels">
+                            <input type="radio" id="pexels_comp" name="graphicSource_comp" value="pexels">
                             <label for="pexels">Pexels</label>
-                            <input type="radio" id="ai" name="graphicSource_comp" value="ai">
+                            <input type="radio" id="ai_comp" name="graphicSource_comp" value="ai">
                             <label for="ai">AI</label>
                         </div>
                     </div>
-            
+
                     <div class="form-group">
                         <label>Nakładka?:</label>
                         <div class="checkbox-container">
-                            <input type="radio" id="withOverlay_comp" name="overlayOption" value="withOverlay"> 
+                            <input type="radio" id="withOverlay_comp" name="overlayOption_comp" value="withOverlay">
                             <label for="withOverlay">Z nakładką</label>
-                            <input type="radio" id="withoutOverlay_comp" name="overlayOption" value="withoutOverlay">
+                            <input type="radio" id="withoutOverlay_comp" name="overlayOption_comp"
+                                value="withoutOverlay">
                             <label for="withoutOverlay">Bez nakładki</label>
                         </div>
                     </div>
-            
+
+                    <div class="color-picker-container">
+                        <label for="colorPicker_comp">Wybierz kolor:</label>
+                        <input type="color" id="colorPicker_comp" name="color" onchange="updateRGB(this.value)">
+                    </div>
+
+                    <div style="display:none;">
+                        <input type="hidden" id="rgbValue_comp" name="rgbValue">
+                    </div>
+
+
                     <div class="form-group">
                         <label for="dateInput">Wybierz datę dla początku publikacji:</label>
-                        <input type="date" id="dateInput_comp" class="form-control" pattern="\d{2}-\d{2}-\d{4}" placeholder="DD-MM-YYYY">
+                        <input type="date" id="dateInput_comp" class="form-control" pattern="\d{2}-\d{2}-\d{4}"
+                            placeholder="DD-MM-YYYY">
                     </div>
-            
+
                     <div class="form-group">
-                        <label for="publishIntervalInput">Co ile mają publikować się wpisy?:</label>
+                        <label for="publishIntervalInput_comp">Co ile mają publikować się wpisy?:</label>
                         <input type="number" id="publishInterval_comp" class="form-control" min="1" max="99">
                     </div>
 
                     <div class="form-group">
-                        <label for="withFaq">Czy chcesz wygenerować FAQ dla tekstów?</label>
-                        <input type="radio" id="withFaq" name="faqOption_comp" value="withFaq"> 
-                        <label for="withFaq">Tak</label>
-                        <input type="radio" id="withoutFaq" name="faqOption_comp" value="withoutFaq">
-                        <label for="withoutFaq">Nie</label>
+                        <label for="withFaq_comp">Czy chcesz wygenerować FAQ dla tekstów?</label>
+                        <input type="radio" id="withFaq_comp" name="faqOption_comp" value="withFaq">
+                        <label for="withFaq_comp">Tak</label>
+                        <input type="radio" id="withoutFaq_comp" name="faqOption_comp" value="withoutFaq">
+                        <label for="withoutFaq_comp">Nie</label>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="openai_api_key_classic">OpenAI API key:</label>
-                        <input type="text" class="form-control" id="openai_api_key_comp" name="openai_api_key_classic" value="{{user.account.openai_api_key}}">
+                        <input type="text" class="form-control" id="openai_api_key_comp" name="openai_api_key_classic"
+                            value="{{user.account.openai_api_key}}">
                     </div>
-            
+
                     <button type="submit_comp" data-card-id="{{ data.id }}" id="classic_comp">Submit</button>
                     <!-- <div id="graphicSpace" data-src="{% static 'temp-image.webp' %}"></div>
                     <div id="responseOutput"></div> -->
                 </div>
             </div>
         </div>
-    {% endif %}
-</div>
-{% endblock %}
-{% block script %}
-<script src="{% static 'js/zaplecze.js' %}"></script>
-<script src="{% static 'js/new_zaplecze.js' %}"></script>
-<script src="{% static 'js/zaplecze_classic.js' %}"></script>
-<script src="{% static 'js/zaplecze_comp.js' %}"></script>
-{% endblock %}
+        {% endif %}
+    </div>
+    {% endblock %}
+    {% block script %}
+    <script src="{% static 'js/zaplecze.js' %}"></script>
+    <script src="{% static 'js/new_zaplecze.js' %}"></script>
+    <script src="{% static 'js/zaplecze_classic.js' %}"></script>
+    <script src="{% static 'js/zaplecze_comp.js' %}"></script>
+    {% endblock %}
