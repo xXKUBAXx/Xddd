@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	dateInput.value = `${year}-${month}-${day}`;
 });
 
-function updateRGB(value) {
+function updateCompRGB(value) {
 	var r = parseInt(value.substring(1, 3), 16);
 	var g = parseInt(value.substring(3, 5), 16);
 	var b = parseInt(value.substring(5, 7), 16);

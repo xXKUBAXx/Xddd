@@ -22,6 +22,8 @@ from ..src.CreateWPblog.wp_api import WP_API
 from ..src.CreateWPblog.openai_article import OpenAI_article
 from ..src.CreateWPblog.openai_api import OpenAI_API
 
+from openai import OpenAI
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -45,13 +47,14 @@ class ZapleczeClassic(View):
         overlay_color = data.get("overlayColor") 
         date_input = data.get("dateInput") #2021-01-01
         publishInterval = data.get("publishInterval") #2
-        openai.api_key = data.get("openai_api_key") #sk
+        openai_api_key = data.get("openai_api_key") #sk
         faq_option = data.get("faqOption") #withFaq, withoutFaq
         tsv_input = data.get("tsvInput")
         # print("color\n\n")
         # print(overlay_color)
         rgb_fill_preset = overlay_color.split(",")
         rgb_fill_preset = [int(channel) for channel in rgb_fill_preset]
+         
 
         if graphicSource is not None:
             if graphicSource == "pixabay":
@@ -81,20 +84,23 @@ class ZapleczeClassic(View):
             print(f"Executing row: {row}")
             category_array = []
             title, graphic_theme, graphic_theme2, category, length, isfaq = row.split("\t")
-            # article, opening = get_text(title, category, length, isfaq, language=zaplecze.lang)
-            image_save_path = get_image(graphic_theme, title, overlay_option, rgb_fill_preset, graphicSource, openai.api_key, zaplecze.lang, graphic_theme2, image_key, emergency_key)
+            article, opening = get_text(title, openai_api_key, category, length, isfaq, language=zaplecze.lang)
+            image_save_path = get_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, zaplecze.lang, graphic_theme2, image_key, emergency_key)
             publish_date = get_publish_date(date_input, publishInterval, date_controller)
             image_id = wp_api.upload_img(image_save_path)
             if '&' in category:
                 categories = list(category.split('&'))
                 for cat in categories:
-                    category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, language=zaplecze.lang)))
+                    category_array.append(wp_api.create_category(cat, generate_cat_desc(cat, openai_api_key, language=zaplecze.lang)))
             else:
-                category_array.append(wp_api.create_category(category, generate_cat_desc(category, language=zaplecze.lang)))
+                category_array.append(wp_api.create_category(category, generate_cat_desc(category,openai_api_key, language=zaplecze.lang)))
 
             category_array = [cat['id'] for cat in category_array]
             wp_api.post_article(title, article, opening, image_id, publish_date, category_array, author_id=1)
             date_controller += 1
+            if os.path.isfile(image_save_path):
+                os.remove(image_save_path)
+                print(f'Image {image_save_path} has been deleted')
 
             # rows.remove(row)
             rows.pop()
@@ -117,13 +123,13 @@ class ZapleczeClassic(View):
     
     
     
-def get_text(title, category, length, isfaq, language):
-    headers = get_headers(title, language)
+def get_text(title, openai_api_key, category, length, isfaq, language):
+    headers = get_headers(title, openai_api_key, language)
     # print(headers)
-    opening = get_opening(title, language)
+    opening = get_opening(title, openai_api_key, language)
     text = f'{opening}'
     for header in headers:
-        section = get_section(header, language)
+        section = get_section(header, openai_api_key, language)
         text += f'\n<h2>{header}</h2>\n{section}'
         # print(text)
         # print(f"\n\nobecna długość to {len(text)}\n\n")
@@ -131,14 +137,14 @@ def get_text(title, category, length, isfaq, language):
             break
 
     if str(isfaq) == 'withFaq':
-        faq = get_faq(title, language)
+        faq = get_faq(title, openai_api_key, language)
         text += f'\n{faq}'
 
     # print(text)
     return text, opening
 
 
-def get_headers(title, language):
+def get_headers(title, openai_api_key, language):
     while True:
         if language.lower() == 'pl':
             prompt = [
@@ -160,7 +166,7 @@ def get_headers(title, language):
             {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
             {"role": "user", "content": f'Vytvořte nadpisy 10 h2 pro článek s názvem "{title}", zahrňte je do značek <h2>'}
             ]
-        response = callBot(prompt, 300)
+        response = callBot(prompt, 300, openai_api_key)
 
         content = response["choices"][0]["message"]["content"]
 
@@ -171,7 +177,7 @@ def get_headers(title, language):
         else:
             return header_list
 
-def get_opening(title, language):
+def get_opening(title, openai_api_key, language):
     while True:
         if language.lower() == 'pl':
             prompt = [
@@ -193,7 +199,7 @@ def get_opening(title, language):
             {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
             {"role": "user", "content": f'Vytvořte úvod k článku s názvem "{title}" a vložte jej do tagu <p>.'}
             ]
-        response = callBot(prompt, 600)
+        response = callBot(prompt, 600, openai_api_key)
 
         content = response["choices"][0]["message"]["content"]
 
@@ -205,7 +211,7 @@ def get_opening(title, language):
             opening_text = "\n".join(opening_text)
             return opening_text
         
-def get_section(header, language):
+def get_section(header, openai_api_key, language):
     while True:
             if language.lower() == 'pl':
                 prompt = [
@@ -228,7 +234,7 @@ def get_section(header, language):
                 {"role": "user", "content": f'Napište {random_pars(language)} odstavce pro nadpis {header} v češtině, každý odstavec vložte mezi značky <p></p>.'}
                 ]                                           
             
-            response = callBot(prompt, 600)
+            response = callBot(prompt, 600, openai_api_key)
             content = response["choices"][0]["message"]["content"]
             content = re.sub(r'<br>', '', content)
             content = re.sub(r'\n\n+', '\n\n', content)
@@ -241,11 +247,11 @@ def get_section(header, language):
 
             return paragraphs
 
-def get_faq(title, language):
+def get_faq(title, openai_api_key, language):
     faq_questions = create_faq(title, language)
     faq = f'\n<h2 class="faq-section">Najczęściej zadawane pytania (FAQ)</h2>'
     for question in faq_questions:
-        answer = ask_bot_faq(question, language)
+        answer = ask_bot_faq(question, openai_api_key, language)
         faq += f'\n<h3 class="faq-section">{question}</h3>\n<p>{answer}</p>'
     
     return faq
@@ -263,7 +269,7 @@ def create_faq(faq, language):
     
     return related_questions
 
-def ask_bot_faq(question, language):
+def ask_bot_faq(question, openai_api_key, language):
         while True:
             if language.lower() == 'pl':
                 prompt = [
@@ -285,7 +291,7 @@ def ask_bot_faq(question, language):
                 {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
                 {"role": "user", "content": f'Odpovězte prosím na "{question}" maximálně 40 slovy. Umístěte svou odpověď do jednoho tagu <p></p>.'}
                 ]
-            response = callBot(prompt, 300)
+            response = callBot(prompt, 300, openai_api_key)
 
             answer = response["choices"][0]["message"]["content"]
             
@@ -295,13 +301,13 @@ def ask_bot_faq(question, language):
                 return answer
         
 
-def get_image(graphic_theme, title, overlay_option, rgb_fill_preset, graphicSource, ai_key, language, graphic_theme2=None, image_key=None, emergency_key=None):
+def get_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, language, graphic_theme2=None, image_key=None, emergency_key=None):
     if graphicSource == "pixabay":
-        return get_pixabay_image(graphic_theme, title, overlay_option, rgb_fill_preset, image_key, graphic_theme2)
+        return get_pixabay_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, graphic_theme2)
     elif graphicSource == "pexels":
-        return get_pexels_image(graphic_theme, title, overlay_option, rgb_fill_preset, image_key, emergency_key, graphic_theme2)
+        return get_pexels_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, emergency_key, graphic_theme2)
     elif graphicSource == "ai":
-        return  get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fill_preset,)
+        return  get_ai_image(graphic_theme, title, openai_api_key, language, overlay_option, rgb_fill_preset,)
 
 
 def get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fill_preset):
@@ -323,7 +329,7 @@ def get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fil
 
 
 
-def get_pixabay_image(graphic_theme, title, overlay_option, rgb_fill_preset, image_key, graphic_theme2=None):
+def get_pixabay_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, graphic_theme2=None):
     
     keyword_list = [graphic_theme, graphic_theme2]
 
@@ -351,7 +357,7 @@ def get_pixabay_image(graphic_theme, title, overlay_option, rgb_fill_preset, ima
                 else:
                     return image_save_path
         if for_loop_pixabay >= 3:
-            keyword_list = generate_emergency_keywords(title, graphic_theme, graphic_theme2)
+            keyword_list = generate_emergency_keywords(title, openai_api_key, graphic_theme, graphic_theme2)
 
 def download_pixa_image(keyword, image_key):
     response = requests.get(f"https://pixabay.com/api/?key={image_key}&q={clean_keyword(keyword)}&image_type=photo")
@@ -365,7 +371,7 @@ def download_pixa_image(keyword, image_key):
         image_url = image_data["largeImageURL"]
         return image_url
     
-def get_pexels_image(graphic_theme, title, overlay_option, rgb_fill_preset, pexels_api_key, emergency_key, graphic_theme2=None):
+def get_pexels_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, pexels_api_key, emergency_key, graphic_theme2=None):
     
     keyword_list = [graphic_theme, graphic_theme2]
 
@@ -394,12 +400,12 @@ def get_pexels_image(graphic_theme, title, overlay_option, rgb_fill_preset, pexe
                 else:
                     return image_save_path
         if for_loop_pexels >= 3:
-            keyword_list = generate_emergency_keywords(title, graphic_theme, graphic_theme2)
+            keyword_list = generate_emergency_keywords(title, openai_api_key, graphic_theme, graphic_theme2)
 
         if not image_url:
             break
 
-def download_pexels_image(keyword, pexels_api_key, emergency_key):
+def download_pexels_image(keyword, openai_api_key, pexels_api_key, emergency_key):
     headers = {
         'Authorization': pexels_api_key
     }
@@ -409,7 +415,7 @@ def download_pexels_image(keyword, pexels_api_key, emergency_key):
         rate_limit_remaining = int(rate_limit_check_response.headers['X-Ratelimit-Remaining'])
         if rate_limit_remaining <= 0:
             print("Rate limit exceeded.")
-            return get_pixabay_image(keyword, emergency_key)
+            return get_pixabay_image(keyword, openai_api_key, emergency_key)
         
         else:
             response = requests.get(f"https://api.pexels.com/v1/search?query={clean_keyword(keyword)}&per_page=1", headers=headers)
@@ -422,7 +428,8 @@ def download_pexels_image(keyword, pexels_api_key, emergency_key):
     
 def addOverlay(save_path, title, overlay_fill_preset=[168, 150, 50, 90]):
 
-    overlay_fill_preset.append(90)
+    if len(overlay_fill_preset) == 3:
+        overlay_fill_preset.append(90)
 
     pure_image = Image.open(save_path).convert('RGBA')
     
@@ -493,7 +500,7 @@ def wrap_text(text, font, max_width):
 
 
     
-def generate_emergency_keywords(title, graphic_theme, graphic_theme2=None):
+def generate_emergency_keywords(title, openai_api_key, graphic_theme, graphic_theme2=None):
     messages=[
                 {
                     'role': 'system',
@@ -505,7 +512,7 @@ def generate_emergency_keywords(title, graphic_theme, graphic_theme2=None):
                 }
             ],
             
-    response = callBot(messages, 300)
+    response = callBot(messages, 300, openai_api_key)
     image_keywords = response["choices"][0]["message"]["content"]
     return image_keywords.split(",")
 
@@ -535,7 +542,7 @@ def get_publish_date(date_input, publishInterval, date_controller):
     new_date = f'{date.date()}T{get_time()}'
     return datetime.datetime.strptime(new_date, "%Y-%m-%dT%H:%M:%S")
 
-def generate_cat_desc(cat, language):
+def generate_cat_desc(cat, openai_api_key, language):
     while True:
             if language.lower() == 'pl':
                 prompt = [
@@ -557,33 +564,41 @@ def generate_cat_desc(cat, language):
                 {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
                 {"role": "user", "content": f'Napište popis pro kategorii blogu s názvem {cat}.'}
                 ]
-            response = callBot(prompt, 300)
-
+            response = callBot(prompt, 300, openai_api_key)
+    
             description = response["choices"][0]["message"]["content"]
-            
+
             if not description:
                 continue
             else:
                 return description
 
 
-def callBot(prompt, price):
+def callBot(prompt, price, openai_api_key):
+    client = OpenAI(api_key=openai_api_key)
     while True:
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=prompt,
             max_tokens=price,
-            n=1,
-            stop=None,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
             temperature=0.8,
             )
+            response = json.loads(response.json())
             return response
 
-        except (openai.error.RateLimitError, openai.error.ServiceUnavailableError, openai.error.APIError) as e:
-            print(f"Rate limit error: {e}")
-            print('Funkcja odczeka 60 sekund i spróbuje ponownie')
-            time.sleep(60)
+        except openai.RateLimitError:
+                print("Too many requests, waiting 30s and trying again")
+                time.sleep(30)
+                continue
+        except Exception as e:
+            print("Unknown error, waiting & resuming - ", e)
+            time.sleep(3)
+            continue
+        break
 
 def random_pars(language):
     random.randint(1, 3)
