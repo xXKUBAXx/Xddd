@@ -68,7 +68,7 @@ class ZapleczeComp(View):
 
         wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
 
-        filename = '../../mouses.csv' if compSelect == 'mouse' else '../../keyboards.csv' if compSelect == 'keyboard' else None
+        filename = '../mouses.csv' if compSelect == 'mouse' else '../keyboards.csv' if compSelect == 'keyboard' else None
         
         list_of_pairs, pairs_titles = get_pairs(filename, compQuant)        
 
@@ -141,7 +141,7 @@ def get_pairs(filename, compQuant):
             return
         else:
             # uncomment for production
-            # df.to_csv(filename, index=False)
+            df.to_csv(filename, index=False)
             
             exclude_keys = ['id', 'in_use', 'compared_with']
             
