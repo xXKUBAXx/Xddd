@@ -106,7 +106,7 @@ class ZapleczeCreateSetupWP(ZapleczeCreate):
         domain = data['domain']
         if data['wp_user'] and data['wp_user'] != "":
             return Response({"res": "This zaplecze alredy has WP"}, status=status.HTTP_200_OK)
-        wp = Setup_WP(domain, data['email'], data['lang'])
+        wp = Setup_WP(domain, data['email'], data['lang'], ssl=True)
         data['wp_user'], data['wp_password'] = wp.install(data['db_user'], data['db_pass'], domain.partition(".")[0])
         serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
         if serializer.is_valid():
@@ -125,7 +125,7 @@ class ZapleczeCreateTweakWP(ZapleczeCreate):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         domain = data['domain']
-        wp = Setup_WP(domain)
+        wp = Setup_WP(domain, ssl=True)
         wp.setup(data['wp_user'], data['wp_password'])
         return Response(data, status=status.HTTP_200_OK)
 
@@ -140,7 +140,7 @@ class ZapleczeCreateWPapi(ZapleczeCreate):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         domain = data['domain']
-        wp = Setup_WP(domain)
+        wp = Setup_WP(domain, ssl=True)
         if data['wp_api_key']:
             return Response({"res": "This zaplecze alredy has WP API key"}, status=status.HTTP_200_OK)
         
@@ -213,14 +213,14 @@ class ZapleczeCreateAll(ZapleczeCreate):
 
         # 4. Install WP
         try:
-            wp = Setup_WP(domain, data['email'], data['lang'])
+            wp = Setup_WP(domain, data['email'], data['lang'], ssl=True)
             data['wp_user'], data['wp_password'] = wp.install(data['db_user'], data['db_pass'], domain.partition(".")[0])
         except:
             return Response({"res": "Error with WP installation", "data": data}, status=status.HTTP_400_BAD_REQUEST)
 
         # 5. Setup WP params
         try:
-            wp = Setup_WP(domain)
+            wp = Setup_WP(domain, ssl=True)
             wp.setup(data['wp_user'], data['wp_password'])
         except:
             return Response({"res": "Error with WP setup", "data": data}, status=status.HTTP_400_BAD_REQUEST)
