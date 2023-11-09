@@ -19,7 +19,7 @@ Umowy {{user.username}}
                     <th>Czas trwania umowy</th>
                 </tr>
                 {% for u in umowy %}
-                    {% if not u.wypowiedziana and u.pozycjoner.mail == user.email and not u.zakonczona %}
+                    {% if not u.wypowiedziana and not u.zakonczona and u.pozycjoner.mail == user.email %}
                             <tr>
                                 <td><a href="/links/{{u.id_seo}}/">{{u.domena}}</a></td>
                                 <td>{{u.od}}</td>
