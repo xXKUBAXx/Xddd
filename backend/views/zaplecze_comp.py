@@ -40,6 +40,13 @@ class ZapleczeComp(View):
         data = json.loads(request.body)
         zaplecze = self.get_object(zaplecze_id)
 
+        user = request.user
+        if user.is_authenticated:
+            user_id = user.id
+        else:
+            user_id = None
+
+
         compSelect = data.get('compSelect')  # mouse / keyboard
         compQuant = int(data.get('compQuant'))  # ilość porównań
         graphicSource = data.get('graphicSource')  # pixabay, pexels, ai
@@ -90,15 +97,16 @@ class ZapleczeComp(View):
             length = 6000
 
         date_controller = 0
-        # main function starts here4
+        # main function starts here
 
         for pair in list_of_pairs:
             category_array = []
-            print(pair)
-            # input("Wait")
+       
             title = pairs_titles[list_of_pairs.index(pair)]
+           
+  
             comp_title, comp_text, opening = get_comp_text(title, compItem, openai_api_key, pair, length, faq_option, language=zaplecze.lang)
-            image_save_path = get_image(graphic_theme, comp_title, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, zaplecze.lang, graphic_theme2, image_key, emergency_key)
+            image_save_path = get_image(user_id, graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, zaplecze.lang, graphic_theme2, image_key, emergency_key)
             publish_date = get_publish_date(date_input, publishInterval, date_controller)
             image_id = wp_api.upload_img(image_save_path)
             if '&' in category:
@@ -220,9 +228,9 @@ def get_comp_text(title, compItem, openai_api_key, pair, length, faq_option, lan
     text = f'{opening}'
     comp_table = get_comp_table(comp_title, pair, language, openai_api_key)
     text = f'<h2>Specyfikacja produktów</h2>\n{comp_table}'
-    print("Nie zjebało się")
+    # print("Nie zjebało się")
     for header in headers:
-        print(f"Nie zjebało się - leci {header}")
+        # print(f"Nie zjebało się - leci {header}")
         section = get_comp_section(comp_title, pair, language, header, openai_api_key)
         text += f'\n<h2>{header}</h2>\n{section}'
         if len(text) > int(length):
@@ -235,7 +243,7 @@ def get_comp_text(title, compItem, openai_api_key, pair, length, faq_option, lan
     return comp_title, text, opening
 
 def get_comp_table(comp_title, pair, language, openai_api_key):
-    label_dict = get_label_dict(language)
+    label_dict = get_label_dict("pl")
     temp_pair_list = pair.split("\n")
 
     temp_header_list = temp_pair_list[0].split(",")
@@ -257,16 +265,23 @@ def get_comp_table(comp_title, pair, language, openai_api_key):
             table_string += f'<tr><th>{label_dict[label]}</th><td>{temp_pair_1[temp_index]}</td><td>{temp_pair_2[temp_index]}</td></tr>'
 
     table_string += '</table></div>'
+    if language.lower() != "pl":
+        prompt = [
+                    {"role": "system", "content": f"Jesteś znakomitym tłumaczem tabelek html. Tłumaczysz otrzymaną tabelkę na język {language.upper()}."},
+                    {"role": "user", "content": f'Zwróć przetłumaczoną tabelkę\n{table_string}'}
+                ]
+        response = callBot(prompt, 700, openai_api_key)
+        content = response["choices"][0]["message"]["content"]
 
-    prompt = [
-                {"role": "system", "content": f"Jesteś znakomitym tłumaczem tabelek html. Tłumaczysz otrzymaną tabelkę na język fr."},
-                {"role": "user", "content": f'Zwróć przetłumaczoną tabelkę\n{table_string}'}
-            ]
-    response = callBot(prompt, 600, openai_api_key)
-    content = response["choices"][0]["message"]["content"]
-    print(content)
-    # input("wait")
-    return table_string
+        comp_table_match = re.search(r'(<div class="comp-table">.*?</div>)', content, re.DOTALL)
+
+        if comp_table_match:
+            comp_table_content = comp_table_match.group(1)
+            return comp_table_content
+        
+    else:
+        return table_string
+
         
 
 def get_section(header, language, openai_api_key):
@@ -306,45 +321,6 @@ def get_section(header, language, openai_api_key):
             return paragraphs
 
 
-def get_comparison(title, pair, language, openai_api_key):
-    while True:
-        if language.lower() == 'pl':
-            prompt = [
-            {"role": "system", "content": "Jesteś wnikliwym redaktorem strony technologicznej, który zajmuje się pisaniem porównań elektroniki i wyciąganiem wniosków, dzięki czemu konsumenci mogą podejmować lepsze decyzje zakupowe."},
-            {"role": "user", "content": f'Na podstawie następujących danych: {textData}, napisz tytuł (zamieść go w h1) i artykuł-porównanie produktów. Tekst zamieść w tagach html (<h1>, <h2>, <p>). W treści zamieść także tabelkę html, którą stworzysz na podstawie danych o produktach.'}
-            ]
-        elif language.lower() == 'en':
-            prompt = [
-            {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
-            {"role": "user", "content": f'Create 10 h2 headers for the article with the title "{title}", include them in <h2> tags.'}
-            ]
-        elif language.lower() == 'de':
-            prompt = [
-            {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
-            {"role": "user", "content": f'Erstellen Sie 10 h2-Überschriften für den Artikel unter dem Titel "{title}", fügen Sie sie in <h2> ein'}
-            ]
-        elif language.lower() == 'cs':
-            prompt = [
-            {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
-            {"role": "user", "content": f'Vytvořte nadpisy 10 h2 pro článek s názvem "{title}", zahrňte je do značek <h2>'}
-            ]
-        response = callBigBot(prompt, 10000, openai_api_key)
-
-        content = response["choices"][0]["message"]["content"]
-
-        prompt = [
-        {"role": "system", "content": "Jesteś wnikliwym redaktorem strony technologicznej, który zajmuje się pisaniem porównań elektroniki i wyciąganiem wniosków, dzięki czemu konsumenci mogą podejmować lepsze decyzje zakupowe."},
-        {"role": "user", "content": f'Rozwiń tekst, który otrzymasz. Rozwiń treść w taki sposób, aby stworzyć długi na 6000 znaków artykuł, dodaj śródtytuły w <h2>. Całość zapisz w tagach html (<h1>, <h2>, <p>). Tekst: {content}. Zoptymalizuj też tabelkę, dodaj pierwszą kolumnę do tagów <th>.'}
-        ]
-
-        response = callBigBot(prompt, 10000, openai_api_key)
-
-        content = response["choices"][0]["message"]["content"]
-
-        if len(content) >= 4000:
-            return content
-
-
 def get_comp_skeleton(title, compItem, language, openai_api_key):
     while True:
         if language.lower() == 'pl':
@@ -355,17 +331,17 @@ def get_comp_skeleton(title, compItem, language, openai_api_key):
         elif language.lower() == 'en':
             prompt = [
             {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
-            {"role": "user", "content": f'Create an introduction to the article with the title "{title}", and include it in the <p> tag.'}
+            {"role": "user", "content": f'Create 5 headings for the comparison article {compItem} - "{title}" and include them in <h1> and <h2> tags. The <h1> heading must contain the names of the compared products. <h2> headers should contain product names in any form.'}
             ]
         elif language.lower() == 'de':
             prompt = [
             {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
-            {"role": "user", "content": f'Erstellen Sie eine Einleitung zum Artikel mit dem Titel "{title}" und fügen Sie ihn in das <p> Tag ein.'}
+            {"role": "user", "content": f'Erstellen Sie 5 Überschriften für den Vergleichsartikel {compItem} – "{title}" und fügen Sie diese in die Tags <h1> und <h2> ein. Die Überschrift <h1> muss die Namen der verglichenen Produkte enthalten. <h2>-Header sollten Produktnamen in beliebiger Form enthalten.'}
             ]
         elif language.lower() == 'cs':
             prompt = [
             {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
-            {"role": "user", "content": f'Vytvořte úvod k článku s názvem "{title}" a vložte jej do tagu <p>.'}
+            {"role": "user", "content": f'Vytvořte 5 nadpisů pro srovnávací článek {compItem} - "{title}" a zahrňte je do značek <h1> a <h2>. Nadpis <h1> musí obsahovat názvy porovnávaných produktů. Hlavičky <h2> by měly obsahovat názvy produktů v jakékoli podobě.'}
             ]
         response = callBot(prompt, 600, openai_api_key)
 
@@ -386,22 +362,22 @@ def get_opening(comp_title, language, openai_api_key):
         if language.lower() == 'pl':
             prompt = [
             {"role": "system", "content": "Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe i bogate w informacje artykuły."},
-            {"role": "user", "content": f'Stwórz wstęp do artykułu który porównuje produkty, pod tytułem "{comp_title}", i zawrzyj go w tagach <p>'}
+            {"role": "user", "content": f'Stwórz wstęp do artykułu który porównuje produkty, pod tytułem "{comp_title}", i zawrzyj go w tagach <p>. Wstęp powinien być długi na 500 liter.'}
             ]
         elif language.lower() == 'en':
             prompt = [
             {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
-            {"role": "user", "content": f'Create an introduction to the article with the title "{comp_title}", and include it in the <p> tag.'}
+            {"role": "user", "content": f'Create an introduction to the article with the title "{comp_title}", and include it in the <p> tag. The introduction should be 500 letters long.'}
             ]
         elif language.lower() == 'de':
             prompt = [
             {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
-            {"role": "user", "content": f'Erstellen Sie eine Einleitung zum Artikel mit dem Titel "{comp_title}" und fügen Sie ihn in das <p> Tag ein.'}
+            {"role": "user", "content": f'Erstellen Sie eine Einleitung zum Artikel mit dem Titel "{comp_title}" und fügen Sie ihn in das <p> Tag ein. Die Einleitung sollte 500 Buchstaben lang sein.'}
             ]
         elif language.lower() == 'cs':
             prompt = [
             {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
-            {"role": "user", "content": f'Vytvořte úvod k článku s názvem "{comp_title}" a vložte jej do tagu <p>.'}
+            {"role": "user", "content": f'Vytvořte úvod k článku s názvem "{comp_title}" a vložte jej do tagu <p>. Úvod by měl mít 500 písmen.'}
             ]
         response = callBot(prompt, 600, openai_api_key)
 
@@ -424,18 +400,18 @@ def get_comp_section(comp_title, pair, language, header, openai_api_key):
                 ]
             elif language.lower() == 'en':
                 prompt = [
-                {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
-                {"role": "user", "content": f'Write {random_pars(language)} paragraphs for the header {header}, settle each paragraph between the <p></p> tags.'}
+                {"role": "system", "content": f"You are an insightful news editor who writes interesting product comparison articles. Use the following product information in your work: {pair}"},
+                {"role": "user", "content": f'Write {random_pars(language)} paragraphs for the {header} heading that will be included in the article with the title {comp_title}, embed each paragraph between <p></p> tags.'}
                 ]
             elif language.lower() == 'de':
                 prompt = [
-                {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
-                {"role": "user", "content": f'Schreiben Sie {random_pars(language)} Absätze für die Überschrift {header}, setzen Sie jeden Absatz zwischen die tags <p></p>.'}
+                {"role": "system", "content": f"Sie sind ein aufschlussreicher Nachrichtenredakteur, der interessante Produktvergleichsartikel schreibt. Verwenden Sie bei Ihrer Arbeit die folgenden Produktinformationen: {pair}"},
+                {"role": "user", "content": f'Schreiben Sie {random_pars(language)} Absätze für die Überschrift {header}, die in den Artikel mit dem Titel {comp_title} eingefügt wird, und platzieren Sie jeden Absatz zwischen <p></p>-Tags.'}
                 ]                                           
             elif language.lower() == 'cs':
                 prompt = [
-                {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
-                {"role": "user", "content": f'Napište {random_pars(language)} odstavce pro nadpis {header} v češtině, každý odstavec vložte mezi značky <p></p>.'}
+                {"role": "system", "content": f"Jste bystrý redaktor zpráv, který píše zajímavé články o srovnání produktů. Při práci použijte následující informace o produktu: {pair}"},
+                {"role": "user", "content": f'Napište {random_pars(language)} odstavce pro nadpis {header}, který bude zahrnut do článku s názvem {comp_title}, vložte každý odstavec mezi značky <p></p>.'}
                 ]                                           
             
             response = callBigBot(prompt, 5000, openai_api_key)
@@ -532,22 +508,28 @@ def callBigBot(prompt, price, openai_api_key):
             continue
         break
             
-def get_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, language, graphic_theme2=None, image_key=None, emergency_key=None):
-    if graphicSource == "pixabay":
-        return get_pixabay_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, graphic_theme2)
-    elif graphicSource == "pexels":
-        return get_pexels_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, emergency_key, graphic_theme2)
-    elif graphicSource == "ai":
-        return  get_ai_image(graphic_theme, title, openai_api_key, language, overlay_option, rgb_fill_preset,)
+def get_image(user_id, graphic_theme, pairs_titles, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, language, graphic_theme2=None, image_key=None, emergency_key=None):
+    # print(f'get image {pairs_titles}')
+    product_names = [title.split('(')[0].strip() for title in pairs_titles]
+    # print(f'get image product_names {product_names}')
+    formatted_title = f"{product_names[0]} vs. {product_names[1]}"
+    # print(f'get image formatted_title {formatted_title}')
     
-def get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fill_preset):
+    if graphicSource == "pixabay":
+        return get_pixabay_image(user_id, graphic_theme, formatted_title, openai_api_key, overlay_option, rgb_fill_preset, image_key, graphic_theme2)
+    elif graphicSource == "pexels":
+        return get_pexels_image(user_id, graphic_theme, formatted_title, openai_api_key, overlay_option, rgb_fill_preset, image_key, emergency_key, graphic_theme2)
+    elif graphicSource == "ai":
+        return  get_ai_image(user_id, graphic_theme, formatted_title, openai_api_key, language, overlay_option, rgb_fill_preset,)
+    
+def get_ai_image(user_id, graphic_theme, title, ai_key, language, overlay_option, rgb_fill_preset):
     openai_api = OpenAI_API(ai_key, language)
     image_url = openai_api.create_img(f'Generate feature image for article about {title}')
     response = requests.get(image_url)
     image = Image.open(BytesIO(response.content))
     image = image.resize((1200, 628)).convert('RGB')
 
-    image_save_path = os.path.join(settings.STATICFILES_DIRS[0], "temp-image.webp")
+    image_save_path = os.path.join(settings.STATICFILES_DIRS[0], f"temp-image-{user_id}-{create_unique_title(title)}.webp")
     print(image_save_path)
     image.save(image_save_path, format='WEBP')
     
@@ -555,8 +537,13 @@ def get_ai_image(graphic_theme, title, ai_key, language, overlay_option, rgb_fil
         return addOverlay(image_save_path, title, rgb_fill_preset)
     else:
         return image_save_path
+
+def create_unique_title(title):
+    title = title.replace(" ", "").lower()
+    title = re.sub(r'[^a-zA-Z0-9]', '', title)
+    return title
     
-def get_pexels_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, pexels_api_key, emergency_key, graphic_theme2=None):
+def get_pexels_image(user_id, graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, pexels_api_key, emergency_key, graphic_theme2=None):
     
     keyword_list = [graphic_theme, graphic_theme2]
 
@@ -576,7 +563,7 @@ def get_pexels_image(graphic_theme, title, openai_api_key, overlay_option, rgb_f
                 image = Image.open(BytesIO(response.content))
                 image = image.resize((1200, 628)).convert('RGB')
 
-                image_save_path = os.path.join(settings.STATICFILES_DIRS[0], "temp-image.webp")
+                image_save_path = image_save_path = os.path.join(settings.STATICFILES_DIRS[0], f"temp-image-{user_id}-{create_unique_title(title)}.webp")
                 print(image_save_path)
                 image.save(image_save_path, format='WEBP')
                 
@@ -611,7 +598,7 @@ def download_pexels_image(keyword, openai_api_key, pexels_api_key, emergency_key
                     return first_result['src']['original']
 
 
-def get_pixabay_image(graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, graphic_theme2=None):
+def get_pixabay_image(user_id, graphic_theme, title, openai_api_key, overlay_option, rgb_fill_preset, image_key, graphic_theme2=None):
     
     keyword_list = [graphic_theme, graphic_theme2]
 
@@ -630,7 +617,7 @@ def get_pixabay_image(graphic_theme, title, openai_api_key, overlay_option, rgb_
                 image = image.resize((1200, 628)).convert('RGB')
 
 
-                image_save_path = os.path.join(settings.STATICFILES_DIRS[0], "temp-image.webp")
+                image_save_path = image_save_path = os.path.join(settings.STATICFILES_DIRS[0], f"temp-image-{user_id}-{create_unique_title(title)}.webp")
                 print(image_save_path)
                 image.save(image_save_path, format='WEBP')
                 
@@ -892,244 +879,6 @@ def get_label_dict(language):
         "Programowalne przyciski": "Programowalne przyciski",
         "Waga": "Waga",
         "Typ urządzenia": "Typ urządzenia"
-        },
-        "en":{
-        "name": "Name",
-        "url": "url",
-        "price": "Price",
-        "score": "Score",
-        "reviews": "Reviews",
-        "Producent": "Manufacturer",
-        "Rodzaj": "Type",
-        "Interfejs": "Interface",
-        "Komunikacja": "Communication",
-        "Typ klawiatury": "Keyboard Type",
-        "Model": "Model",
-        "Kolor": "Color",
-        "Długość przewodu": "Cable Length",
-        "Podświetlenie klawiszy": "Key Backlighting",
-        "Obsługa makr": "Macro Support",
-        "Podpórka pod nadgarstki": "Wrist Rest",
-        "Regulowany kąt pochylenia": "Adjustable Tilt",
-        "Szerokość": "Width",
-        "Wysokość": "Height",
-        "Popularne": "Popular",
-        "Liczba klawiszy": "Number of Keys",
-        "Głębokość": "Depth",
-        "Kolor podświetlenia klawiatury": "Keyboard Backlight Color",
-        "Dystrybucja": "Distribution",
-        "Liczba przycisków": "Number of Buttons",
-        "Podświetlenie myszy": "Mouse Lighting",
-        "Rozdzielczość": "Resolution",
-        "Zasięg": "Range",
-        "Liczba rolek": "Number of Rollers",
-        "Programowalne przyciski": "Programmable Buttons",
-        "Waga": "Weight",
-        "Typ urządzenia": "Device Type"
-        },
-        "de":{
-        "name": "Name",
-        "url": "url",
-        "price": "Preis",
-        "score": "Bewertung",
-        "reviews": "Rezensionen",
-        "Producent": "Hersteller",
-        "Rodzaj": "Typ",
-        "Interfejs": "Schnittstelle",
-        "Komunikacja": "Kommunikation",
-        "Typ klawiatury": "Tastaturtyp",
-        "Model": "Modell",
-        "Kolor": "Farbe",
-        "Długość przewodu": "Kabellänge",
-        "Podświetlenie klawiszy": "Tastenbeleuchtung",
-        "Obsługa makr": "Makro-Unterstützung",
-        "Podpórka pod nadgarstki": "Handgelenkauflage",
-        "Regulowany kąt pochylenia": "Verstellbare Neigung",
-        "Szerokość": "Breite",
-        "Wysokość": "Höhe",
-        "Popularne": "Beliebt",
-        "Liczba klawiszy": "Anzahl der Tasten",
-        "Głębokość": "Tiefe",
-        "Kolor podświetlenia klawiatury": "Tastaturbeleuchtungsfarbe",
-        "Dystrybucja": "Vertrieb",
-        "Liczba przycisków": "Anzahl der Tasten",
-        "Podświetlenie myszy": "Mausbeleuchtung",
-        "Rozdzielczość": "Auflösung",
-        "Zasięg": "Reichweite",
-        "Liczba rolek": "Anzahl der Rollen",
-        "Programowalne przyciski": "Programmierbare Tasten",
-        "Waga": "Gewicht",
-        "Typ urządzenia": "Gerätetyp"
-        },
-        "cs":{
-        "name": "Název",
-        "url": "url",
-        "price": "Cena",
-        "score": "Hodnocení",
-        "reviews": "Recenze",
-        "Producent": "Výrobce",
-        "Rodzaj": "Typ",
-        "Interfejs": "Rozhraní",
-        "Komunikacja": "Komunikace",
-        "Typ klawiatury": "Typ klávesnice",
-        "Model": "Model",
-        "Kolor": "Barva",
-        "Długość przewodu": "Délka kabelu",
-        "Podświetlenie klawiszy": "Podsvícení kláves",
-        "Obsługa makr": "Podpora maker",
-        "Podpórka pod nadgarstki": "Podpěrka zápěstí",
-        "Regulowany kąt pochylenia": "Nastavitelný úhel sklonu",
-        "Szerokość": "Šířka",
-        "Wysokość": "Výška",
-        "Popularne": "Populární",
-        "Liczba klawiszy": "Počet kláves",
-        "Głębokość": "Hloubka",
-        "Kolor podświetlenia klawiatury": "Barva podsvícení klávesnice",
-        "Dystrybucja": "Distribuce",
-        "Liczba przycisków": "Počet tlačítek",
-        "Podświetlenie myszy": "Podsvícení myši",
-        "Rozdzielczość": "Rozlišení",
-        "Zasięg": "Dosah",
-        "Liczba rolek": "Počet koleček",
-        "Programowalne przyciski": "Programovatelná tlačítka",
-        "Waga": "Váha",
-        "Typ urządzenia": "Typ zařízení"
-        },
-        "sk":{
-        "name": "Názov",
-        "url": "url",
-        "price": "Cena",
-        "score": "Hodnotenie",
-        "reviews": "Recenzie",
-        "Producent": "Výrobca",
-        "Rodzaj": "Typ",
-        "Interfejs": "Rozhranie",
-        "Komunikacja": "Komunikácia",
-        "Typ klawiatury": "Typ klávesnice",
-        "Model": "Model",
-        "Kolor": "Farba",
-        "Długość przewodu": "Dĺžka kábla",
-        "Podświetlenie klawiszy": "Podsvietenie kláves",
-        "Obsługa makr": "Podpora makier",
-        "Podpórka pod nadgarstki": "Podpera zápästia",
-        "Regulowany kąt pochylenia": "Nastaviteľný uhol sklonu",
-        "Szerokość": "Šírka",
-        "Wysokość": "Výška",
-        "Popularne": "Populárne",
-        "Liczba klawiszy": "Počet kláves",
-        "Głębokość": "Hĺbka",
-        "Kolor podświetlenia klawiatury": "Farba podsvietenia klávesnice",
-        "Dystrybucja": "Distribúcia",
-        "Liczba przycisków": "Počet tlačidiel",
-        "Podświetlenie myszy": "Podsvietenie myši",
-        "Rozdzielczość": "Rozlíšenie",
-        "Zasięg": "Dosah",
-        "Liczba rolek": "Počet koliesok",
-        "Programowalne przyciski": "Programovateľné tlačidlá",
-        "Waga": "Váha",
-        "Typ urządzenia": "Typ zariadenia"
-        },
-        "fr":{
-        "name": "Nom",
-        "url": "url",
-        "price": "Prix",
-        "score": "Score",
-        "reviews": "Avis",
-        "Producent": "Fabricant",
-        "Rodzaj": "Type",
-        "Interfejs": "Interface",
-        "Komunikacja": "Communication",
-        "Typ klawiatury": "Type de clavier",
-        "Model": "Modèle",
-        "Kolor": "Couleur",
-        "Długość przewodu": "Longueur du câble",
-        "Podświetlenie klawiszy": "Rétroéclairage des touches",
-        "Obsługa makr": "Prise en charge des macros",
-        "Podpórka pod nadgarstki": "Repose-poignets",
-        "Regulowany kąt pochylenia": "Angle d'inclinaison réglable",
-        "Szerokość": "Largeur",
-        "Wysokość": "Hauteur",
-        "Popularne": "Populaire",
-        "Liczba klawiszy": "Nombre de touches",
-        "Głębokość": "Profondeur",
-        "Kolor podświetlenia klawiatury": "Couleur du rétroéclairage du clavier",
-        "Dystrybucja": "Distribution",
-        "Liczba przycisków": "Nombre de boutons",
-        "Podświetlenie myszy": "Éclairage de la souris",
-        "Rozdzielczość": "Résolution",
-        "Zasięg": "Portée",
-        "Liczba rolek": "Nombre de rouleaux",
-        "Programowalne przyciski": "Boutons programmables",
-        "Waga": "Poids",
-        "Typ urządzenia": "Type d'appareil"
-        },
-        "es":{
-        "name": "Nombre",
-        "url": "url",
-        "price": "Precio",
-        "score": "Puntuación",
-        "reviews": "Reseñas",
-        "Producent": "Fabricante",
-        "Rodzaj": "Tipo",
-        "Interfejs": "Interfaz",
-        "Komunikacja": "Comunicación",
-        "Typ klawiatury": "Tipo de teclado",
-        "Model": "Modelo",
-        "Kolor": "Color",
-        "Długość przewodu": "Longitud del cable",
-        "Podświetlenie klawiszy": "Iluminación de teclas",
-        "Obsługa makr": "Soporte de macros",
-        "Podpórka pod nadgarstki": "Reposamuñecas",
-        "Regulowany kąt pochylenia": "Ángulo de inclinación ajustable",
-        "Szerokość": "Anchura",
-        "Wysokość": "Altura",
-        "Popularne": "Popular",
-        "Liczba klawiszy": "Número de teclas",
-        "Głębokość": "Profundidad",
-        "Kolor podświetlenia klawiatury": "Color de la iluminación del teclado",
-        "Dystrybucja": "Distribución",
-        "Liczba przycisków": "Número de botones",
-        "Podświetlenie myszy": "Iluminación del ratón",
-        "Rozdzielczość": "Resolución",
-        "Zasięg": "Alcance",
-        "Liczba rolek": "Número de ruedas",
-        "Programowalne przyciski": "Botones programables",
-        "Waga": "Peso",
-        "Typ urządzenia": "Tipo de dispositivo"
-        },
-        "ro":{
-        "name": "Nume",
-        "url": "url",
-        "price": "Preț",
-        "score": "Scor",
-        "reviews": "Recenzii",
-        "Producent": "Producător",
-        "Rodzaj": "Tip",
-        "Interfejs": "Interfață",
-        "Komunikacja": "Comunicare",
-        "Typ klawiatury": "Tipul tastaturii",
-        "Model": "Model",
-        "Kolor": "Culoare",
-        "Długość przewodu": "Lungimea cablului",
-        "Podświetlenie klawiszy": "Iluminarea tastelor",
-        "Obsługa makr": "Suport macro",
-        "Podpórka pod nadgarstki": "Suport pentru încheietura mâinii",
-        "Regulowany kąt pochylenia": "Unghi reglabil",
-        "Szerokość": "Lățime",
-        "Wysokość": "Înălțime",
-        "Popularne": "Popular",
-        "Liczba klawiszy": "Numărul de taste",
-        "Głębokość": "Adâncime",
-        "Kolor podświetlenia klawiatury": "Culoarea iluminării tastaturii",
-        "Dystrybucja": "Distribuție",
-        "Liczba przycisków": "Numărul de butoane",
-        "Podświetlenie myszy": "Iluminarea mouse-ului",
-        "Rozdzielczość": "Rezoluție",
-        "Zasięg": "Rază de acțiune",
-        "Liczba rolek": "Numărul de roți",
-        "Programowalne przyciski": "Butoane programabile",
-        "Waga": "Greutate",
-        "Typ urządzenia": "Tipul dispozitivului"
-    }
+        }
 }
     return table_dicts[language]

@@ -19,7 +19,9 @@ class ZapleczeVisibility(View):
         services_token = data.get('semstorm_key') 
 
         # prod
-        list_of_domains = get_list_of_zaplecza("../zaplecza_temp.tsv")
+        list_of_domains = get_list_of_zaplecza("../zaplecza.tsv")
+        list_of_domains = [i.lower() for i in list_of_domains]
+        temporary_list_of_domains = []
 
         # test server
         # list_of_domains = get_list_of_zaplecza("../../zaplecza_temp.tsv")
@@ -32,8 +34,9 @@ class ZapleczeVisibility(View):
 
             if len(list_of_domains) > 0:
                 controller += len(temporary_list_of_domains)
+                
                 list_of_domains = list(set(list_of_domains)-set(temporary_list_of_domains))
-                list_of_domains.sort()
+                # list_of_domains.sort()
                 vis_data = get_basic_stats(temporary_list_of_domains, services_token)
                 for item in temporary_list_of_domains:
 
@@ -44,7 +47,8 @@ class ZapleczeVisibility(View):
                     # save_to_tsv(item, vis_data, "../../visibility_data.tsv")
                 
                 print(f'Done {controller} out of {full_lenght}')
-                time.sleep(1)
+                temporary_list_of_domains = []
+                # time.sleep(1)
                     
             else:
                 return JsonResponse({"message": f"Baza widoczności została zaktualizowana - Sprawdzono {controller} Zaplecz"})
