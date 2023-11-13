@@ -38,8 +38,16 @@ class CreateZaplecze(View):
             data = SocialAccount.objects.get(user=request.user).extra_data
         except:
             data = {}
+
+        try:
+            papaj_spi = User.objects.get(username='papaj_spi')
+        except User.DoesNotExist:
+            papaj_spi = None
+
         langs = OpenAI_API("").get_langs()
-        context = {'social_data': data, 'langs': langs}
+        context = {'social_data': data, 'langs': langs, 'papaj_spi': papaj_spi}
+
+
         return render(request, 'create.html', context)
     
 
@@ -53,7 +61,13 @@ class UpdateZaplecze(View):
             data = SocialAccount.objects.get(user=request.user).extra_data
         except:
             data = {}
-        context = {'social_data': data, 'data': serializer.data}
+
+        try:
+            papaj_spi = User.objects.get(username='papaj_spi')
+        except User.DoesNotExist:
+            papaj_spi = None
+
+        context = {'social_data': data, 'data': serializer.data, 'papaj_spi': papaj_spi}
         return render(request, 'update.html', context)
     
 
@@ -106,7 +120,13 @@ class WriteLink(View):
 class LinksPanel(View):
     def get(self, request):
         umowy = json.load(open("../umowy.json"))
-        context = {"umowy": umowy['data'].values()}
+
+        try:
+            papaj_spi = User.objects.get(username='papaj_spi')
+        except User.DoesNotExist:
+            papaj_spi = None
+
+        context = {"umowy": umowy['data'].values(), 'papaj_spi': papaj_spi}
 
         return render(request, 'links_panel.html', context)
     

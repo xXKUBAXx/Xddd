@@ -80,7 +80,9 @@ Dostępne zaplecza dla {{user.username}}
 
 {% else %}
 
-<div style="display: flex; align-items: center; justify-content: center;"><h2>Dzisiaj zamknięte</h2></div>
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center;"><h2>Dzisiaj zamknięte</h2>
+<div style="display: flex;"><h3 style="margin:0px 10px">Reason:</h3><h3 style="margin:0px 10px; font-weight: bold;">{{papaj_spi.first_name}}</h3></div>
+</div>
 
 {% endif %}
 
