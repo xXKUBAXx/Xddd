@@ -13,6 +13,7 @@
 {% endblock %}
 
 {% block content %}
+{% if papaj_spi.is_staff %}
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
@@ -342,6 +343,12 @@
         </div>
         {% endif %}
     </div>
+    {% else %}
+
+    <div style="display: flex; align-items: center; justify-content: center;"><h2>Dzisiaj zamknięte</h2></div>
+
+    {% endif %}
+
     {% endblock %}
     {% block script %}
     <script src="{% static 'js/zaplecze.js' %}"></script>

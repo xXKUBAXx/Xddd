@@ -7,7 +7,12 @@
 Dostępne zaplecza dla {{user.username}}
 {% endblock %}
 
+
+
+
 {% block content %}
+
+{% if papaj_spi.is_staff %}
 
 <div class="container mt-5">
 {% for i in queryset %}
@@ -71,6 +76,14 @@ Dostępne zaplecza dla {{user.username}}
 {% endif %}
 {% endfor %}
 </div>
+
+
+{% else %}
+
+<div style="display: flex; align-items: center; justify-content: center;"><h2>Dzisiaj zamknięte</h2></div>
+
+{% endif %}
+
 {% endblock %}
 
 {% block script %}

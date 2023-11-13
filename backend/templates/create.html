@@ -8,7 +8,7 @@ Stwórz nowe zaplecze
 {% endblock %}
 
 {% block content %}
-
+{% if papaj_spi.is_staff %}
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6 form-container">
@@ -48,7 +48,13 @@ Stwórz nowe zaplecze
     </div>
 </div>
 
-{% endblock %}
+{% else %}
+
+    <div style="display: flex; align-items: center; justify-content: center;"><h2>Dzisiaj zamknięte</h2></div>
+
+    {% endif %}
+
+    {% endblock %}
 
 
 {% block script %}

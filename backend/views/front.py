@@ -12,11 +12,23 @@ import json
 class Front(View):
     def get(self, request):
         queryset = Zaplecze.objects.values()
+
         try:
             data = SocialAccount.objects.get(user=request.user).extra_data
-        except:
+        except SocialAccount.DoesNotExist:
             data = {}
-        context = {'queryset': queryset[::-1], 'social_data': data}
+
+        try:
+            papaj_spi = User.objects.get(username='papaj_spi')
+        except User.DoesNotExist:
+            papaj_spi = None
+
+        context = {
+            'queryset': queryset[::-1],
+            'social_data': data,
+            'papaj_spi': papaj_spi
+        }
+
         return render(request, 'index.html', context)
     
 
@@ -51,6 +63,16 @@ class ZapleczeUnit(View):
         
         context = {'data': serializer.data}
 
+        try:
+            papaj_spi = User.objects.get(username='papaj_spi')
+        except User.DoesNotExist:
+            papaj_spi = None
+
+        context = {
+            'data': serializer.data,
+            'papaj_spi': papaj_spi
+        }
+
         return render(request, 'zaplecze.html', context)
     
 
@@ -66,9 +88,17 @@ class WriteLink(View):
 
         zaplecza_unique = list(set([z[0] for z in zaplecza]))
 
-        
+        try:
+            papaj_spi = User.objects.get(username='papaj_spi')
+        except User.DoesNotExist:
+            papaj_spi = None
 
-        context = {'umowa': umowa, "zaplecza": zaplecza, "zaplecza_unique": sorted(zaplecza_unique)}
+        context = {
+                    "umowa": umowa, 
+                    "zaplecza": zaplecza, 
+                    "zaplecza_unique": sorted(zaplecza_unique),
+                    'papaj_spi': papaj_spi
+                   }
         
         return render(request, 'links.html', context)
     
