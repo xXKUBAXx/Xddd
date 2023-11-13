@@ -67,8 +67,12 @@ class ZapleczeComp(View):
                 emergency_key = None
 
         wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
-
+        
+        # production
         filename = '../mouses.csv' if compSelect == 'mouse' else '../keyboards.csv' if compSelect == 'keyboard' else None
+        
+        # local server
+        # filename = '../../mouses.csv' if compSelect == 'mouse' else '../../keyboards.csv' if compSelect == 'keyboard' else None
         
         list_of_pairs, pairs_titles = get_pairs(filename, compQuant)        
 
@@ -90,6 +94,8 @@ class ZapleczeComp(View):
 
         for pair in list_of_pairs:
             category_array = []
+            print(pair)
+            # input("Wait")
             title = pairs_titles[list_of_pairs.index(pair)]
             comp_title, comp_text, opening = get_comp_text(title, compItem, openai_api_key, pair, length, faq_option, language=zaplecze.lang)
             image_save_path = get_image(graphic_theme, comp_title, openai_api_key, overlay_option, rgb_fill_preset, graphicSource, zaplecze.lang, graphic_theme2, image_key, emergency_key)
@@ -229,38 +235,38 @@ def get_comp_text(title, compItem, openai_api_key, pair, length, faq_option, lan
     return comp_title, text, opening
 
 def get_comp_table(comp_title, pair, language, openai_api_key):
-    while True:
-        if language.lower() == 'pl':
-            prompt = [
-            {"role": "system", "content": f"Jesteś wnikliwym redaktorem strony informacyjnej, który pisze ciekawe artykuły porównujące produkty. W swojej pracy wykorzystaj następujące informacje o produktach: {pair}"},
-            {"role": "user", "content": f'Stwórz tabelkę htmlową na podstawie znanych Ci danych, do artykułu {comp_title}. Nazwa produktów powinna wystąpić tylko raz. Tabelka powinna być pionowa, osadzona w tagu <div class="comp-table">. Jeżeli jakaś wartość jest oznaczona "nie dotyczy", nie dodawaj jej do tabelki. Nie dodawaj do tabelki: linku, url, ocen, opinii.'}
+    label_dict = get_label_dict(language)
+    temp_pair_list = pair.split("\n")
+
+    temp_header_list = temp_pair_list[0].split(",")
+    temp_pair_1 = temp_pair_list[1].split(",")
+    temp_pair_2 = temp_pair_list[2].split(",")
+
+    table_string = '<div class="comp-table"><table>'
+
+    forbidden_values = ['non', 'nan', 'nie dotyczy', 'url', 'score', 'reviews']
+
+    for label in temp_header_list:
+        temp_index = temp_header_list.index(label)
+        if (temp_pair_1[temp_index].lower() not in forbidden_values) or (temp_pair_2[temp_index].lower() not in forbidden_values):
+            if label == "name":
+                table_string += f'<tr><th>{label_dict[label]}</th><th>{temp_pair_1[temp_index]}</th><th>{temp_pair_2[temp_index]}</th></tr>'
+                continue
+            elif label in forbidden_values:
+                continue
+            table_string += f'<tr><th>{label_dict[label]}</th><td>{temp_pair_1[temp_index]}</td><td>{temp_pair_2[temp_index]}</td></tr>'
+
+    table_string += '</table></div>'
+
+    prompt = [
+                {"role": "system", "content": f"Jesteś znakomitym tłumaczem tabelek html. Tłumaczysz otrzymaną tabelkę na język fr."},
+                {"role": "user", "content": f'Zwróć przetłumaczoną tabelkę\n{table_string}'}
             ]
-        elif language.lower() == 'en':
-            prompt = [
-            {"role": "system", "content": "You are an insightful editor of a news site who writes interesting articles."},
-            {"role": "user", "content": f'Create an introduction to the article with the title "{title}", and include it in the <p> tag.'}
-            ]
-        elif language.lower() == 'de':
-            prompt = [
-            {"role": "system", "content": "Sie sind ein einfühlsamer Redakteur einer Nachrichtenseite, der interessante Artikel schreibt."},
-            {"role": "user", "content": f'Erstellen Sie eine Einleitung zum Artikel mit dem Titel "{title}" und fügen Sie ihn in das <p> Tag ein.'}
-            ]
-        elif language.lower() == 'cs':
-            prompt = [
-            {"role": "system", "content": "Jste bystrý redaktor zpravodajského webu, který píše zajímavé články."},
-            {"role": "user", "content": f'Vytvořte úvod k článku s názvem "{title}" a vložte jej do tagu <p>.'}
-            ]
-        response = callBot(prompt, 1000, openai_api_key)
-
-        content = response["choices"][0]["message"]["content"]
-
-        comp_table_match = re.search(r'(<div class="comp-table">.*?</div>)', content, re.DOTALL)
-
-        if comp_table_match:
-            comp_table_content = comp_table_match.group(1)
-            return comp_table_content
-
-
+    response = callBot(prompt, 600, openai_api_key)
+    content = response["choices"][0]["message"]["content"]
+    print(content)
+    # input("wait")
+    return table_string
         
 
 def get_section(header, language, openai_api_key):
@@ -850,3 +856,280 @@ def random_pars(language):
     }
 
     return switcher[language][random.randint(1, 3)]
+
+def get_label_dict(language):
+    table_dicts = {
+    "pl":{
+        "name": "Nazwa",
+        "url": "url",
+        "price": "Cena",
+        "score": "Ocena",
+        "reviews": "Opinie",
+        "Producent": "Producent",
+        "Rodzaj": "Rodzaj",
+        "Interfejs": "Interfejs",
+        "Komunikacja": "Komunikacja",
+        "Typ klawiatury": "Typ klawiatury",
+        "Model": "Model",
+        "Kolor": "Kolor",
+        "Długość przewodu": "Długość przewodu",
+        "Podświetlenie klawiszy": "Podświetlenie klawiszy",
+        "Obsługa makr": "Obsługa makr",
+        "Podpórka pod nadgarstki": "Podpórka pod nadgarstki",
+        "Regulowany kąt pochylenia": "Regulowany kąt pochylenia",
+        "Szerokość": "Szerokość",
+        "Wysokość": "Wysokość",
+        "Popularne": "Popularne",
+        "Liczba klawiszy": "Liczba klawiszy",
+        "Głębokość": "Głębokość",
+        "Kolor podświetlenia klawiatury": "Kolor podświetlenia klawiatury",
+        "Dystrybucja": "Dystrybucja",
+        "Liczba przycisków": "Liczba przycisków",
+        "Podświetlenie myszy": "Podświetlenie myszy",
+        "Rozdzielczość": "Rozdzielczość",
+        "Zasięg": "Zasięg",
+        "Liczba rolek": "Liczba rolek",
+        "Programowalne przyciski": "Programowalne przyciski",
+        "Waga": "Waga",
+        "Typ urządzenia": "Typ urządzenia"
+        },
+        "en":{
+        "name": "Name",
+        "url": "url",
+        "price": "Price",
+        "score": "Score",
+        "reviews": "Reviews",
+        "Producent": "Manufacturer",
+        "Rodzaj": "Type",
+        "Interfejs": "Interface",
+        "Komunikacja": "Communication",
+        "Typ klawiatury": "Keyboard Type",
+        "Model": "Model",
+        "Kolor": "Color",
+        "Długość przewodu": "Cable Length",
+        "Podświetlenie klawiszy": "Key Backlighting",
+        "Obsługa makr": "Macro Support",
+        "Podpórka pod nadgarstki": "Wrist Rest",
+        "Regulowany kąt pochylenia": "Adjustable Tilt",
+        "Szerokość": "Width",
+        "Wysokość": "Height",
+        "Popularne": "Popular",
+        "Liczba klawiszy": "Number of Keys",
+        "Głębokość": "Depth",
+        "Kolor podświetlenia klawiatury": "Keyboard Backlight Color",
+        "Dystrybucja": "Distribution",
+        "Liczba przycisków": "Number of Buttons",
+        "Podświetlenie myszy": "Mouse Lighting",
+        "Rozdzielczość": "Resolution",
+        "Zasięg": "Range",
+        "Liczba rolek": "Number of Rollers",
+        "Programowalne przyciski": "Programmable Buttons",
+        "Waga": "Weight",
+        "Typ urządzenia": "Device Type"
+        },
+        "de":{
+        "name": "Name",
+        "url": "url",
+        "price": "Preis",
+        "score": "Bewertung",
+        "reviews": "Rezensionen",
+        "Producent": "Hersteller",
+        "Rodzaj": "Typ",
+        "Interfejs": "Schnittstelle",
+        "Komunikacja": "Kommunikation",
+        "Typ klawiatury": "Tastaturtyp",
+        "Model": "Modell",
+        "Kolor": "Farbe",
+        "Długość przewodu": "Kabellänge",
+        "Podświetlenie klawiszy": "Tastenbeleuchtung",
+        "Obsługa makr": "Makro-Unterstützung",
+        "Podpórka pod nadgarstki": "Handgelenkauflage",
+        "Regulowany kąt pochylenia": "Verstellbare Neigung",
+        "Szerokość": "Breite",
+        "Wysokość": "Höhe",
+        "Popularne": "Beliebt",
+        "Liczba klawiszy": "Anzahl der Tasten",
+        "Głębokość": "Tiefe",
+        "Kolor podświetlenia klawiatury": "Tastaturbeleuchtungsfarbe",
+        "Dystrybucja": "Vertrieb",
+        "Liczba przycisków": "Anzahl der Tasten",
+        "Podświetlenie myszy": "Mausbeleuchtung",
+        "Rozdzielczość": "Auflösung",
+        "Zasięg": "Reichweite",
+        "Liczba rolek": "Anzahl der Rollen",
+        "Programowalne przyciski": "Programmierbare Tasten",
+        "Waga": "Gewicht",
+        "Typ urządzenia": "Gerätetyp"
+        },
+        "cs":{
+        "name": "Název",
+        "url": "url",
+        "price": "Cena",
+        "score": "Hodnocení",
+        "reviews": "Recenze",
+        "Producent": "Výrobce",
+        "Rodzaj": "Typ",
+        "Interfejs": "Rozhraní",
+        "Komunikacja": "Komunikace",
+        "Typ klawiatury": "Typ klávesnice",
+        "Model": "Model",
+        "Kolor": "Barva",
+        "Długość przewodu": "Délka kabelu",
+        "Podświetlenie klawiszy": "Podsvícení kláves",
+        "Obsługa makr": "Podpora maker",
+        "Podpórka pod nadgarstki": "Podpěrka zápěstí",
+        "Regulowany kąt pochylenia": "Nastavitelný úhel sklonu",
+        "Szerokość": "Šířka",
+        "Wysokość": "Výška",
+        "Popularne": "Populární",
+        "Liczba klawiszy": "Počet kláves",
+        "Głębokość": "Hloubka",
+        "Kolor podświetlenia klawiatury": "Barva podsvícení klávesnice",
+        "Dystrybucja": "Distribuce",
+        "Liczba przycisków": "Počet tlačítek",
+        "Podświetlenie myszy": "Podsvícení myši",
+        "Rozdzielczość": "Rozlišení",
+        "Zasięg": "Dosah",
+        "Liczba rolek": "Počet koleček",
+        "Programowalne przyciski": "Programovatelná tlačítka",
+        "Waga": "Váha",
+        "Typ urządzenia": "Typ zařízení"
+        },
+        "sk":{
+        "name": "Názov",
+        "url": "url",
+        "price": "Cena",
+        "score": "Hodnotenie",
+        "reviews": "Recenzie",
+        "Producent": "Výrobca",
+        "Rodzaj": "Typ",
+        "Interfejs": "Rozhranie",
+        "Komunikacja": "Komunikácia",
+        "Typ klawiatury": "Typ klávesnice",
+        "Model": "Model",
+        "Kolor": "Farba",
+        "Długość przewodu": "Dĺžka kábla",
+        "Podświetlenie klawiszy": "Podsvietenie kláves",
+        "Obsługa makr": "Podpora makier",
+        "Podpórka pod nadgarstki": "Podpera zápästia",
+        "Regulowany kąt pochylenia": "Nastaviteľný uhol sklonu",
+        "Szerokość": "Šírka",
+        "Wysokość": "Výška",
+        "Popularne": "Populárne",
+        "Liczba klawiszy": "Počet kláves",
+        "Głębokość": "Hĺbka",
+        "Kolor podświetlenia klawiatury": "Farba podsvietenia klávesnice",
+        "Dystrybucja": "Distribúcia",
+        "Liczba przycisków": "Počet tlačidiel",
+        "Podświetlenie myszy": "Podsvietenie myši",
+        "Rozdzielczość": "Rozlíšenie",
+        "Zasięg": "Dosah",
+        "Liczba rolek": "Počet koliesok",
+        "Programowalne przyciski": "Programovateľné tlačidlá",
+        "Waga": "Váha",
+        "Typ urządzenia": "Typ zariadenia"
+        },
+        "fr":{
+        "name": "Nom",
+        "url": "url",
+        "price": "Prix",
+        "score": "Score",
+        "reviews": "Avis",
+        "Producent": "Fabricant",
+        "Rodzaj": "Type",
+        "Interfejs": "Interface",
+        "Komunikacja": "Communication",
+        "Typ klawiatury": "Type de clavier",
+        "Model": "Modèle",
+        "Kolor": "Couleur",
+        "Długość przewodu": "Longueur du câble",
+        "Podświetlenie klawiszy": "Rétroéclairage des touches",
+        "Obsługa makr": "Prise en charge des macros",
+        "Podpórka pod nadgarstki": "Repose-poignets",
+        "Regulowany kąt pochylenia": "Angle d'inclinaison réglable",
+        "Szerokość": "Largeur",
+        "Wysokość": "Hauteur",
+        "Popularne": "Populaire",
+        "Liczba klawiszy": "Nombre de touches",
+        "Głębokość": "Profondeur",
+        "Kolor podświetlenia klawiatury": "Couleur du rétroéclairage du clavier",
+        "Dystrybucja": "Distribution",
+        "Liczba przycisków": "Nombre de boutons",
+        "Podświetlenie myszy": "Éclairage de la souris",
+        "Rozdzielczość": "Résolution",
+        "Zasięg": "Portée",
+        "Liczba rolek": "Nombre de rouleaux",
+        "Programowalne przyciski": "Boutons programmables",
+        "Waga": "Poids",
+        "Typ urządzenia": "Type d'appareil"
+        },
+        "es":{
+        "name": "Nombre",
+        "url": "url",
+        "price": "Precio",
+        "score": "Puntuación",
+        "reviews": "Reseñas",
+        "Producent": "Fabricante",
+        "Rodzaj": "Tipo",
+        "Interfejs": "Interfaz",
+        "Komunikacja": "Comunicación",
+        "Typ klawiatury": "Tipo de teclado",
+        "Model": "Modelo",
+        "Kolor": "Color",
+        "Długość przewodu": "Longitud del cable",
+        "Podświetlenie klawiszy": "Iluminación de teclas",
+        "Obsługa makr": "Soporte de macros",
+        "Podpórka pod nadgarstki": "Reposamuñecas",
+        "Regulowany kąt pochylenia": "Ángulo de inclinación ajustable",
+        "Szerokość": "Anchura",
+        "Wysokość": "Altura",
+        "Popularne": "Popular",
+        "Liczba klawiszy": "Número de teclas",
+        "Głębokość": "Profundidad",
+        "Kolor podświetlenia klawiatury": "Color de la iluminación del teclado",
+        "Dystrybucja": "Distribución",
+        "Liczba przycisków": "Número de botones",
+        "Podświetlenie myszy": "Iluminación del ratón",
+        "Rozdzielczość": "Resolución",
+        "Zasięg": "Alcance",
+        "Liczba rolek": "Número de ruedas",
+        "Programowalne przyciski": "Botones programables",
+        "Waga": "Peso",
+        "Typ urządzenia": "Tipo de dispositivo"
+        },
+        "ro":{
+        "name": "Nume",
+        "url": "url",
+        "price": "Preț",
+        "score": "Scor",
+        "reviews": "Recenzii",
+        "Producent": "Producător",
+        "Rodzaj": "Tip",
+        "Interfejs": "Interfață",
+        "Komunikacja": "Comunicare",
+        "Typ klawiatury": "Tipul tastaturii",
+        "Model": "Model",
+        "Kolor": "Culoare",
+        "Długość przewodu": "Lungimea cablului",
+        "Podświetlenie klawiszy": "Iluminarea tastelor",
+        "Obsługa makr": "Suport macro",
+        "Podpórka pod nadgarstki": "Suport pentru încheietura mâinii",
+        "Regulowany kąt pochylenia": "Unghi reglabil",
+        "Szerokość": "Lățime",
+        "Wysokość": "Înălțime",
+        "Popularne": "Popular",
+        "Liczba klawiszy": "Numărul de taste",
+        "Głębokość": "Adâncime",
+        "Kolor podświetlenia klawiatury": "Culoarea iluminării tastaturii",
+        "Dystrybucja": "Distribuție",
+        "Liczba przycisków": "Numărul de butoane",
+        "Podświetlenie myszy": "Iluminarea mouse-ului",
+        "Rozdzielczość": "Rezoluție",
+        "Zasięg": "Rază de acțiune",
+        "Liczba rolek": "Numărul de roți",
+        "Programowalne przyciski": "Butoane programabile",
+        "Waga": "Greutate",
+        "Typ urządzenia": "Tipul dispozitivului"
+    }
+}
+    return table_dicts[language]

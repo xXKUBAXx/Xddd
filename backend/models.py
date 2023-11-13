@@ -20,7 +20,7 @@ class Zaplecze(models.Model):
 
     #WP API stuff
     lang = models.CharField(max_length=4, blank=True, null=True)
-    topic = models.CharField(max_length=32, blank=True, null=True)
+    topic = models.CharField(max_length=128, blank=True, null=True)
     wp_user = models.CharField(max_length=32, blank=True, null=True)
     wp_password = models.CharField(max_length=64, blank=True, null=True)
     wp_api_key = models.CharField(max_length=128, blank=True, null=True)

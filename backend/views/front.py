@@ -62,9 +62,11 @@ class WriteLink(View):
                 umowa = u
                 break
 
-        zaplecza = [l.split("\t") for l in open("../zaplecza.tsv").read().split("\n") if len(l.split("\t")[-1])>20]
+        zaplecza = [l.split("\t") for l in open("../zaplecza.tsv", encoding="utf=8").read().split("\n") if len(l.split("\t")[-1])>20]
 
         zaplecza_unique = list(set([z[0] for z in zaplecza]))
+
+        
 
         context = {'umowa': umowa, "zaplecza": zaplecza, "zaplecza_unique": sorted(zaplecza_unique)}
         

@@ -104,4 +104,22 @@ $(document).ready(function() {
         tableHtml += '</tbody></table>';
         $('.table-container').html(tableHtml).addClass('scrollable-table').show();
     }
+
+    
+    
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    var h2Extender = document.getElementById('h2-extender');
+    var semstormContainer = document.querySelector('.semstorm-refresh-container');
+
+    if (h2Extender && semstormContainer) {
+        h2Extender.addEventListener('click', function() {
+            if (semstormContainer.style.display === 'none' || semstormContainer.style.display === '') {
+                semstormContainer.style.display = 'block';
+            } else {
+                semstormContainer.style.display = 'none';
+            }
+        });
+    }
 });

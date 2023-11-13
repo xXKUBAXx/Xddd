@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/write/<int:zaplecze_id>/', views.ZapleczeWrite.as_view()),
     path('api/write/', views.AnyZapleczeWrite.as_view()),
     path('api/links/', views.ManyZapleczesWrite.as_view()),
+    path('api/visibility/', views.ZapleczeVisibility.as_view()),
     path('', views.Front.as_view()),
     path('logout', views.logout_view),
     path('user/', views.UpdateProfile.as_view()),

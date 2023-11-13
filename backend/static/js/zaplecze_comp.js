@@ -45,6 +45,8 @@ $(document).ready(function () {
 	var defaultColor = '204,255,102';
 	var savedColor = localStorage.getItem(currentUrl + '-overlayColorComp');
 
+	
+
 	var cardId = $('#classic_comp').data('card-id');
 
 	if (savedColor) {
@@ -72,6 +74,8 @@ $(document).ready(function () {
 		console.log('Zaliczyło!');
 
 		var chosenColor = $('#rgbValue_comp').val() || defaultColor;
+
+		$('#classic_comp').hide();
 
 		if (chosenColor !== savedColor) {
 			updateColorInLocalStorage(chosenColor);

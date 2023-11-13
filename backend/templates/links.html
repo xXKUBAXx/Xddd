@@ -10,6 +10,18 @@ Write linked article for {{umowa.domena}}
 
 {% block content %}
 
+{% if user.is_staff %}
+<h2 id="h2-extender" style="text-align: center;">Po prostu odśwież to zaplecze!</h2>
+<div class="semstorm-refresh-container">
+    <h2 class="pulse"><strong>Ostrożnie!</strong></h2>
+    <div style="display: flex; flex-direction: column; align-items: center;" class="form-group">
+        <label class="form-label" for="semstorm_api_key">Semstorm API key:</label>
+        <input style="max-width: 25%;" type="text" class="form-control" id="semstorm_api_key" name="semstorm_api_key">
+    </div>
+    <div class="ref-button-holder"><button type="refresh_visibility" id="refresh_visibility" class="refresh_visibility">Refresh Semstorm</button></div>
+</div>
+{% endif %}
+
 <div class="container mt-5">
     <div style="position: fixed; top: 85%; right: 0; transform: translateY(-50%); width: 250px; height: auto; background-color: #3498db; color: #ffffff; z-index: 1000; padding: 20px; text-align: center; box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);">
         <p style="margin-bottom: 10px; font-size: 1.2em;">Ilość wybranych zaplecz: <span id="zapleczaCount" style="font-weight: bold;">0</span></p>
@@ -168,6 +180,7 @@ Write linked article for {{umowa.domena}}
 {% endblock %}
 
 {% block script %}
+<script src="{% static 'js/refresh_vis_base.js' %}"></script>
 <script src="{% static 'js/links.js' %}"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
 <script>
