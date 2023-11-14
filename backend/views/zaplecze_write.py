@@ -188,7 +188,7 @@ class ManyZapleczesWrite(APIView):
         except:
             print("Cannot shuffle")
             print(wp_cats)
-            return {0: "Wrong WordPress credentials"}, 0
+            return {0: "Wrong WordPress credentials"}, 0, z["domain"]
         if len(wp_cats) >= categories:
             cats = wp_cats[:categories]
         else:
