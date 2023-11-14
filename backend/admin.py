@@ -21,7 +21,11 @@ class AccountInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     inlines = (AccountInline, )
 
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ('user', 'tokens_used', 'openai_api_key', 'semstorm_api_key')
+
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
-admin.site.register(Account)
+# admin.site.register(Account)
+admin.site.register(Account, AccountAdmin)

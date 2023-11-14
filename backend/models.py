@@ -29,7 +29,9 @@ class Zaplecze(models.Model):
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    openai_api_key = models.CharField(max_length=64)
+    openai_api_key = models.CharField(max_length=64, default="")
+    semstorm_api_key = models.CharField(max_length=64, default="")
+    tokens_used = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username
