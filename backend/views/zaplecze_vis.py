@@ -98,9 +98,9 @@ def save_to_tsv(domain, stats, filename):
         today = datetime.datetime.now().strftime("%d-%m-%Y")
 
         new_data_line = {
-            "top3": f"{today}: {stats['results'][domain]['keywords_top_3']}",
-            "top10": f"{today}:{stats['results'][domain]['keywords_top']}",
-            "top50": f"{today}:{stats['results'][domain]['keywords']}"
+            "top3": f"{stats['results'][domain]['keywords_top_3']}",
+            "top10": f"{stats['results'][domain]['keywords_top']}",
+            "top50": f"{stats['results'][domain]['keywords']}"
         }
 
         today = datetime.datetime.now().strftime("%Y-%m-%d")
