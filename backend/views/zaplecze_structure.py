@@ -1,11 +1,10 @@
-from django.shortcuts import render
-from ..models import Zaplecze
+from django.shortcuts import get_object_or_404
+from ..models import Zaplecze, Account
 from ..serializers import ZapleczeSerializer, StructireSerializer, CategorySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
 from django.http import JsonResponse
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
@@ -73,6 +72,10 @@ class ZapleczeAPIStructure(APIView):
 
         structure, tokens = o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
 
+        account = get_object_or_404(Account, user_id=request.user.id)
+        account.tokens_used += tokens
+        account.save()
+
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
 
@@ -93,5 +96,9 @@ class AnyZapleczeAPIStructure(APIView):
         )
 
         structure, tokens = o.create_structure(request.data.get("topic"), request.data.get('cat_num'), request.data.get('subcat_num'))
+
+        account = get_object_or_404(Account, user_id=request.user.id)
+        account.tokens_used += tokens
+        account.save()
 
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)

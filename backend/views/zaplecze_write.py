@@ -1,11 +1,10 @@
-from django.shortcuts import render
-from ..models import Zaplecze
+from django.shortcuts import get_object_or_404
+from ..models import Zaplecze, Account
 from ..serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from django.views.generic import View
 import json
 import random
 from datetime import datetime, timedelta
@@ -65,6 +64,11 @@ class ZapleczeWrite(APIView):
         o = OpenAI_article(**params)
         
         response, tokens, _ = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
+
+        account = get_object_or_404(Account, user_id=request.user.id)
+        account.tokens_used += tokens
+        account.save()
+        
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
@@ -142,6 +146,10 @@ class AnyZapleczeWrite(APIView):
         
         response, tokens, _ = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
         print({"data": response, "tokens": tokens})
+
+        account = get_object_or_404(Account, user_id=request.user.id)
+        account.tokens_used += tokens
+        account.save()
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
@@ -236,5 +244,10 @@ class ManyZapleczesWrite(APIView):
             response[dom] = res
             tokens += t
             print(response)
+            account = get_object_or_404(Account, user_id=request.user.id)
+            account.tokens_used += t
+            account.save()
+            
+
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
