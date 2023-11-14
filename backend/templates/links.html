@@ -16,7 +16,7 @@ Write linked article for {{umowa.domena}}
     <h2 class="pulse"><strong>Ostrożnie!</strong></h2>
     <div style="display: flex; flex-direction: column; align-items: center;" class="form-group">
         <label class="form-label" for="semstorm_api_key">Semstorm API key:</label>
-        <input style="max-width: 25%;" type="text" class="form-control" id="semstorm_api_key" name="semstorm_api_key">
+        <input style="max-width: 25%;" type="text" class="form-control" id="semstorm_api_key" name="semstorm_api_key" value="{{user.account.semstorm_api_key}}">
     </div>
     <div class="ref-button-holder"><button type="refresh_visibility" id="refresh_visibility" class="refresh_visibility">Refresh Semstorm</button></div>
 </div>
@@ -30,7 +30,7 @@ Write linked article for {{umowa.domena}}
     </div>
     
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="card shadow">
                 <div class="card-body">
                     <h3>Dostępne zaplecza</h3>
@@ -43,14 +43,22 @@ Write linked article for {{umowa.domena}}
                                 <th>Linkować</th>
                                 <th>Tematyka</th>
                                 <th>Adres</th>
+                                <th>Visibility from</th>
+                                <th>top3</th>
+                                <th>top10</th>
+                                <th>top50</th>
                             </tr>
                         </thead>
                         <tbody>
-                        {% for z in zaplecza %}
+                            {% for z in zaplecza.values %}
                             <tr>
-                                <td><input type="checkbox" data-user="{{z.2}}" data-key="{{z.4}}"></td>
-                                <td>{{z.0}}</td>
-                                <td>{{z.1}}</td>
+                                <td><input type="checkbox" data-user="{{z.login}}" data-key="{{z.wp_api_key}}"></td>
+                                <td>{{z.topic}}</td>
+                                <td>{{z.domain}}</td>
+                                <td>{{z.date}}</td>
+                                <td style="color: black; background-color: {% if z.top3_growth == 1 %}#cfecd0{% elif z.top3_growth == 0 %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.top3}}</td>
+                                <td style="color: black; background-color: {% if z.top10_growth == 1 %}#cfecd0{% elif z.top10_growth == 0 %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.top10}}</td>
+                                <td style="color: black; background-color: {% if z.top50_growth == 1 %}#cfecd0{% elif z.top50_growth == 0 %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.top50}}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -80,9 +88,19 @@ Write linked article for {{umowa.domena}}
                 </div>
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3 class="card-title">Links</h3>
+                </div>
+                <div class="additional-attributes">
+                    <button type="button" id="addlinks">Add links</button>
+                </div>
+            </div>
+        </div>
     </div>
-
-
+    
+    
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow">
@@ -116,16 +134,6 @@ Write linked article for {{umowa.domena}}
 
 
 <div class="row">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-body">
-                <h3 class="card-title">Links</h3>
-            </div>
-            <div class="additional-attributes">
-                <button type="button" id="addlinks">Add links</button>
-            </div>
-        </div>
-    </div>
     
 
     <div class="col-md-6">

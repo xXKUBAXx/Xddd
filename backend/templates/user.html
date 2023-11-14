@@ -12,11 +12,14 @@ Dodaj klucz do API
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6 form-container">
+            <label class="form-label">Used OpenAI tokens: {{user.account.tokens_used}}</label>
             <form id="createForm" method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     <label class="form-label" for="openai_api_key">OpenAI API key:</label>
                     <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+                    <label class="form-label" for="semstorm_api_key">Semstorm API key:</label>
+                    <input type="text" class="form-control" id="semstorm_api_key" name="semstorm_api_key" value="{{user.account.semstorm_api_key}}">
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Submit</button>
             </form>

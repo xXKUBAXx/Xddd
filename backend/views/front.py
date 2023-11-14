@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from ..models import Zaplecze, Account
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
@@ -91,6 +91,14 @@ class ZapleczeUnit(View):
     
 
 class WriteLink(View):
+    def detect_change(self, val1, val2):
+        if val1 > val2:
+            return 1
+        elif val1 == val2:
+            return 0
+        else:
+            return -1
+        
     def get(self, request, umowa_id):
         umowy = json.load(open("../frazy.json"))
         for u in umowy["data"]:
@@ -98,9 +106,61 @@ class WriteLink(View):
                 umowa = u
                 break
 
-        zaplecza = [l.split("\t") for l in open("../zaplecza.tsv", encoding="utf=8").read().split("\n") if len(l.split("\t")[-1])>20]
+        zaplecza = [l.split("\t") for l in open("../zaplecza.tsv", encoding="utf-8").read().split("\n") if len(l.split("\t")[-1])>20]
 
         zaplecza_unique = list(set([z[0] for z in zaplecza]))
+
+        visibility = [v.split("\t") for v in open("../visibility_data.tsv", encoding="utf-8").read().split("\n")]
+
+        zaplecza_data = {}
+        for z in zaplecza:
+            zaplecza_data[z[1]] = {
+                "domain": z[1].lower(),
+                "topic": z[0], 
+                "login": z[2],
+                "wp_password": z[3],
+                "wp_api_key": z[4],
+                "date": ""
+            }
+        
+        for v in visibility:
+            dom = v[0].lower()
+            try:
+                if zaplecza_data[dom]["date"] == "":
+                    zaplecza_data[dom].update({
+                        "date": v[1],
+                        "top3": v[2],
+                        "top3_growth": 0,
+                        "top10": v[3],
+                        "top10_growth": 0,
+                        "top50": v[4],
+                        "top50_growth": 0
+                    })
+                elif zaplecza_data[dom]["date"] > v[1]:
+                    top3_growth = self.detect_change(zaplecza_data[dom]["top3"], v[2])
+                    top10_growth = self.detect_change(zaplecza_data[dom]["top10"], v[3])
+                    top50_growth = self.detect_change(zaplecza_data[dom]["top50"], v[4])
+                    zaplecza_data[dom].update({
+                        "date": v[1],
+                        "top3_growth": top3_growth,
+                        "top10_growth": top10_growth,
+                        "top50_growth": top50_growth
+                    })
+                else:
+                    top3_growth = self.detect_change(v[2], zaplecza_data[dom]["top3"])
+                    top10_growth = self.detect_change(v[3], zaplecza_data[dom]["top10"])
+                    top50_growth = self.detect_change(v[4], zaplecza_data[dom]["top50"])
+                    zaplecza_data[dom].update({
+                        "date": v[1],
+                        "top3": v[2],
+                        "top3_growth": top3_growth,
+                        "top10": v[3],
+                        "top10_growth": top10_growth,
+                        "top50": v[4],
+                        "top50_growth": top50_growth
+                    })
+            except:
+                pass
 
         try:
             papaj_spi = User.objects.get(username='papaj_spi')
@@ -109,7 +169,7 @@ class WriteLink(View):
 
         context = {
                     "umowa": umowa, 
-                    "zaplecza": zaplecza, 
+                    "zaplecza": zaplecza_data, 
                     "zaplecza_unique": sorted(zaplecza_unique),
                     'papaj_spi': papaj_spi
                    }
@@ -136,15 +196,13 @@ class UpdateProfile(APIView):
         return render(request, 'user.html')
     
     def post(self, request):
-        user = Account.objects.get(id=request.user.id)
-        print(user.openai_api_key)
-        user.openai_api_key = request.data.get("openai_api_key")
-        user.save()
-        serializer = AccountSerializer(user)
-        data = serializer.data
-        data['openai_api_key'] = request.data.get("openai_api_key")
-        serializer = AccountSerializer(instance=user, data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
+        user_id = request.user.id # Assuming you send user_id in the post request
+        openai_api_key = request.data.get('openai_api_key')
+        semstorm_api_key = request.data.get('semstorm_api_key')
+
+        account = get_object_or_404(Account, user_id=user_id)
+        account.openai_api_key = openai_api_key
+        account.semstorm_api_key = semstorm_api_key
+        account.save()
 
         return render(request, 'user.html')
