@@ -15,7 +15,7 @@ class Front(View):
 
         try:
             data = SocialAccount.objects.get(user=request.user).extra_data
-        except SocialAccount.DoesNotExist:
+        except:
             data = {}
 
         try:
