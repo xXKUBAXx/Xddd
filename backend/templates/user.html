@@ -38,8 +38,9 @@ Dodaj klucz do API
             
             // Serialize form data
             var formData = $(this).serialize();
-            console.log(formData);
+            // console.log(formData);
 
+            /*
             // Check if any field is empty
             var emptyFields = false;
             $(this).find('input').each(function() {
@@ -53,6 +54,7 @@ Dodaj klucz do API
                 alert('Please fill in all fields.');
                 return; // Do not proceed with submission
             }
+            */
             
             // Send POST request to the /api/all/ endpoint
             $.ajax({
