@@ -18,11 +18,40 @@ Dodaj klucz do API
                 <div class="form-group">
                     <label class="form-label" for="openai_api_key">OpenAI API key:</label>
                     <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+                    {% if user.is_staff %}
                     <label class="form-label" for="semstorm_api_key">Semstorm API key:</label>
                     <input type="text" class="form-control" id="semstorm_api_key" name="semstorm_api_key" value="{{user.account.semstorm_api_key}}">
+                    {% endif %}
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Submit</button>
             </form>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 3em;">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>URL</th>
+                            <th>Keyword</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                        <tr>
+                            <td>{% if row.done %}Done{% else %}Writing{% endif %}</td>
+                            <td>{{row.url}}</td>
+                            <td>{{row.keyword}}</td>
+                            <td>{{row.link}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

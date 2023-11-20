@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from ..models import Zaplecze, Account
+from ..models import Zaplecze, Account, Link
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View
@@ -193,7 +193,12 @@ class LinksPanel(View):
 
 class UpdateProfile(APIView):
     def get(self, request):
-        return render(request, 'user.html')
+        #get all table rows that belongs to current user
+        queryset = Link.objects.filter(user=request.user.email)
+        context = {
+            "data": queryset
+        }
+        return render(request, 'user.html', context)
     
     def post(self, request):
         user_id = request.user.id # Assuming you send user_id in the post request
