@@ -8,10 +8,13 @@ from django.contrib.auth.admin import UserAdmin
 class ZapleczeAdmin(admin.ModelAdmin):
     list_display = ['domain', 'email', 'url', 'login', 'password', 'topic']
 
-
 admin.site.register(Zaplecze, ZapleczeAdmin)
 
-admin.site.register(Link)
+
+class LinkAdmin(admin.ModelAdmin):
+    list_display = ['user', 'keyword', 'link', 'url', 'done']
+
+admin.site.register(Link, LinkAdmin)
 
 
 class AccountInline(admin.StackedInline):
