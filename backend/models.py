@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Zaplecze(models.Model):
     #basic
-    domain = models.CharField(max_length=64, blank=True, null=True)
+    domain = models.CharField(max_length=64, blank=True, null=True, unique=True)
     email = models.CharField(max_length=64, blank=True, null=True)
 
     #Admin
@@ -25,6 +25,17 @@ class Zaplecze(models.Model):
     wp_password = models.CharField(max_length=64, blank=True, null=True)
     wp_api_key = models.CharField(max_length=128, blank=True, null=True)
     wp_post_count = models.IntegerField(default=0)
+
+
+
+class Link(models.Model):
+    user = models.CharField(max_length=64)
+    domain = models.CharField(max_length=64)
+    link = models.CharField(max_length=256)
+    keyword = models.CharField(max_length=128)
+    url = models.CharField(max_length=128)
+    cost = models.IntegerField(blank=True, null=True)
+    done = models.BooleanField()
 
 
 class Account(models.Model):

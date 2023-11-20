@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Zaplecze, Account
+from .models import Zaplecze, Account, Link
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 # Register your models here.
@@ -11,6 +11,7 @@ class ZapleczeAdmin(admin.ModelAdmin):
 
 admin.site.register(Zaplecze, ZapleczeAdmin)
 
+admin.site.register(Link)
 
 
 class AccountInline(admin.StackedInline):
