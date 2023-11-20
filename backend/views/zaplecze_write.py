@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from ..models import Zaplecze, Account
+from ..models import Zaplecze, Account, Link
 from ..serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -240,10 +240,23 @@ class ManyZapleczesWrite(APIView):
 
 
         for a, z, sd in zip(articles, zapleczas, start_dates):
+            links_db = []
+            for article in a:
+                l = Link(user=request.user.email, domain=z['domain'], link=article['url'], keyword=article['keyword'], done=False)
+                l.save()
+                links_db.append(l.id)
             res, t, dom = self.do_zaplecze(a, z, openai_key, lang, sd, days_delta, forward_delta, p_num, topic)
             response[dom] = res
             tokens += t
             print(response)
+            #add writen article to db
+            a_urls = [item for sublist in res.values() for item in sublist]
+            for a_url, link_id in zip(a_urls, links_db):
+                l = get_object_or_404(Link, id=link_id)
+                l.url = a_url
+                l.done = True
+                l.save()
+            #add used tokens to user balance
             account = get_object_or_404(Account, user_id=request.user.id)
             account.tokens_used += t
             account.save()
