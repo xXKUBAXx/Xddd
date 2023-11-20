@@ -26,6 +26,7 @@ class LinksSerializer(serializers.ModelField):
         model = Link
         fields = "__all__"
         extra_kwargs = {
+            "url": {"required": False, "allow_blank": True, "allow_null": True},
             "cost": {"required": False, "allow_blank": True, "allow_null": True}
         }
 

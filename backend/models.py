@@ -33,7 +33,7 @@ class Link(models.Model):
     domain = models.CharField(max_length=64)
     link = models.CharField(max_length=256)
     keyword = models.CharField(max_length=128)
-    url = models.CharField(max_length=128)
+    url = models.CharField(max_length=128, blank=True, null=True)
     cost = models.IntegerField(blank=True, null=True)
     done = models.BooleanField()
 
