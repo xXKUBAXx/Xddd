@@ -65,8 +65,11 @@ class ZapleczeWrite(APIView):
         
         response, tokens, _ = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
 
-        account = get_object_or_404(Account, user_id=request.user.id)
-        account.tokens_used += tokens
+        try:
+            account = get_object_or_404(Account, user_id=request.user.id)
+            account.tokens_used += tokens
+        except:
+            account = Account.objects.create(user_id=request.user.id, tokens_used=tokens, openai_api_key=openai_key)
         account.save()
         
 
@@ -147,8 +150,11 @@ class AnyZapleczeWrite(APIView):
         response, tokens, _ = o.populate_structure(a, p, cats, "backend/src/CreateWPblog/", links, nofollow, topic)
         print({"data": response, "tokens": tokens})
 
-        account = get_object_or_404(Account, user_id=request.user.id)
-        account.tokens_used += tokens
+        try:
+            account = get_object_or_404(Account, user_id=request.user.id)
+            account.tokens_used += tokens
+        except:
+            account = Account.objects.create(user_id=request.user.id, tokens_used=tokens, openai_api_key=openai_key)
         account.save()
 
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
@@ -257,8 +263,11 @@ class ManyZapleczesWrite(APIView):
                 l.done = True
                 l.save()
             #add used tokens to user balance
-            account = get_object_or_404(Account, user_id=request.user.id)
-            account.tokens_used += t
+            try:
+                account = get_object_or_404(Account, user_id=request.user.id)
+                account.tokens_used += t
+            except:
+                account = Account.objects.create(user_id=request.user.id, tokens_used=t, openai_api_key=openai_key)
             account.save()
             
 

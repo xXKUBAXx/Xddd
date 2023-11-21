@@ -89,6 +89,9 @@ Dodaj klucz do API
             $.ajax({
                 type: 'POST',
                 url: '/user/',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
                 data: formData,
                 success: function(response) {
                     // Handle success response here

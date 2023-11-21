@@ -205,9 +205,12 @@ class UpdateProfile(APIView):
         openai_api_key = request.data.get('openai_api_key')
         semstorm_api_key = request.data.get('semstorm_api_key')
 
-        account = get_object_or_404(Account, user_id=user_id)
-        account.openai_api_key = openai_api_key
-        account.semstorm_api_key = semstorm_api_key
+        try:
+            account = get_object_or_404(Account, user_id=user_id)
+            account.openai_api_key = openai_api_key
+            account.semstorm_api_key = semstorm_api_key
+        except Exception as e:
+            account = Account.objects.create(user_id=user_id, openai_api_key=openai_api_key, semstorm_api_key=semstorm_api_key)
         account.save()
 
         return render(request, 'user.html')
