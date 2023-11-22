@@ -39,6 +39,7 @@ SITE_ID=4
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,12 +49,15 @@ INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'rest_framework',
     'drf_yasg',
+    'adrf',
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google'
 ]
+
+ASGI_APPLICATION = "app.asgi.application"
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {

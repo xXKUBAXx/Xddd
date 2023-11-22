@@ -1,16 +1,19 @@
 from django.shortcuts import get_object_or_404
 from ..models import Zaplecze, Account, Link
 from ..serializers import *
-from rest_framework.views import APIView
+from adrf.views import APIView
+from asgiref.sync import sync_to_async
 from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 import json
 import random
 from datetime import datetime, timedelta
-
+import asyncio
+import os
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
+from ..src.CreateWPblog.openai_api import OpenAI_API
 from ..src.CreateWPblog.setup_wp import Setup_WP
 from ..src.CreateWPblog.wp_api import WP_API
 
@@ -163,7 +166,7 @@ class AnyZapleczeWrite(APIView):
 class ManyZapleczesWrite(APIView):
     serializer_class = WriteSerializer
     @swagger_auto_schema(
-            operation_description="Write article for any Zaplecze", 
+            operation_description="Write articles for multiple Zapleczas", 
             request_body=WriteSerializer, 
             responses={201:ResponseSerializer, 400:"Bad Request"}
             )
@@ -194,7 +197,7 @@ class ManyZapleczesWrite(APIView):
         except:
             print("Cannot shuffle")
             print(wp_cats)
-            return {0: "Wrong WordPress credentials"}, 0, z["domain"]
+            return {0: ["Wrong WordPress credentials"]}, 0, z["domain"]
         if len(wp_cats) >= categories:
             cats = wp_cats[:categories]
         else:
@@ -205,8 +208,137 @@ class ManyZapleczesWrite(APIView):
         o = OpenAI_article(**params)
         
         return o.populate_structure(1, p_num, cats, "backend/src/CreateWPblog/", a, 0, topic)
+    
 
-    def post(self, request):
+    async def add_tokens(self, id, toknes:int, openai_api_key:str = ""):
+        try:
+            account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=id)
+            account.tokens_used += toknes
+        except:
+            account = Account(
+                user_id=id, 
+                tokens_used=toknes, 
+                openai_api_key=openai_api_key
+                )
+        await sync_to_async(account.save, thread_sensitive=False)()
+
+    
+    async def write_article(self, 
+                            o:OpenAI_article, 
+                            user,
+                            title:str, 
+                            header_num:int, 
+                            cat_id:int = 1,
+                            path:str = '',
+                            links:list[dict] = None,
+                            nofollow:int = 0,
+                            ) -> tuple[str, int, int]:
+        
+        #add article to db
+        l = Link(user=user.email, domain=o.get_domain(), link=links[0]['url'], keyword=links[0]['keyword'], done=False)
+        await sync_to_async(l.save, thread_sensitive=False)()
+                
+        #generate headers & promt for generating image
+        print("Creating headers for - ", title)
+        headers, img_prompt, headers_tokens = await o.create_headers(title,header_num)
+        await self.add_tokens(user.id, headers_tokens)
+        
+        p_tasks = []
+        #write paragraphs with links first
+        if links:
+            for link, header in zip(links, headers[:len(links)]):
+                p_tasks.append(asyncio.create_task(o.write_paragraph(title, header, link['keyword'], link['url'], nofollow)))
+        #queue up rest of paragraphs
+        for h in headers:
+            p_tasks.append(asyncio.create_task(o.write_paragraph(title, h)))
+        print("Writing paragraphs for article - ", title)
+        paragraphs = await asyncio.gather(*p_tasks)
+        #merge all texts into single string article
+        text = ""
+        for header, paragraph, tokens in paragraphs:
+            await self.add_tokens(user.id, tokens)
+            text += "<h2>"+header+"</h2>"
+            text += paragraph
+
+        #Write description
+        desc, tokens = await o.write_description(text)
+        await self.add_tokens(user.id, tokens)
+
+        #Generate & download image
+        if img_prompt != "":
+            img = o.download_img(img_prompt, f"{path}files/test_photo{datetime.now().microsecond}.webp")
+            #Upload image to WordPress
+            img_id = o.upload_img(img)
+            #Delete local image
+            os.remove(img)
+        else:
+            print("No img prompt - TARAPATAS!!")
+            img_id = None
+        
+        #Upload article to Wordpress
+        if img_id:
+            response = o.post_article(title, text, desc, img_id, o.publish_date['t'], cat_id)['link']
+        else:
+            print('no image id - uploading with default image')
+            response = o.post_article(title, text, desc, "1", o.publish_date['t'], cat_id)['link']
+
+
+        print("Uploaded article - ", response)
+        o.shift_date()
+        l.url = response
+        l.done = True
+        await sync_to_async(l.save, thread_sensitive=False)()
+        return response
+    
+    
+    
+    async def main(self, 
+                o:OpenAI_article,
+                user,
+                article_num:int, 
+                header_num:int,
+                categories:list[dict] = [],
+                path:str = "",
+                links:list[dict] = [],
+                nofollow:int = 0, 
+                topic:str = ""):
+        
+        '''
+        GOTO data structure
+        [
+            {
+                "cat": "",
+                "articles": [
+                    {
+                        "title": "",
+                        "headers": [], 
+                        "paragraphs": [] 
+                    }
+                ], 
+                ...articles
+            },
+            ...categories
+        ]
+        '''
+        print("titles", article_num)
+        titles_tasks = []
+        # for category in categories:
+        #     titles_tasks.append(asyncio.create_task(o.create_titles(category['name'],article_num,category['id'])))
+        titles_tasks.append(asyncio.create_task(o.create_titles(topic,article_num,0)))
+
+        titles_list = await asyncio.gather(*titles_tasks)
+
+        articles_tasks = []
+        for x, cat in zip(titles_list,categories):
+            titles, _, tokens = x
+            await self.add_tokens(user.id, tokens)
+            for title, link in zip(titles,links):
+                articles_tasks.append(asyncio.create_task(self.write_article(o, user, title, header_num, cat['id'], path, [link], nofollow)))
+        res = await asyncio.gather(*articles_tasks)
+        
+        return res
+
+    async def post(self, request):
         topic, lang, openai_key, p_num, start_date, days_delta, zapleczas, links = \
             request.data.get("topic"), \
             request.data.get("lang"), \
@@ -237,39 +369,59 @@ class ManyZapleczesWrite(APIView):
         else:
             forward_delta = False
             
-        response, tokens = {}, 0
         start_dates = []
         tmp_date = start_date
         for a in articles:
             start_dates.append(tmp_date)
             tmp_date += timedelta(days=(days_delta * len(a) * (1 if forward_delta else -1)))
 
-
+        
+        tasks = []
         for a, z, sd in zip(articles, zapleczas, start_dates):
-            links_db = []
-            for article in a:
-                l = Link(user=request.user.email, domain=z['domain'], link=article['url'], keyword=article['keyword'], done=False)
-                l.save()
-                links_db.append(l.id)
-            res, t, dom = self.do_zaplecze(a, z, openai_key, lang, sd, days_delta, forward_delta, p_num, topic)
-            response[dom] = res
-            tokens += t
-            print(response)
-            #add writen article to db
-            a_urls = [item for sublist in res.values() for item in sublist]
-            for a_url, link_id in zip(a_urls, links_db):
-                l = get_object_or_404(Link, id=link_id)
-                l.url = a_url
-                l.done = True
-                l.save()
-            #add used tokens to user balance
+            #get categories from WP
+            if type(a)==dict:
+                categories = 1
+            else:
+                categories = len(a)
+            wp = OpenAI_article(
+                openai_key,
+                z["domain"], 
+                z["wp_user"], 
+                z["wp_api_key"],
+                lang,
+                sd,
+                days_delta,
+                forward_delta
+                )
+            wp_cats = wp.get_categories()
             try:
-                account = get_object_or_404(Account, user_id=request.user.id)
-                account.tokens_used += t
+                random.shuffle(wp_cats)
             except:
-                account = Account.objects.create(user_id=request.user.id, tokens_used=t, openai_api_key=openai_key)
-            account.save()
-            
+                print("Cannot shuffle")
+                print(wp_cats)
+                return {0: ["Wrong WordPress credentials"]}, 0, z["domain"]
+            if len(wp_cats) >= categories:
+                cats = wp_cats[:categories]
+            else:
+                cats = wp_cats
+                for _ in range(categories - len(wp_cats)):
+                    cats.append({"id":1, "name": topic})
 
 
-        return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
+            tasks.append(
+                asyncio.create_task(
+                    self.main(
+                        wp,
+                        request.user,
+                        len(a), 
+                        p_num, 
+                        cats, 
+                        "backend/src/CreateWPblog/", 
+                        a, 
+                        0,
+                        topic
+                        )))
+                
+        res = await asyncio.gather(*tasks)
+        print([x for r in res for x in r])
+        return Response({"data": [x for r in res for x in r]}, status=status.HTTP_201_CREATED)
