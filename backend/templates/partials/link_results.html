@@ -1,0 +1,11 @@
+{% if url %}
+    <li id="link-result{{ id }}" hx-swap="beforeend">
+        {{ keyword }} - <a href="{{ url }}" target="_blank">{{ url }}</a>
+    </li>
+{% else %}
+    <ul id="link-results" hx-swap-oob="beforeend">
+        <li id="link-result{{ id }}">
+            {{ keyword }}
+        </li>
+    </ul>
+{% endif %}

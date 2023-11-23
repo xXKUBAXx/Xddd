@@ -231,6 +231,7 @@ $(document).ready(function() {
         const spin = document.createElement("div");
         spin.classList.add("spinner");
         spin.setAttribute("id", "articles_spinner")
+        $(this).parent().append("<ul id=\"link-results\">Preparing texts for:</ul>");
         $(this).parent().append(spin);
         $(this).remove();
         
@@ -245,13 +246,13 @@ $(document).ready(function() {
             success: function(response) {
                 let count = 0;
                 for (let i in response.data){
-                    $("#write-details").append("<h6>"+ i +"</h6>");
-                    $("#write-details").append("<ul id=\""+ ++count +"\"></ul>");
-                    for (let j in response.data[i]){
-                        for (let k in response.data[i][j]){
-                            $("#write-details > ul#"+count).append("<li><a href=\""+response.data[i][j][k]+"\" target=\"_blank\">"+response.data[i][j][k]+"</a></li>");
-                        };
-                    };
+                    // $("#write-details").append("<h6>"+ i +"</h6>");
+                    // $("#write-details").append("<ul id=\""+ ++count +"\"></ul>");
+                    // for (let j in response.data[i]){
+                    //     for (let k in response.data[i][j]){
+                    //         $("#write-details > ul#"+count).append("<li><a href=\""+response.data[i][j][k]+"\" target=\"_blank\">"+response.data[i][j][k]+"</a></li>");
+                    //     };
+                    // };
                 };
                 $("#write-details").parent().append("<p>Tokens used: "+response.tokens+"</p>");
                 $("div#articles_spinner").remove()
