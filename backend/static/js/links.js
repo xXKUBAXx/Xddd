@@ -227,11 +227,12 @@ $(document).ready(function() {
 
         
         formData += "&links="+JSON.stringify(link_data);
+        formData += "&ul_id="+$(this).parent().find("ul").attr('id')
         //add spinner to make waiting more bearable
         const spin = document.createElement("div");
         spin.classList.add("spinner");
         spin.setAttribute("id", "articles_spinner")
-        $(this).parent().append("<ul id=\"link-results\">Preparing texts for:</ul>");
+        // $(this).parent().append("<ul id=\"link-results\">Preparing texts for:</ul>");
         $(this).parent().append(spin);
         $(this).remove();
         

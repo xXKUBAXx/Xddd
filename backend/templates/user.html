@@ -29,30 +29,44 @@ Dodaj klucz do API
     </div>
 
     <div class="row" style="margin-top: 3em;">
-        <div class="col-md-12">
+        {% regroup data by task_id as task_list %}
+
+        {% for task in task_list %}
+          <div class="col-md-12">
             <div class="card shadow">
-                <table>
-                    <thead>
-                        <tr>
+                <div class="card-body">
+                    <h3>Task ID: {{ task.grouper }} - Keywords: 
+                      {% for row in task.list %}
+                        {{ row.keyword }}{% if not forloop.last %}, {% endif %}
+                      {% endfor %}
+                    </h3>
+                    <p>Click to see task details</p>
+                </div>
+                <div class="additional-attributes">
+                    <table>
+                        <thead>
+                          <tr>
                             <th>Status</th>
                             <th>URL</th>
                             <th>Keyword</th>
                             <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in data %}
-                        <tr>
-                            <td>{% if row.done %}Done{% else %}Writing{% endif %}</td>
-                            <td>{{row.url}}</td>
-                            <td>{{row.keyword}}</td>
-                            <td>{{row.link}}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for row in task.list %}
+                            <tr>
+                              <td>{% if row.done %}Done{% else %}Writing{% endif %}</td>
+                              <td>{{ row.url }}</td>
+                              <td>{{ row.keyword }}</td>
+                              <td>{{ row.link }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                </div>
             </div>
-        </div>
+          </div>
+        {% endfor %}        
     </div>
 </div>
 
