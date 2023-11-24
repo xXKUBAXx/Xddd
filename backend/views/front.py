@@ -196,7 +196,7 @@ class UpdateProfile(APIView):
         #get all table rows that belongs to current user
         queryset = Link.objects.filter(user=request.user.email)
         context = {
-            "data": queryset
+            "data": queryset[::-1]
         }
         return render(request, 'user.html', context)
     
