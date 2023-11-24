@@ -11,6 +11,8 @@ import random
 from datetime import datetime, timedelta
 import asyncio
 import os
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync, sync_to_async
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
 from ..src.CreateWPblog.openai_api import OpenAI_API
@@ -18,9 +20,9 @@ from ..src.CreateWPblog.setup_wp import Setup_WP
 from ..src.CreateWPblog.wp_api import WP_API
 
 class ZapleczeWrite(APIView):
-    def get_object(self, zaplecze_id):
+    async def get_object(self, zaplecze_id):
         try:
-            return Zaplecze.objects.get(id=zaplecze_id)
+            return await sync_to_async(Zaplecze.objects.get, thread_sensitive=False)(id=zaplecze_id)
         except Zaplecze.DoesNotExist:
             return None
 
@@ -30,8 +32,8 @@ class ZapleczeWrite(APIView):
             request_body=WriteSerializer, 
             responses={201:ResponseSerializer, 400:"Bad Request"}
             )
-    def post(self, request, zaplecze_id):
-        zaplecze = self.get_object(zaplecze_id)
+    async def post(self, request, zaplecze_id):
+        zaplecze = await self.get_object(zaplecze_id)
         if not zaplecze:
             return Response(
                 {"res": "Object with this id does not exists"},
@@ -66,17 +68,21 @@ class ZapleczeWrite(APIView):
         
         o = OpenAI_article(**params)
         
-        response, tokens, _ = o.populate_structure(a, p, categories, "backend/src/CreateWPblog/", links)
+        response = await o.main(a, p, json.loads(categories), "backend/src/CreateWPblog/", links)
 
-        try:
-            account = get_object_or_404(Account, user_id=request.user.id)
-            account.tokens_used += tokens
-        except:
-            account = Account.objects.create(user_id=request.user.id, tokens_used=tokens, openai_api_key=openai_key)
-        account.save()
+        # try:
+        #     account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=id)
+        #     account.tokens_used += tokens
+        # except:
+        #     account = Account(
+        #         user_id=id, 
+        #         tokens_used=tokens, 
+        #         openai_api_key=openai_key
+        #         )
+        # await sync_to_async(account.save, thread_sensitive=False)()
         
 
-        return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
+        return Response({"data": response}, status=status.HTTP_201_CREATED)
 
 class AnyZapleczeWrite(APIView):
     serializer_class = WriteSerializer
@@ -85,7 +91,7 @@ class AnyZapleczeWrite(APIView):
             request_body=WriteSerializer, 
             responses={201:ResponseSerializer, 400:"Bad Request"}
             )
-    def post(self, request):
+    async def post(self, request):
         categories, openai_key, a, p, links, domain, wp_user, lang = \
                 request.data.get('categories'), \
                 str(request.data.get('openai_api_key')), \
@@ -226,6 +232,8 @@ class ManyZapleczesWrite(APIView):
     async def write_article(self, 
                             o:OpenAI_article, 
                             user,
+                            task_id,
+                            ul_id,
                             title:str, 
                             header_num:int, 
                             cat_id:int = 1,
@@ -235,7 +243,15 @@ class ManyZapleczesWrite(APIView):
                             ) -> tuple[str, int, int]:
         
         #add article to db
-        l = Link(user=user.email, domain=o.get_domain(), link=links[0]['url'], keyword=links[0]['keyword'], done=False)
+        l = Link(
+            user=user.email, 
+            task_id=task_id,
+            ul_id=ul_id,
+            domain=o.get_domain(), 
+            link=links[0]['url'], 
+            keyword=links[0]['keyword'], 
+            done=False
+            )
         await sync_to_async(l.save, thread_sensitive=False)()
                 
         #generate headers & promt for generating image
@@ -295,6 +311,8 @@ class ManyZapleczesWrite(APIView):
     async def main(self, 
                 o:OpenAI_article,
                 user,
+                task_id,
+                ul_id,
                 article_num:int, 
                 header_num:int,
                 categories:list[dict] = [],
@@ -333,7 +351,7 @@ class ManyZapleczesWrite(APIView):
             titles, _, tokens = x
             await self.add_tokens(user.id, tokens)
             for title, link in zip(titles,links):
-                articles_tasks.append(asyncio.create_task(self.write_article(o, user, title, header_num, cat['id'], path, [link], nofollow)))
+                articles_tasks.append(asyncio.create_task(self.write_article(o, user, task_id, ul_id, title, header_num, cat['id'], path, [link], nofollow)))
         res = await asyncio.gather(*articles_tasks)
         
         return res
@@ -377,6 +395,10 @@ class ManyZapleczesWrite(APIView):
 
         
         tasks = []
+        task_id = await sync_to_async(Link.objects.order_by, thread_sensitive=False)('task_id')
+        task_id = await sync_to_async(task_id.last, thread_sensitive=False)()
+        task_id = task_id.task_id + 1
+        print(request.data.get("ul_id"))
         for a, z, sd in zip(articles, zapleczas, start_dates):
             #get categories from WP
             if type(a)==dict:
@@ -407,12 +429,14 @@ class ManyZapleczesWrite(APIView):
                 for _ in range(categories - len(wp_cats)):
                     cats.append({"id":1, "name": topic})
 
-
+            
             tasks.append(
                 asyncio.create_task(
                     self.main(
                         wp,
                         request.user,
+                        task_id,
+                        request.data.get("ul_id"),
                         len(a), 
                         p_num, 
                         cats, 
@@ -422,6 +446,15 @@ class ManyZapleczesWrite(APIView):
                         topic
                         )))
                 
+        
+        channel_layer = get_channel_layer()
+        group_name = 'user-notifications'
+        event = {
+            "type": "notification",
+            "text": f"Ukończono zlecenie nr {task_id} - przejdź do panelu użytkownika, żeby zobaczyć szczegóły"
+        }
+        
         res = await asyncio.gather(*tasks)
         print([x for r in res for x in r])
+        await channel_layer.group_send(group_name, event)
         return Response({"data": [x for r in res for x in r]}, status=status.HTTP_201_CREATED)
