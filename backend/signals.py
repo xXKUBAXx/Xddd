@@ -10,10 +10,12 @@ def create_profile(sender, instance, created, **kwargs):
     if created:
         # trigger notification to all consumers in the 'user-notification' group
         channel_layer = get_channel_layer()
-        group_name = 'user-notifications'
+        group_name = 'user-links'
         event = {
             "type": "link_created",
             "user": instance.user,
+            "task_id": instance.task_id, 
+            "ul_id": instance.ul_id,
             "keyword": instance.keyword,
             "id": instance.id
         }
@@ -21,10 +23,11 @@ def create_profile(sender, instance, created, **kwargs):
     
     else:
         channel_layer = get_channel_layer()
-        group_name = 'user-notifications'
+        group_name = 'user-links'
         event = {
             "type": "link_done", 
             "user": instance.user,
+            "task_id": instance.task_id, 
             "keyword": instance.keyword,
             "url": instance.url,
             "id": instance.id
