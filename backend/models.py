@@ -29,6 +29,8 @@ class Zaplecze(models.Model):
 
 
 class Link(models.Model):
+    task_id = models.IntegerField(default=0)
+    ul_id = models.CharField(max_length=32, default="client0")
     user = models.CharField(max_length=64)
     domain = models.CharField(max_length=64)
     link = models.CharField(max_length=256)
