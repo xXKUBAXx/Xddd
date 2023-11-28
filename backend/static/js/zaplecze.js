@@ -48,8 +48,11 @@ $(document).ready(function() {
                 success: function(response) {
                     console.log(response);
                 },
-                error: function(response) {
-                    console.error(response);
+                error: function(error) {
+                    // Handle error response here
+                    $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                    $("div#class_spinner").remove();
+                    console.error(error);
                 }
             })
         }
@@ -90,6 +93,8 @@ $(document).ready(function() {
             },
             error: function(error) {
                 // Handle error response here
+                $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                $("div#class_spinner").remove();
                 console.error(error);
             }
         });
