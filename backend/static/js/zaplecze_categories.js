@@ -68,11 +68,15 @@ $(document).ready(function() {
                     });
                 }
             },
-            error: (e) => {
-                console.error(e)
+            error: (error) => {
+                // Handle error response here
+                $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                $("button#categories").remove();
+                console.error(error);
             }
         });
     });
+
     $("#articles").on('click', function(event) {
         const ul = document.createElement("ul");
         ul.setAttribute("id", "selected_cats")
@@ -206,21 +210,6 @@ $(document).ready(function() {
         spin.setAttribute("id", "articles_spinner")
         $(this).parent().append(spin);
         $(this).remove();
-
-        const cats_num = $("ul#selected_cats li").length;
-        const arts_num = $("#ArtSliderValue").val();
-        const pars_num = $("#ParagraphsSliderValue").val();
-
-        let deadline = new Date();
-        console.log(5*cats_num*arts_num*pars_num);
-        deadline.setSeconds(deadline.getSeconds() + 5*cats_num*arts_num*pars_num);
-        let x = setInterval(() => {
-            let now = new Date();
-            let dist = deadline - now;
-            $("div#articles_spinner").innerHTML = dist;
-            console.log(dist);
-            if (dist < 0) $("div#articles_spinner").innerHTML = "";
-        }, 1000)
 
         let data = [];
         for (i of cats) {
