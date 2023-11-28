@@ -194,7 +194,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[{asctime}] {message}', 
+            'format': '[{asctime}] {message}',
             'style': '{',
         },
     },
@@ -202,6 +202,10 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
+            'filters': [
+                lambda record: 'api.openai.com' not in record.getMessage(), 
+                lambda record: '/static' not in record.getMessage()
+                ],
         },
     },
     'root': {
@@ -220,3 +224,4 @@ LOGGING = {
         },
     },
 }
+
