@@ -34,9 +34,9 @@ Write linked article for {{umowa.domena}}
             <div class="card shadow">
                 <div class="card-body">
                     <h3>Dostępne zaplecza</h3>
-                    <p>Click to select any zaplecze</p>
+                    <p>Select any zaplecze to publish texts</p>
                 </div>
-                <div class="additional-attributes" style="display: block;padding-top: 0;">
+                <div class="additional-attributes-show" style="padding-top: 0;">
                     <table id="zaplacza-table" data-order='[[ 1, "asc" ]]' style="width: 100%;">
                         <thead>
                             <tr>
@@ -106,25 +106,30 @@ Write linked article for {{umowa.domena}}
             <div class="card shadow">
                 <div class="card-body">
                     <h3>Frazy z panelu</h3>
-                    <p>Click to select keywords to write texts about</p>
+                    <p>Select keywords to write texts about (position 0 means unobtained yet)</p>
                 </div>
-                <div class="additional-attributes">
+                <div class="additional-attributes-show">
                     <table id="frazy-table">
-                        <tr>
-                            <th>URL</th>
-                            <th>Fraza</th>
-                            <th>Linki</th>
-                        </tr>
-                        {% for r in umowa.podstrony %}
-                            {% if forloop.counter0|divisibleby:2  %}
+                        <thead>
                             <tr>
-                                <td>{{r}}</td>
-                            {% else %}
-                                <td>{{r}}</td>
-                                <td><input type="number" min="0" max="5" value="0"></td>
+                                <th>URL</th>
+                                <th>Fraza</th>
+                                <th>{{umowa.frazy.0.data_wczoraj}}</th>
+                                <th>{{umowa.frazy.0.data_dzisiaj}}</th>
+                                <th>Linki</th>
                             </tr>
-                            {% endif %}
-                        {% endfor %}
+                        </thead>
+                        <tbody>
+                            {% for r in umowa.frazy %}
+                                <tr>
+                                    <td>{{r.url}}</td>
+                                    <td>{{r.fraza}}</td>
+                                    <td>{{r.pozycja_wczoraj}}</td>
+                                    <td>{{r.pozycja_dzisiaj}}</td>
+                                    <td><input type="number" min="0" max="5" value="0"></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -140,9 +145,9 @@ Write linked article for {{umowa.domena}}
         <div class="card shadow" ws-connect="/ws/links/">
             <div class="card-body">
                 <h3 class="card-title">Details</h3>
-                <p>Click to add publication details</p>
+                <p>Complete publication details</p>
             </div>
-            <div class="additional-attributes" id="write-details">
+            <div class="additional-attributes-show" id="write-details">
                 <form id="writeLinks" type="post">
                     {% csrf_token %}
                     {% if not data.topic %}
@@ -203,12 +208,13 @@ Write linked article for {{umowa.domena}}
 <script>
     $(document).ready(function() {
         let table = new DataTable('#zaplacza-table', {
-            paging: false,
-            scrollY: "40vh",
-            scrollCollapse: true
+            paging: true
         });
-        $('#zaplacza-table').DataTable().columns.adjust();
-        $('#zaplacza-table').parent().parent().parent().parent().hide();
+        let panel_table = new DataTable("#frazy-table", {
+            paging: true,
+        })
+        // $('#zaplacza-table').DataTable().columns.adjust();
+        // $('#zaplacza-table').parent().parent().parent().parent().hide();
     });
 </script>
 {% endblock %}

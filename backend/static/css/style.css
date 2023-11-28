@@ -48,6 +48,10 @@ h1:hover {
     padding: 1.25rem; 
     display: none;
 }
+
+.additional-attributes-show {
+    padding: 1.25rem; 
+}
 /*disable hover animation to save sanity
 .card:hover {
     transform: scale(1.05);

@@ -3,12 +3,18 @@ from ..models import Zaplecze, Account, Link
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View
+from django.http import HttpResponse
+from django.utils.decorators import method_decorator
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from ..src.CreateWPblog.openai_api import OpenAI_API
 
 import json
+import urllib
+from .utils import log_user
 
+
+@method_decorator(log_user(), name='dispatch')
 class Front(View):
     def get(self, request):
         queryset = Zaplecze.objects.values()
@@ -31,7 +37,7 @@ class Front(View):
 
         return render(request, 'index.html', context)
     
-
+@method_decorator(log_user(), name='dispatch')
 class CreateZaplecze(View):
     def get(self, request):
         try:
@@ -50,7 +56,7 @@ class CreateZaplecze(View):
 
         return render(request, 'create.html', context)
     
-
+@method_decorator(log_user(), name='dispatch')
 class UpdateZaplecze(View):        
     def get(self, request, zaplecze_id):
         if zaplecze_id:
@@ -70,7 +76,7 @@ class UpdateZaplecze(View):
         context = {'social_data': data, 'data': serializer.data, 'papaj_spi': papaj_spi}
         return render(request, 'update.html', context)
     
-
+@method_decorator(log_user(), name='dispatch')
 class ZapleczeUnit(View):
     def get(self, request, zaplecze_id):
         serializer = ZapleczeSerializer(Zaplecze.objects.get(id=zaplecze_id))
@@ -90,6 +96,7 @@ class ZapleczeUnit(View):
         return render(request, 'zaplecze.html', context)
     
 
+@method_decorator(log_user(), name='dispatch')
 class WriteLink(View):
     def detect_change(self, val1, val2):
         if val1 > val2:
@@ -100,11 +107,28 @@ class WriteLink(View):
             return -1
         
     def get(self, request, umowa_id):
-        umowy = json.load(open("../frazy.json"))
-        for u in umowy["data"]:
-            if u["id"] == umowa_id:
-                umowa = u
-                break
+        with urllib.request.urlopen(f"https://panel.verseo.pl/get_client_eichner_subpages.php?token=ewwg37sht579wqegwhedki4r5i98we34ytwue5uj&id_umowy={umowa_id}") as url:
+            umowa = json.load(url)['data'][0]
+        
+        parsed_umowa = []
+        for row in umowa['frazy']:
+            row['data_wczoraj'] = row['data wczoraj']
+            try:
+                row['pozycja_wczoraj'] = int(row['pozycja wczoraj'])
+            except:
+                row['pozycja_wczoraj'] = 0
+            row['data_dzisiaj'] = row['data dzisiaj']
+            try:
+                row['pozycja_dzisiaj'] = int(row['pozycja dzisiaj'])
+            except: 
+                row['pozycja_dzisiaj'] = 0
+            del row['data wczoraj']
+            del row['pozycja wczoraj']
+            del row['data dzisiaj']
+            del row['pozycja dzisiaj']
+            parsed_umowa.append(row)
+        
+        umowa['frazy'] = parsed_umowa
 
         zaplecza = [l.split("\t") for l in open("../zaplecza.tsv", encoding="utf-8").read().split("\n") if len(l.split("\t")[-1])>20]
 
@@ -176,10 +200,12 @@ class WriteLink(View):
         
         return render(request, 'links.html', context)
     
-
+@method_decorator(log_user(), name='dispatch')
 class LinksPanel(View):
     def get(self, request):
-        umowy = json.load(open("../umowy.json"))
+        user = request.user.email.split("@")[0]
+        with urllib.request.urlopen(f"https://panel.verseo.pl/get_client_eichner.php?token=45h5j56k6788i4y3h57k567i54t3w6ki5y6u4u6h&pozycjoner={user}&aktywne=1") as url:
+            umowy = json.load(url)
 
         try:
             papaj_spi = User.objects.get(username='papaj_spi')
@@ -191,6 +217,7 @@ class LinksPanel(View):
         return render(request, 'links_panel.html', context)
     
 
+@method_decorator(log_user(), name='dispatch')
 class UpdateProfile(APIView):
     def get(self, request):
         #get all table rows that belongs to current user
