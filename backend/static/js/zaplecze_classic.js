@@ -141,10 +141,10 @@ $(document).ready(function () {
 				const wordpressTitles = posts.map((post) =>
 					decodeHTMLEntities(post.title.rendered)
 				);
-				console.log('Tytuły, które pokrywają się z plikiem TSV:');
+				// console.log('Tytuły, które pokrywają się z plikiem TSV:');
 				tsvTitles.forEach((tsvTitle) => {
 					if (wordpressTitles.includes(tsvTitle)) {
-						console.log(`${tsvTitle} - opublikowano`);
+						// console.log(`${tsvTitle} - opublikowano`);
 						updateStatusCells(posts);
 					}
 				});
