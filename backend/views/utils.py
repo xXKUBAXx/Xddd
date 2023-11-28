@@ -5,7 +5,7 @@ def log_user():
         def wrapper(request, *args, **kwargs):
             # Log the message with user info and additional message
             try:
-                email = request.user.mail
+                email = request.user.email
             except:
                 email = "unlogged"
             logging.getLogger(__name__).info(f'{email} -> {request.path}')
