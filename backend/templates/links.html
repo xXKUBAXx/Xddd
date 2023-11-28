@@ -208,10 +208,14 @@ Write linked article for {{umowa.domena}}
 <script>
     $(document).ready(function() {
         let table = new DataTable('#zaplacza-table', {
-            paging: true
+            paging: false,
+            scrollCollapse: true,
+            scrollY: '40vh'
         });
         let panel_table = new DataTable("#frazy-table", {
-            paging: true,
+            paging: false,
+            scrollCollapse: true,
+            scrollY: '40vh'
         })
         // $('#zaplacza-table').DataTable().columns.adjust();
         // $('#zaplacza-table').parent().parent().parent().parent().hide();
