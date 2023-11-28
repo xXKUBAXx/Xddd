@@ -19,8 +19,10 @@ from ..src.CreateWPblog.openai_api import OpenAI_API
 from ..src.CreateWPblog.setup_wp import Setup_WP
 from ..src.CreateWPblog.wp_api import WP_API
 from .zaplecze_api import ZAPIView
+from .utils import log_user
+from django.utils.decorators import method_decorator
 
-class ZapleczeWrite(APIView):
+class ZapleczeWrite(ZAPIView):
     async def get_object(self, zaplecze_id):
         try:
             return await sync_to_async(Zaplecze.objects.get, thread_sensitive=False)(id=zaplecze_id)
@@ -71,19 +73,19 @@ class ZapleczeWrite(APIView):
         
         response = await o.main(a, p, json.loads(categories), "backend/src/CreateWPblog/", links)
 
-        # try:
-        #     account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=id)
-        #     account.tokens_used += tokens
-        # except:
-        #     account = Account(
-        #         user_id=id, 
-        #         tokens_used=tokens, 
-        #         openai_api_key=openai_key
-        #         )
-        # await sync_to_async(account.save, thread_sensitive=False)()
+        total_tokens = 0
+        result = {}
+        for url, cat_id, t in response:
+            total_tokens += t
+            if cat_id in result.keys():
+                result[cat_id].append(url)
+            else:
+                result[cat_id] = [url]
+                
+        await self.add_tokens(request.user.id, total_tokens, openai_key)
         
-
-        return Response({"data": response}, status=status.HTTP_201_CREATED)
+        return Response({"data": result, "tokens": total_tokens}, status=status.HTTP_201_CREATED)
+    
 
 class AnyZapleczeWrite(APIView):
     serializer_class = WriteSerializer
