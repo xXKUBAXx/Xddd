@@ -1,21 +1,24 @@
 from django.shortcuts import get_object_or_404
 from ..models import Zaplecze, Account
 from ..serializers import ZapleczeSerializer, StructireSerializer, CategorySerializer
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from django.http import JsonResponse
+from asgiref.sync import sync_to_async
+
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
 from ..src.CreateWPblog.wp_api import WP_API
 
+from .zaplecze_api import ZAPIView
 
-class ZapleczeAPIStructure(APIView):
+
+class ZapleczeAPIStructure(ZAPIView):
     serializer_class = ZapleczeSerializer
-    def get_object(self, zaplecze_id):
+    async def get_object(self, zaplecze_id):
         try:
-            return Zaplecze.objects.get(id=zaplecze_id)
+            return await sync_to_async(Zaplecze.objects.get, thread_sensitive=False)(id=zaplecze_id)
         except Zaplecze.DoesNotExist:
             return None
         
@@ -23,8 +26,8 @@ class ZapleczeAPIStructure(APIView):
             operation_description="Get Zaplecze categories", 
             responses={200:CategorySerializer, 400:"Bad Request"}
             )
-    def get(self, request, zaplecze_id):
-        zaplecze = self.get_object(zaplecze_id)
+    async def get(self, request, zaplecze_id):
+        zaplecze = await self.get_object(zaplecze_id)
 
         if not zaplecze:
             return Response(
@@ -34,7 +37,11 @@ class ZapleczeAPIStructure(APIView):
         
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
-        wp_api = WP_API(data['domain'], data['wp_user'], data['wp_api_key'])
+        try:
+            wp_api = WP_API(data['domain'], data['wp_user'], data['wp_api_key'])
+        except Exception as e:
+            return Response({"data": e.args, "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
+
         return JsonResponse(
             wp_api.get_categories(),
             status=status.HTTP_200_OK,
@@ -46,8 +53,8 @@ class ZapleczeAPIStructure(APIView):
             request_body=StructireSerializer,
             responses={201:CategorySerializer}
             )
-    def post(self, request, zaplecze_id):
-        zaplecze = self.get_object(zaplecze_id)
+    async def post(self, request, zaplecze_id):
+        zaplecze = await self.get_object(zaplecze_id)
 
         serializer = ZapleczeSerializer(zaplecze)
 
@@ -62,31 +69,35 @@ class ZapleczeAPIStructure(APIView):
         else:
             topic = serializer.data["topic"]
 
-        o = OpenAI_article(
-            api_key=request.data.get("openai_api_key"),
-            domain_name=data['domain'],
-            wp_login=data['wp_user'],
-            wp_pass=data['wp_api_key'],
-            lang=data['lang']
-        )
+        try:
+            o = OpenAI_article(
+                api_key=request.data.get("openai_api_key"),
+                domain_name=data['domain'],
+                wp_login=data['wp_user'],
+                wp_pass=data['wp_api_key'],
+                lang=data['lang']
+            )
+        except Exception as e:
+            return Response({"data": e.args, "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
 
-        structure, tokens = o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
 
-        account = get_object_or_404(Account, user_id=request.user.id)
+        structure, tokens = await o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
+
+        account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=request.user.id)
         account.tokens_used += tokens
-        account.save()
+        await sync_to_async(account.save,thread_sensitive=False)()
 
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
 
 
-class AnyZapleczeAPIStructure(APIView):
+class AnyZapleczeAPIStructure(ZAPIView):
     @swagger_auto_schema(
             operation_description="Create categories on Zaplecze", 
             request_body=StructireSerializer,
             responses={201:CategorySerializer}
             )
-    def post(self, request):
+    async def post(self, request):
         o = OpenAI_article(
             api_key=request.data.get("openai_api_key"),
             domain_name=request.data.get('domain'),
@@ -95,10 +106,11 @@ class AnyZapleczeAPIStructure(APIView):
             lang=request.data.get('lang')
         )
 
-        structure, tokens = o.create_structure(request.data.get("topic"), request.data.get('cat_num'), request.data.get('subcat_num'))
+        structure, tokens = await o.create_structure(request.data.get("topic"), request.data.get('cat_num'), request.data.get('subcat_num'))
+        self.add_tokens(request.user.id, tokens, request.data.get("openai_api_key"))
 
-        account = get_object_or_404(Account, user_id=request.user.id)
+        account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=request.user.id)
         account.tokens_used += tokens
-        account.save()
+        await sync_to_async(account.save,thread_sensitive=False)()
 
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
