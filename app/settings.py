@@ -185,3 +185,38 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+
+
+import os
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {message}', 
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],  # Remove the 'console' handler for the 'django' logger
+            'level': 'INFO',
+            'propagate': False,
+        },
+        '': {
+            'handlers': ['console'],  # Add the 'console' handler for the root logger
+            'level': 'INFO',
+        },
+    },
+}
