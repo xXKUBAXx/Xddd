@@ -64,8 +64,8 @@ class ZapleczeAPIStructure(ZAPIView):
             topic = request.data.get("topic")
             data["topic"] = topic
             serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
-            if serializer.is_valid():
-                serializer.save()
+            if await sync_to_async(serializer.is_valid, thread_sensitive=False)():
+                sync_to_async(serializer.save, thread_sensitive=False)()
         else:
             topic = serializer.data["topic"]
 
