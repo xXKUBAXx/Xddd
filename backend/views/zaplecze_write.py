@@ -263,8 +263,14 @@ class ManyZapleczesWrite(ZAPIView):
         
         tasks = []
         for article_links, zaplecze, sd in zip(articles, zapleczas, start_dates):
+            if len(topic) < 4:
+                topic = article_links[0]['keyword']
             #select random categories from WP
-            wp, cats = await self.select_wp_cats(article_links, zaplecze, openai_key, topic, lang, sd, days_delta, forward_delta)
+            try:
+                wp, cats = await self.select_wp_cats(article_links, zaplecze, openai_key, topic, lang, sd, days_delta, forward_delta)
+            except Exception as e:
+                print(e)
+                continue
 
             if cats == None:
                 print(f"Wrong credentials to {zaplecze['domain']} - {zaplecze['wp_user']}:{zaplecze['wp_api_key']}")
@@ -296,6 +302,7 @@ class ManyZapleczesWrite(ZAPIView):
         }
         
         res = await asyncio.gather(*tasks)
+        total_tokens = sum([t for r in res for _, t in r])
         print([x for r in res for x in r])
         await channel_layer.group_send(group_name, event)
-        return Response({"data": [x for r in res for x, t in r]}, status=status.HTTP_201_CREATED)
+        return Response({"data": [x for r in res for x, _ in r], "tokens": total_tokens}, status=status.HTTP_201_CREATED)
