@@ -193,19 +193,28 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
+        'simple': {
             'format': '[{asctime}] {message}',
             'style': '{',
         },
     },
+    'filters': {
+        'exclude_outgoing_http': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'api.openai.com' not in record.getMessage(),
+        },
+    },
     'handlers': {
         'console': {
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-            'filters': [
-                lambda record: 'api.openai.com' not in record.getMessage(), 
-                lambda record: '/static' not in record.getMessage()
-                ],
+            'formatter': 'simple',
+            'filters': ['exclude_outgoing_http'],
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'simple',
         },
     },
     'root': {
@@ -214,14 +223,11 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],  # Remove the 'console' handler for the 'django' logger
-            'level': 'INFO',
-            'propagate': False,
-        },
-        '': {
-            'handlers': ['console'],  # Add the 'console' handler for the root logger
-            'level': 'INFO',
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
         },
     },
 }
+
 
