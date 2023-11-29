@@ -81,7 +81,7 @@ class ZAPIView(APIView):
 
         #Generate & download image
         if img_prompt != "":
-            img = o.download_img(img_prompt, f"{path}files/test_photo{datetime.now().microsecond}.webp")
+            img = await o.download_img(img_prompt, f"{path}files/test_photo{datetime.now().microsecond}.webp")
             #Upload image to WordPress
             img_id = o.upload_img(img)
             #Delete local image
