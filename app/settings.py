@@ -198,23 +198,21 @@ LOGGING = {
             'style': '{',
         },
     },
-    'filters': {
-        'exclude_outgoing_http': {
-            '()': 'django.utils.log.CallbackFilter',
-            'callback': lambda record: 'api.openai.com' not in record.getMessage(),
-        },
-    },
     'handlers': {
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
-            'filters': ['exclude_outgoing_http'],
+            'filters': [
+                lambda record: 'api.openai.com' not in record.getMessage(),
+                lambda record: 'chrome' not in record.getMessage(),
+                lambda record: 'driver' not in record.getMessage()
+                ],
         },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'formatter': 'simple',
+            'formatter': 'simple',  
         },
     },
     'root': {
