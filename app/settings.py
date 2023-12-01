@@ -203,11 +203,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
-            'filters': [
-                lambda record: 'api.openai.com' not in record.getMessage(),
-                lambda record: 'chrome' not in record.getMessage(),
-                lambda record: 'driver' not in record.getMessage()
-                ],
+            'filters': ['exclude_outgoing_http'],
         },
         'mail_admins': {
             'level': 'ERROR',
