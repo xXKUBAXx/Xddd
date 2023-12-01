@@ -40,18 +40,6 @@ $(document).ready(function() {
             document.getElementById("zapleczaCount").innerHTML = document.querySelectorAll('#zaplacza-table tbody input[type="checkbox"]:checked').length+parseInt(z_value.val());
         });
     });
-
-    const linki_values = document.querySelectorAll('#frazy-table tbody input[type="number"]');
-    function updateLinksSum() {
-        let sum = 0;
-        linki_values.forEach(l => {
-            sum += parseInt(l.value);
-        });
-        document.getElementById("linksCount").innerHTML = sum + parseInt(document.querySelectorAll("#linki-form-group div").length);
-    };
-    linki_values.forEach(box => {
-        box.addEventListener("change", updateLinksSum);
-    })
     
 
     const today = new Date();
@@ -62,82 +50,6 @@ $(document).ready(function() {
     mm < 10 ? mm = '0' + mm : null; 
     document.getElementById("start_date").setAttribute("value", yyyy + '-' + mm + '-' + dd);
 
-    $("#addlinks").on('click', function(event) {
-        event.preventDefault();
-        if (!$("div#linki-form-group").length) {
-            const div = document.createElement('div');
-            div.style.display = 'flex';
-            div.style.flexWrap = 'wrap';
-            div.style.paddingTop = '20px';
-            div.setAttribute('id', 'linki-form-group');
-            div.classList.add('form-group');
-
-            const inputs = document.createElement('div');
-            inputs.style.display = 'flex';
-
-            const input_url = document.createElement('input');
-            input_url.classList.add('form-control');
-            input_url.setAttribute('type', 'text');
-            input_url.setAttribute('placeholder', 'url');
-            input_url.setAttribute('name', 'url');
-            input_url.style.width = "50%";
-            inputs.appendChild(input_url);
-
-            const input_keyword = document.createElement('input');
-            input_keyword.classList.add('form-control');
-            input_keyword.setAttribute('type', 'text');
-            input_keyword.setAttribute('placeholder', 'keyword');
-            input_keyword.setAttribute('name', 'keyword');
-            input_keyword.style.width = "50%";
-            inputs.appendChild(input_keyword);
-
-            div.appendChild(inputs);
-            
-            const btn = document.createElement('button');
-            btn.classList.add('btn');
-            btn.classList.add('btn-outline-primary');
-            btn.classList.add('btn-floating');
-            btn.setAttribute('type','button');
-            btn.setAttribute('id','addlinksrow');
-            const icon = document.createElement('i');
-            icon.classList.add('fas');
-            icon.classList.add('fa-plus');
-            btn.appendChild(icon);
-            btn.style.height = "38px";
-
-            btn.addEventListener('click', function(event) {
-                event.preventDefault();
-                if ($("div#linki-form-group").length) {
-                    const inputs = document.createElement('div');
-                    inputs.style.display = 'flex';
-
-                    const input_url = document.createElement('input');
-                    input_url.classList.add('form-control');
-                    input_url.setAttribute('type', 'text');
-                    input_url.setAttribute('placeholder', 'url');
-                    input_url.setAttribute('name', 'url');
-                    input_url.style.width = "50%";
-                    inputs.appendChild(input_url);
-
-                    const input_keyword = document.createElement('input');
-                    input_keyword.classList.add('form-control');
-                    input_keyword.setAttribute('type', 'text');
-                    input_keyword.setAttribute('placeholder', 'keyword');
-                    input_keyword.setAttribute('name', 'keyword');
-                    input_keyword.style.width = "50%";
-                    inputs.appendChild(input_keyword);
-                    document.querySelector("#addlinksrow").insertAdjacentElement("beforebegin", inputs);
-                }
-            })
-            btn.addEventListener('click', updateLinksSum);  
-
-            div.appendChild(btn);
-
-            document.querySelector("button#addlinks").insertAdjacentElement("beforebegin", div);
-            updateLinksSum();
-            $(this).remove()
-        }
-    });
 
     $("#writeLinks").on('submit', function(event) {
         event.preventDefault();
