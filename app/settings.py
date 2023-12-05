@@ -192,36 +192,58 @@ import os
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    
     'formatters': {
-        'simple': {
+        'full': {
             'format': '[{asctime}] {message}',
             'style': '{',
         },
     },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-            'filters': [],
+    
+    'filters': {
+        'logger_filter': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'logger' not in record.module,
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'formatter': 'simple',  
+        'ws_filter': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'WebSocket' not in record.getMessage(),
+        },
+        'get_filter': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'GET' not in record.getMessage(),
         },
     },
+    
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'full',
+            'level': 'INFO',
+            'filters': [
+                'logger_filter', 
+                'ws_filter', 
+                'get_filter'
+                ],  # Apply the module filter
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'formatter': 'full',
+            'filename': 'info.log',
+        },
+    },
+    
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
     },
+
     'loggers': {
         'django': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+            'handlers': ['file'],
+            'level': 'INFO',
             'propagate': True,
         },
-    },
+    }
 }
-
 
