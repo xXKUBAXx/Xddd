@@ -203,7 +203,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
-            'filters': ['exclude_outgoing_http'],
+            'filters': [],
         },
         'mail_admins': {
             'level': 'ERROR',
