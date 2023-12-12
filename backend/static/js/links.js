@@ -160,7 +160,7 @@ $(document).ready(function() {
                 $("#write-details").append("<p>Tokens used: "+response.tokens+"</p>");
                 $("div#articles_spinner").remove()
             },
-            error: function(response) {
+            error: function(error) {
                 // Handle error response here
                 $("#write-details").append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
                 $("div#articles_spinner").remove();
