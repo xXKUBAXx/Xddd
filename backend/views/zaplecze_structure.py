@@ -40,7 +40,7 @@ class ZapleczeAPIStructure(ZAPIView):
         try:
             wp_api = WP_API(data['domain'], data['wp_user'], data['wp_api_key'])
         except Exception as e:
-            return Response({"data": e.args, "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": str(e), "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(
             wp_api.get_categories(),
@@ -78,7 +78,7 @@ class ZapleczeAPIStructure(ZAPIView):
                 lang=data['lang']
             )
         except Exception as e:
-            return Response({"data": e.args, "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": str(e), "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
 
 
         structure, tokens = await o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))

@@ -301,7 +301,10 @@ class ManyZapleczesWrite(ZAPIView):
             "text": f"Ukończono zlecenie nr {task_id} - przejdź do panelu użytkownika, żeby zobaczyć szczegóły"
         }
         
-        res = await asyncio.gather(*tasks)
+        try:
+            res = await asyncio.gather(*tasks)
+        except Exception as e:
+            return Response({"data": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         total_tokens = sum([t for r in res for _, t in r])
         print([x for r in res for x in r])
         await channel_layer.group_send(group_name, event)
