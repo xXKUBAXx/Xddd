@@ -51,6 +51,20 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/links_panel">Link</a>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Notifications
+                    </a>
+                    
+                    <ul id="notification-dropdown" class="dropdown-menu min-w-max absolute bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 bg-clip-padding border-none">
+                        <!-- Notifications go here -->
+                        <hr class="h-0 my-2 border border-solid border-t-0 border-gray-700 opacity-25" />
+                        
+                        <li>
+                            <a href="#" id="clear-btn" class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100">Clear All</a>
+                        </li>
+                    </ul>
+                </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="/user">Hello, {{user.username}}</a>
@@ -63,20 +77,6 @@
                     <a class="nav-link" href="{% provider_login_url 'google' action="reauthenticate" %}">Login</a>
                 </li>
                 {% endif %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Notifications
-                    </a>
-        
-                    <ul id="notification-dropdown" class="dropdown-menu min-w-max absolute bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 bg-clip-padding border-none">
-                        <!-- Notifications go here -->
-                        <hr class="h-0 my-2 border border-solid border-t-0 border-gray-700 opacity-25" />
-        
-                        <li>
-                            <a href="#" id="clear-btn" class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100">Clear All</a>
-                        </li>
-                    </ul>
-                </li>
             </ul>
         </div>
     </div>
@@ -93,5 +93,60 @@
 <script src="{% static 'js/main.js' %}"></script>
 {%block script %}{% endblock %}
 {% endif %}
+<div style="display: flex; justify-content: flex-end; position: sticky;bottom: 0;left: 0;background-image: url({% static 'monkey.png' %});height: 15em;width: 17em;z-index: -10;translate: -135px;"> 
+<div class="left eyeball">
+    <div class="pupil" id="pupil1"></div>
+</div>
+        <div class="right eyeball">
+            <div class="pupil" id="pupil2"></div>
+        </div>
+</div>
+<style>
+.eyeball {    
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
+    margin: 0px 4px;
+    top: 113px;
+    overflow: hidden;
+}
+
+.pupil {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background-color: #000000;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease-out;
+}
+</style>
+<script>
+    const eyeball = document.querySelector('.eyeball');
+
+    document.addEventListener('mousemove', (e) => {
+        const { clientX: mouseX, clientY: mouseY } = e;
+
+            const pupil = eyeball.querySelector('.pupil');
+            const { left, top, width, height } = eyeball.getBoundingClientRect();
+            const eyeX = left + width / 2;
+            const eyeY = top + height / 2;
+            const deltaX = mouseX - eyeX;
+            const deltaY = mouseY - eyeY;
+            const angle = Math.atan2(deltaY, deltaX);
+            const distance = Math.min(width, height) / 4;
+            const eyePositionX = eyeX + distance * Math.cos(angle) - 3;
+            const eyePositionY = eyeY + distance * Math.sin(angle) - 6;
+
+            pupil.style.transform = `translate(${eyePositionX - eyeX}px, ${eyePositionY - eyeY}px)`;
+            const pupil2 = document.querySelector('#pupil2');
+            pupil2.style.transform = `translate(${eyePositionX - eyeX}px, ${eyePositionY - eyeY}px)`;
+    });
+</script>
 </body>
 </html>
