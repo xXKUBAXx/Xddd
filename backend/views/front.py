@@ -207,7 +207,7 @@ class LinksPanel(View):
             user = request.user.email.split("@")[0]
             with urllib.request.urlopen(f"https://panel.verseo.pl/get_client_eichner.php?token=45h5j56k6788i4y3h57k567i54t3w6ki5y6u4u6h&pozycjoner={user}&aktywne=1") as url:
                 umowy = json.load(url)
-        except AttributeError:
+        except Exception:
             umowy = {"data": {"key":""}}
 
 
