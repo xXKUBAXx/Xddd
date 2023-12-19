@@ -238,7 +238,10 @@ class UpdateProfile(APIView):
     def post(self, request):
         user_id = request.user.id # Assuming you send user_id in the post request
         openai_api_key = request.data.get('openai_api_key')
-        semstorm_api_key = request.data.get('semstorm_api_key')
+        try:
+            semstorm_api_key = request.data.get('semstorm_api_key')
+        except:
+            semstorm_api_key = "semstorm_key"
 
         try:
             account = get_object_or_404(Account, user_id=user_id)

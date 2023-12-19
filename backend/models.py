@@ -42,8 +42,8 @@ class Link(models.Model):
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    openai_api_key = models.CharField(max_length=64, default="")
-    semstorm_api_key = models.CharField(max_length=64, default="")
+    openai_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
+    semstorm_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
     tokens_used = models.IntegerField(default=0)
 
     def __str__(self):
