@@ -68,7 +68,7 @@
                             <input type="text" class="form-control" id="openai_api_key" name="openai_api_key"
                                 value="{{user.account.openai_api_key}}">
                         </div>
-                        {% if not data.topic %}
+                        {% if not data.topic and data.topic != "None" %}
                         <div class="form-group">
                             <label class="form-label" for="topic">Zapleczes topic:</label>
                             <input type="text" class="form-control" id="topic" name="topic">
