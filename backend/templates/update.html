@@ -18,7 +18,7 @@ Stwórz nowe zaplecze
                 {% if k != 'id' %}
                 <div class="form-group">
                     <label class="form-label" for="{{k}}">{{k}}:</label>
-                    <input type="text" class="form-control" id="{{k}}" name="{{k}}" value="{{v}}">
+                    <input type="text" class="form-control" id="{{k}}" name="{{k}}" value="{% if v %}{{v}}{% endif %}">
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -42,20 +42,6 @@ Stwórz nowe zaplecze
             // get csrf token
             var csrftoken = getCookie('csrftoken');
 
-            // Check if any field is empty
-            var emptyFields = false;
-            $(this).find('input').each(function() {
-                if ($(this).val() === '') {
-                    emptyFields = true;
-                    return false; // Exit the loop early
-                }
-            });
-            
-            if (emptyFields) {
-                alert('Please fill in all fields.');
-                return; // Do not proceed with submission
-            }
-            
             // Send POST request to the /api/all/ endpoint
             $.ajax({
                 type: 'PUT',
