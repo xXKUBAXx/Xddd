@@ -41,7 +41,8 @@ Dodaj klucz do API
                       {% endfor %}
                     </h3>
                     <p>Click to see task details</p>
-                    <button class="copyButton">Skopuj notatke do panelu</button>
+                    <button class="copyButton">Copy panel note</button>
+                    <button class="copyLinks">Copy links</button>
                 </div>
                 <div class="additional-attributes">
                   <table class="keywordsTable">
@@ -78,38 +79,63 @@ Dodaj klucz do API
 <script>
   // Using jQuery for simplicity
   $(document).ready(function () {
-      $(".copyButton").on("click", function () {
-          event.preventDefault(); // Prevent form from submitting normally
-          // Find the associated table
-          const keywordsTable = $(this).closest(".card").find(".keywordsTable");
-          const rows = keywordsTable.find("tbody tr");
+    $(".copyButton").on("click", function () {
+      event.preventDefault(); // Prevent form from submitting normally
+      // Find the associated table
+      const keywordsTable = $(this).closest(".card").find(".keywordsTable");
+      const rows = keywordsTable.find("tbody tr");
 
-          let clipboardText = "Dla fraz kluczowych z największym potencjałem zleciłem przygotowanie treści zawierających bezpośrednie odnośniki do strony klienta. Takie działanie pozwoli rozbudować profil linkowy klienta, zwiększyć autorytet domeny oraz poprawić pozycję kluczowych fraz w kontekście ruchu organicznego:\n";
+      let clipboardText = "Dla fraz kluczowych z największym potencjałem zleciłem przygotowanie treści zawierających bezpośrednie odnośniki do strony klienta. Takie działanie pozwoli rozbudować profil linkowy klienta, zwiększyć autorytet domeny oraz poprawić pozycję kluczowych fraz w kontekście ruchu organicznego:\n";
 
-          // Loop through each row in the table
-          rows.each(function () {
-              const cells = $(this).find("td");
-              // Assuming the structure is consistent (Status, URL, Keyword, Link)
-              const status = cells.eq(0).text();
-              const url = cells.eq(1).text();
-              const keyword = cells.eq(2).text();
-              const link = cells.eq(3).text();
+      // Loop through each row in the table
+      rows.each(function () {
+          const cells = $(this).find("td");
+          // Assuming the structure is consistent (Status, URL, Keyword, Link)
+          const status = cells.eq(0).text();
+          const url = cells.eq(1).text();
+          const keyword = cells.eq(2).text();
+          const link = cells.eq(3).text();
 
-              // Append the keyword and URL to the clipboardText
-              clipboardText += `\t- ${keyword}: ${url}\n`;
-          });
-
-          // Create a textarea element to temporarily hold the text
-          const textarea = $("<textarea>").val(clipboardText);
-          $("body").append(textarea);
-
-          // Select and copy the text
-          textarea.select();
-          document.execCommand("copy");
-
-          // Remove the textarea element from the DOM
-          textarea.remove();
+          // Append the keyword and URL to the clipboardText
+          clipboardText += `\t- ${keyword}: ${url}\n`;
       });
+
+      // Create a textarea element to temporarily hold the text
+      const textarea = $("<textarea>").val(clipboardText);
+      $("body").append(textarea);
+
+      // Select and copy the text
+      textarea.select();
+      document.execCommand("copy");
+
+      // Remove the textarea element from the DOM
+      textarea.remove();
+    });
+    $(".copyLinks").on("click", function() {
+      event.preventDefault();
+      const keywordsTable = $(this).closest(".card").find(".keywordsTable");
+      const rows = keywordsTable.find("tbody tr");
+
+      let clipboardText = "";
+
+      // Loop through each row in the table
+      rows.each(function () {
+          const cells = $(this).find("td");
+          // Append the URL to the clipboardText
+          clipboardText += cells.eq(1).text() + "\n";
+      });
+
+      // Create a textarea element to temporarily hold the text
+      const textarea = $("<textarea>").val(clipboardText);
+      $("body").append(textarea);
+
+      // Select and copy the text
+      textarea.select();
+      document.execCommand("copy");
+
+      // Remove the textarea element from the DOM
+      textarea.remove();
+    })
   });
 </script>
 <script>
