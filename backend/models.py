@@ -24,7 +24,7 @@ class Zaplecze(models.Model):
     wp_user = models.CharField(max_length=32, blank=True, null=True)
     wp_password = models.CharField(max_length=64, blank=True, null=True)
     wp_api_key = models.CharField(max_length=128, blank=True, null=True)
-    wp_post_count = models.IntegerField(default=0)
+    wp_post_count = models.IntegerField(default=0, null=True, blank=True)
 
 
 
