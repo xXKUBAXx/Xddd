@@ -55,8 +55,13 @@ $(document).ready(function() {
                         .textContent = e.parent==0 ? e.name : parents[e.parent]+' -> '+e.name;
                     $("#cat_table>tbody").append(fragment);
                 });
+                document.querySelector("button#selectAll").addEventListener("click", () => {
+                    document.querySelectorAll('#cat_table input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
+                    document.querySelector('#cat_table input#\\31[type="checkbox"]').checked = false;
+                })
                 $("button#categories").remove();
-                $("#articles").show();
+                $("button#articles").show();
+                $("button#selectAll").show();
                 if (response.length != $("#wp_post_count").innerHTML){
                     $.ajax({
                         type: 'PUT',
