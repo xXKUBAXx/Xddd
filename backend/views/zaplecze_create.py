@@ -37,7 +37,7 @@ class ZapleczeCreateDomain(ZapleczeCreate):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         domain = data['domain']
-        if data['ftp_user']:
+        if data['ftp_user'] and data['ftp_user']!="None":
             return Response({"res": "This zaplecze alredy has FTP"}, status=status.HTTP_200_OK)
         create = Create(data)
         create.login()
@@ -58,7 +58,7 @@ class ZapleczeCreateDB(ZapleczeCreate):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         domain = data['domain']
-        if data['db_user']:
+        if data['db_user'] and data['db_user']!="None":
             return Response({"res": "This zaplecze alredy has DB"}, status=status.HTTP_200_OK)
         create = Create(data)
         create.login()
@@ -81,7 +81,7 @@ class ZapleczeCreateFTP(ZapleczeCreate):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         domain = data['domain']
-        if data['ftp_user']:
+        if data['ftp_user'] and data['ftp_user']!="None":
             return Response({"res": "This zaplecze alredy has FTP"}, status=status.HTTP_200_OK)
         create = Create(data)
         create.login()
