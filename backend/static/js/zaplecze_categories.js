@@ -101,6 +101,7 @@ $(document).ready(function() {
         $(this).parent().append(ul);
         $("#cat_table").parent().remove();
         $(this).remove();
+        $("button#selectAll").remove();
         $("#writeForm").show();
     });
     
