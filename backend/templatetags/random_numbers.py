@@ -15,3 +15,7 @@ def random_str(a, b, p):
         return a
     else:
         return b
+
+@register.filter(name='split_url')
+def split_url(value):
+  return value.split('/')[2]

@@ -1,4 +1,5 @@
 {% extends "base.html" %}  
+{% load random_numbers %}
 
 {% block style %}
 {% endblock %}
@@ -35,10 +36,7 @@ Dodaj klucz do API
           <div class="col-md-12">
             <div class="card shadow">
                 <div class="card-body">
-                    <h3>Task ID: {{ task.grouper }} - Keywords: 
-                      {% for row in task.list %}
-                        {{ row.keyword }}{% if not forloop.last %}, {% endif %}
-                      {% endfor %}
+                    <h3>Task ID: {{ task.grouper }} - {{ task.list.0.link|split_url }}
                     </h3>
                     <p>Click to see task details</p>
                     <button class="copyButton">Copy panel note</button>
