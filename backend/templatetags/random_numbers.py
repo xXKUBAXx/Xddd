@@ -18,4 +18,7 @@ def random_str(a, b, p):
 
 @register.filter(name='split_url')
 def split_url(value):
-  return value.split('/')[2]
+    try:
+        return value.split('/')[2]
+    except:
+        return "Unknown"
