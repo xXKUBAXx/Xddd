@@ -71,7 +71,7 @@ class ZapleczeWrite(ZAPIView):
         
         o = OpenAI_article(**params)
         
-        response = await o.main(a, p, json.loads(categories), "backend/src/CreateWPblog/", json.loads(links))
+        response = await o.main(a, p, json.loads(categories), "backend/src/CreateWPblog/", links)
 
         total_tokens = 0
         result = {}
