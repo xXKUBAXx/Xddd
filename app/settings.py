@@ -213,6 +213,10 @@ LOGGING = {
             '()': 'django.utils.log.CallbackFilter',
             'callback': lambda record: 'GET' not in record.getMessage(),
         },
+        'http_200_filter': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'HTTP/1.1 200 OK' not in record.getMessage(),
+        },
     },
     
     'handlers': {
@@ -223,18 +227,21 @@ LOGGING = {
             'filters': [
                 'logger_filter', 
                 'ws_filter', 
-                'get_filter'
+                'get_filter',
+                'http_200_filter'
                 ],  # Apply the module filter
         },
         'file': {
             'class': 'logging.FileHandler',
             'formatter': 'full',
             'filename': 'info.log',
+            'level' : 'INFO',
+            'filters' : ['ws_filter'],
         },
     },
     
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console', 'file'],
         'level': 'INFO',
     },
 
