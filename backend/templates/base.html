@@ -58,21 +58,6 @@
                     <a class="nav-link" href="/user">Hello, {{user.username}}</a>
                 </li>
                 {% endif %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Notifications
-                    </a>
-                    
-                    <ul id="notification-dropdown" class="dropdown-menu min-w-max absolute bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 bg-clip-padding border-none">
-                        <!-- Notifications go here -->
-                        <hr class="h-0 my-2 border border-solid border-t-0 border-gray-700 opacity-25" />
-                        
-                        <li>
-                            <a href="#" id="clear-btn" class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100">Clear All</a>
-                        </li>
-                    </ul>
-                </li>
-                {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Logout</a>
                 </li>
