@@ -1,0 +1,57 @@
+#top-sticky {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 101;
+}
+
+#notification-container {
+  max-width: 300px;
+}
+
+/* Close button styles */
+.close-button {
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.close-button svg {
+  width: 25px;
+  height: 25px;
+}
+
+/* Updated notification styles */
+.notification {
+  background-color: #add8e6;
+  color: #000;
+  border-radius: 8px;
+  padding: 10px;
+  padding-right: 20px;
+  margin-bottom: 1px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+/* Optional: Style the close button on hover */
+.close-button:hover {
+  filter: brightness(50%); /* Add a hover effect for better visibility */
+}
+
+#banner-container {
+  width: 100%;
+}
+
+.banner {
+  background-color: #add8e6;
+  color: #000;
+  border-radius: 8px;
+  margin-bottom: 1px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

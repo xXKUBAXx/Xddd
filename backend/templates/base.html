@@ -13,11 +13,13 @@
     <script src="https://unpkg.com/htmx.org@1.8.5" integrity="sha384-7aHh9lqPYGYZ7sTHvzP1t3BAfLhYSTy9ArHdP3Xsr9/3TlGurYgcPBoFmXX2TX/w" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
 
+
     <!-- Tailwind and Tailwind-Elements -->
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tw-elements/dist/css/index.min.css" />
     <script src="https://cdn.tailwindcss.com"></script> -->
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
 
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
 
@@ -31,7 +33,7 @@
 
 </head>
 
-<body hx-ext="ws" ws-connect="/ws/notifications/">
+<body hx-ext="ws">
 
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -83,7 +85,12 @@
         </div>
     </div>
 </nav>
-
+<div id="top-sticky">
+    <div id="banner-container" ws-connect="/ws/banners/">
+        <div hx-trigger="load" hx-get="/banners"></div>
+    </div>
+    <div id="notification-container-{{user.id}}" ws-connect="/ws/notifications/"></div>
+</div> 
 <h1 class="">{%block h1 %}{% endblock %}</h1>
 
 {% if user.is_authenticated %}
@@ -93,6 +100,7 @@
 
 
 <script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/notifications.js' %}"></script>
 {%block script %}{% endblock %}
 {% endif %}
 {% if user.account.cursor_followed %}
@@ -104,53 +112,8 @@
             <div class="pupil" id="pupil2"></div>
         </div>
 </div>
-<style>
-.eyeball {    
-    position: relative;
-    width: 40px;
-    height: 40px;
-    background-color: #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
-    margin: 0px 4px;
-    top: 113px;
-    overflow: hidden;
-}
-
-.pupil {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    background-color: #000000;
-    border-radius: 50%;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    transition: transform 0.1s ease-out;
-}
-</style>
-<script>
-    const eyeball = document.querySelector('.eyeball');
-
-    document.addEventListener('mousemove', (e) => {
-        const { clientX: mouseX, clientY: mouseY } = e;
-
-            const pupil = eyeball.querySelector('.pupil');
-            const { left, top, width, height } = eyeball.getBoundingClientRect();
-            const eyeX = left + width / 2;
-            const eyeY = top + height / 2;
-            const deltaX = mouseX - eyeX;
-            const deltaY = mouseY - eyeY;
-            const angle = Math.atan2(deltaY, deltaX);
-            const distance = Math.min(width, height) / 4;
-            const eyePositionX = eyeX + distance * Math.cos(angle) - 3;
-            const eyePositionY = eyeY + distance * Math.sin(angle) - 6;
-
-            pupil.style.transform = `translate(${eyePositionX - eyeX}px, ${eyePositionY - eyeY}px)`;
-            const pupil2 = document.querySelector('#pupil2');
-            pupil2.style.transform = `translate(${eyePositionX - eyeX}px, ${eyePositionY - eyeY}px)`;
-    });
-</script>
+<link rel="stylesheet" href="{% static 'css/eyes.css' %}">
+<script src="{% static 'js/eyes.js' %}"></script>
 {% endif %}
 </body>
 </html>

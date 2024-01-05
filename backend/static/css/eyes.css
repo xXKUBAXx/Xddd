@@ -1,0 +1,23 @@
+.eyeball {    
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
+    margin: 0px 4px;
+    top: 113px;
+    overflow: hidden;
+}
+
+.pupil {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background-color: #000000;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease-out;
+}
