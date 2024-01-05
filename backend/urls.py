@@ -27,5 +27,6 @@ urlpatterns = [
     path('links_panel/', views.LinksPanel.as_view()),
     path('links/<int:umowa_id>/', views.WriteLink.as_view()),
     path('<int:zaplecze_id>/', views.ZapleczeUnit.as_view()),
-    path('<int:zaplecze_id>/update/', views.UpdateZaplecze.as_view())
+    path('<int:zaplecze_id>/update/', views.UpdateZaplecze.as_view()),
+    path('banners/', views.Notifications.as_view())
 ]

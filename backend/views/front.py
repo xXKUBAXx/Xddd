@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404
-from ..models import Zaplecze, Account, Link
+from ..models import Zaplecze, Account, Link, Banner
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View
 from django.http import HttpResponse
+from django.template.loader import get_template
 from django.utils.decorators import method_decorator
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
@@ -252,3 +253,11 @@ class UpdateProfile(APIView):
         account.save()
 
         return render(request, 'user.html')
+
+
+
+
+class Notifications(APIView):
+    def get(self, request):
+        queryset = list(Banner.objects.values())
+        return render(request, "partials/banners.html", {"banners": queryset})
