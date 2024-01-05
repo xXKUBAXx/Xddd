@@ -298,7 +298,9 @@ class ManyZapleczesWrite(ZAPIView):
         group_name = 'user-notifications'
         event = {
             "type": "notification",
-            "text": f"Ukończono zlecenie nr {task_id} - przejdź do panelu użytkownika, żeby zobaczyć szczegóły"
+            "text": f"Ukończono zlecenie nr {task_id}", 
+            "url": "/user",
+            "email": request.user.id
         }
         
         try:

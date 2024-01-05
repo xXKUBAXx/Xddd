@@ -1,4 +1,4 @@
-from .models import Link
+from .models import Link, Banner
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
@@ -31,5 +31,19 @@ def create_profile(sender, instance, created, **kwargs):
             "keyword": instance.keyword,
             "url": instance.url,
             "id": instance.id
+        }
+        async_to_sync(channel_layer.group_send)(group_name, event)
+
+
+
+@receiver(post_save, sender=Banner)
+def db_notificatoin(sender, instance, created, **kwargs):
+    if instance.active:
+        channel_layer = get_channel_layer()
+        group_name ='user-banners' 
+        event = {
+            "type": "banner", 
+            "text": instance.text,
+            "color": instance.color
         }
         async_to_sync(channel_layer.group_send)(group_name, event)

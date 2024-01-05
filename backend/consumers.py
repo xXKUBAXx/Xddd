@@ -19,10 +19,30 @@ class NotificationConsumer(WebsocketConsumer):
 
     def notification(self, event):
         html = get_template("partials/notification.html").render(
-            context={"text": event["text"]}
+            context=event
         )
         self.send(text_data=html)
 
+
+class BannerConsumer(WebsocketConsumer):
+    def connect(self):
+        self.GROUP_NAME = 'user-banners'
+        # Join room group
+        async_to_sync(self.channel_layer.group_add)(
+            self.GROUP_NAME, self.channel_name
+        )
+        self.accept()
+
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)(
+            self.GROUP_NAME, self.channel_name
+        )
+
+    def banner(self, event):
+        html = get_template("partials/banner.html").render(
+            context=event
+        )
+        self.send(text_data=html)
 
 class LinksConsumer(WebsocketConsumer):
     def connect(self):
