@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Zaplecze, Account, Link
+from .models import Zaplecze, Account, Link, Banner
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 # Register your models here.
@@ -15,6 +15,12 @@ class LinkAdmin(admin.ModelAdmin):
     list_display = ['user', 'keyword', 'link', 'url', 'done']
 
 admin.site.register(Link, LinkAdmin)
+
+
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ['active', 'text', 'color']
+
+admin.site.register(Banner, BannerAdmin)
 
 
 class AccountInline(admin.StackedInline):

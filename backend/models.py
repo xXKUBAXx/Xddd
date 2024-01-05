@@ -27,7 +27,6 @@ class Zaplecze(models.Model):
     wp_post_count = models.IntegerField(default=0, null=True, blank=True)
 
 
-
 class Link(models.Model):
     task_id = models.IntegerField(default=0)
     ul_id = models.CharField(max_length=32, default="client0")
@@ -39,6 +38,11 @@ class Link(models.Model):
     cost = models.IntegerField(blank=True, null=True)
     done = models.BooleanField()
 
+
+class Banner(models.Model):
+    text = models.CharField(max_length = 2048)
+    active = models.BooleanField(default=True)
+    color = models.CharField(max_length = 32, default="#add8e6")
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
