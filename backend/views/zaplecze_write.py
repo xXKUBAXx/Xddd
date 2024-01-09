@@ -45,11 +45,11 @@ class ZapleczeWrite(ZAPIView):
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         categories, openai_key, a, p, links = \
-                request.data.get('categories'), \
+                json.loads(request.data.get('categories')), \
                 str(request.data.get('openai_api_key')), \
                 int(request.data.get('a_num')), \
                 int(request.data.get('p_num')), \
-                request.data.get('links')
+                json.loads(request.data.get('links'))
         
 
         params = {
@@ -71,7 +71,7 @@ class ZapleczeWrite(ZAPIView):
         
         o = OpenAI_article(**params)
         
-        response = await o.main(a, p, json.loads(categories), "backend/src/CreateWPblog/", links)
+        response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
 
         total_tokens = 0
         result = {}
