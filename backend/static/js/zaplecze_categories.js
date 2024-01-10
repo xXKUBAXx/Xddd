@@ -172,8 +172,10 @@ $(document).ready(function() {
                 }
                 $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
             },
-            error: function(response) {
-                console.error(response);
+            error: function(error) {
+                $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                console.error(error);
+                $("div#articles_spinner").remove();
             }
         })
     });

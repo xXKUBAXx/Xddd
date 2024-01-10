@@ -44,12 +44,17 @@ class ZapleczeWrite(ZAPIView):
             )
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
-        categories, openai_key, a, p, links = \
+        categories, openai_key, a, p = \
                 json.loads(request.data.get('categories')), \
                 str(request.data.get('openai_api_key')), \
                 int(request.data.get('a_num')), \
-                int(request.data.get('p_num')), \
-                json.loads(request.data.get('links'))
+                int(request.data.get('p_num'))
+
+        try:
+            links = json.loads(request.data.get('links'))
+        except: 
+            links = []
+
         
 
         params = {
