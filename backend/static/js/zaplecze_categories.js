@@ -75,7 +75,12 @@ $(document).ready(function() {
             },
             error: (error) => {
                 // Handle error response here
-                $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                if (error.responseJSON.data){
+                    $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                } else {
+                    $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
+
+                }
                 $("button#categories").remove();
                 console.error(error);
             }
@@ -173,9 +178,13 @@ $(document).ready(function() {
                 $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
             },
             error: function(error) {
-                $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                console.error(error);
-                $("div#articles_spinner").remove();
+                if (error.responseJSON.data){
+                    $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                } else {
+                    $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
+                }
+                $("div#articles_spinner").remove()
+                console.error(response);
             }
         })
     });
