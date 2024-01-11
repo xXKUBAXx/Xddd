@@ -5,7 +5,7 @@ import json
 class WriteZapleczaThrottle(SimpleRateThrottle):
     scope = 'write-zaplecza'
 
-    def get_cache_key(self, request, view):
+    def get_cache_key(self, request):
         if request.user and request.user.is_authenticated:
             ident = request.user.pk
         else: 
@@ -27,14 +27,8 @@ class WriteZapleczaThrottle(SimpleRateThrottle):
         """
         if self.rate is None:
             return True
-
-        self.key = self.get_cache_key(request, view)
-        if self.key is None:
-            return True
-
-        self.history = self.cache.get(self.key, [])
-        self.now = self.timer()
-
+        
+        self.get_history(request)
         # Drop any requests from the history which have now passed the
         # throttle duration
         while self.history and self.history[-1] <= self.now - self.duration:
@@ -46,6 +40,19 @@ class WriteZapleczaThrottle(SimpleRateThrottle):
         return self.throttle_success(request)
 
 
+    def get_history(self, request):
+        self.key = self.get_cache_key(request)
+        if self.key is None:
+            return True
+
+        self.history = self.cache.get(self.key, [])
+        self.now = self.timer()
+
+
+    def add_timestamp(self):
+        self.history.insert(0, self.now)
+        self.cache.set(self.key, self.history, self.duration)
+
     def throttle_success(self, request):
         """
         Inserts the current request's timestamp along with the key
@@ -54,8 +61,5 @@ class WriteZapleczaThrottle(SimpleRateThrottle):
         categories, a = json.loads(request.data.get('categories')), int(request.data.get('a_num'))
 
         for _ in range(len(categories*a)):
-            print(f"Adding for {request.user.email}")
-            self.history.insert(0, self.now)
-            self.cache.set(self.key, self.history, self.duration)
-
+            self.add_timestamp()
         return True
