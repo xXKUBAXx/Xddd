@@ -20,9 +20,11 @@ from ..src.CreateWPblog.setup_wp import Setup_WP
 from ..src.CreateWPblog.wp_api import WP_API
 from .zaplecze_api import ZAPIView
 from .utils import log_user
-from django.utils.decorators import method_decorator
+from ..throttling import WriteZapleczaThrottle
+
 
 class ZapleczeWrite(ZAPIView):
+    throttle_classes = [WriteZapleczaThrottle]
     async def get_object(self, zaplecze_id):
         try:
             return await sync_to_async(Zaplecze.objects.get, thread_sensitive=False)(id=zaplecze_id)
