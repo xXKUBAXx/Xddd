@@ -162,7 +162,11 @@ $(document).ready(function() {
             },
             error: function(error) {
                 // Handle error response here
-                $("#write-details").append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                if (error.responseJSON.data){
+                    $("#write-details").append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                }else{
+                    $("#write-details").append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
+                }
                 $("div#articles_spinner").remove();
                 console.error(error);
             }

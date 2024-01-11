@@ -50,7 +50,11 @@ $(document).ready(function() {
                 },
                 error: function(error) {
                     // Handle error response here
-                    $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                    if (error.responseJSON.data){
+                        $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                    } else {
+                        $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
+                    }
                     $("div#class_spinner").remove();
                     console.error(error);
                 }
@@ -93,7 +97,11 @@ $(document).ready(function() {
             },
             error: function(error) {
                 // Handle error response here
-                $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                if(error.responseJSON.data){
+                    $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
+                } else {
+                    $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
+                }
                 $("div#class_spinner").remove();
                 console.error(error);
             }
