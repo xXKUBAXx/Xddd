@@ -16,6 +16,7 @@ from .zaplecze_api import ZAPIView
 
 class ZapleczeAPIStructure(ZAPIView):
     serializer_class = ZapleczeSerializer
+    throttle_scope = 'structure'
     async def get_object(self, zaplecze_id):
         try:
             return await sync_to_async(Zaplecze.objects.get, thread_sensitive=False)(id=zaplecze_id)
