@@ -38,6 +38,9 @@ class ZapleczeWrite(ZAPIView):
             responses={201:ResponseSerializer, 400:"Bad Request"}
             )
     async def post(self, request, zaplecze_id):
+        # throttle = WriteZapleczaThrottle()
+        # throttle.get_history(request)
+        # throttle.add_timestamp()
         zaplecze = await self.get_object(zaplecze_id)
         if not zaplecze:
             return Response(
@@ -51,12 +54,11 @@ class ZapleczeWrite(ZAPIView):
                 str(request.data.get('openai_api_key')), \
                 int(request.data.get('a_num')), \
                 int(request.data.get('p_num'))
-
+        
         try:
             links = json.loads(request.data.get('links'))
         except: 
             links = []
-
         
 
         params = {
