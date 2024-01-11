@@ -122,6 +122,8 @@ class ZapleczeCreateTweakWP(ZapleczeCreate):
                 {"res": "Object with this id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if data['wp_post_count'] > 0:
+            return Response({"res": "This zaplecze is alive"}, status=status.HTTP_200_OK)
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
         domain = data['domain']
