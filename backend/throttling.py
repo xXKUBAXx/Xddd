@@ -27,6 +27,9 @@ class WriteZapleczaThrottle(SimpleRateThrottle):
         """
         if self.rate is None:
             return True
+
+        if request.user.account.premium_user:
+            return True
         
         self.get_history(request)
         # Drop any requests from the history which have now passed the

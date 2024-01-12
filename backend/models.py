@@ -50,6 +50,7 @@ class Account(models.Model):
     semstorm_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
     tokens_used = models.IntegerField(default=0)
     cursor_followed = models.BooleanField(default=False)
+    premium_user = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
