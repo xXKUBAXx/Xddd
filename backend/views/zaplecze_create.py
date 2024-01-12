@@ -43,7 +43,11 @@ class ZapleczeCreateDomain(ZapleczeCreate):
         create.login()
         create.add_domain(domain)
         create.add_ip(domain)
-        create.add_ssl()
+        try:
+            create.add_ssl()
+        except:
+            print("SSL problem")
+            create.add_ssl()
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -146,7 +150,10 @@ class ZapleczeCreateWPapi(ZapleczeCreate):
         if data['wp_api_key']:
             return Response({"res": "This zaplecze alredy has WP API key"}, status=status.HTTP_200_OK)
         
-        data['wp_api_key'] = wp.get_api_key(data['wp_user'], data['wp_password'])
+        try:
+            data['wp_api_key'] = wp.get_api_key(data['wp_user'], data['wp_password'])
+        except:
+            raise Exception("Cannot obtain WordPress API key")
         serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
         if serializer.is_valid():
             serializer.save()

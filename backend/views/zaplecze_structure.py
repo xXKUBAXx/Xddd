@@ -60,6 +60,7 @@ class ZapleczeAPIStructure(ZAPIView):
         serializer = ZapleczeSerializer(zaplecze)
 
         data = serializer.data
+        self.logger.info(f"{request.user.email} - Generating {int(request.data.get('cat_num'))*int(request.data.get('subcat_num'))} categories at {data['domain']}")        
 
         if "topic" in request.data:
             topic = request.data.get("topic")
@@ -88,6 +89,7 @@ class ZapleczeAPIStructure(ZAPIView):
         account.tokens_used += tokens
         await sync_to_async(account.save,thread_sensitive=False)()
 
+        self.logger.info(f"{request.user.email} - Done generating {int(request.data.get('cat_num'))*int(request.data.get('subcat_num'))} categories at {data['domain']}")        
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
 
@@ -99,6 +101,7 @@ class AnyZapleczeAPIStructure(ZAPIView):
             responses={201:CategorySerializer}
             )
     async def post(self, request):
+        self.logger.info(f"{request.user.email} - Generating {int(request.data.get('cat_num'))*int(request.data.get('subcat_num'))} categories at {request.data.get('domain')}")        
         o = OpenAI_article(
             api_key=request.data.get("openai_api_key"),
             domain_name=request.data.get('domain'),
@@ -114,4 +117,5 @@ class AnyZapleczeAPIStructure(ZAPIView):
         account.tokens_used += tokens
         await sync_to_async(account.save,thread_sensitive=False)()
 
+        self.logger.info(f"{request.user.email} - Done generating {int(request.data.get('cat_num'))*int(request.data.get('subcat_num'))} categories at {request.data.get('domain')}")        
         return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)

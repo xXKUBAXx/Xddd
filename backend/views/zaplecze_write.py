@@ -60,6 +60,7 @@ class ZapleczeWrite(ZAPIView):
         except: 
             links = []
         
+        self.logger.info(f"{request.user.email} - Writing {len(categories)*a} articles at {data['domain']}")        
 
         params = {
             "api_key" : openai_key,
@@ -93,6 +94,7 @@ class ZapleczeWrite(ZAPIView):
                 
         await self.add_tokens(request.user.id, total_tokens, openai_key)
         
+        self.logger.info(f"{request.user.email} - Done writing {len(categories)*a} articles at {data['domain']}")        
         return Response({"data": result, "tokens": total_tokens}, status=status.HTTP_201_CREATED)
     
 
@@ -114,6 +116,7 @@ class AnyZapleczeWrite(APIView):
                 request.data.get('wp_user'), \
                 request.data.get('lang')
         
+        self.logger.info(f"{request.user.email} - Writing {len(categories)*a} articles at {domain}")        
         if 'wp_api_key' in request.data:
             wp_api_key = request.data.get('wp_api_key')
         elif 'wp_password': 
@@ -178,6 +181,7 @@ class AnyZapleczeWrite(APIView):
             account = Account.objects.create(user_id=request.user.id, tokens_used=tokens, openai_api_key=openai_key)
         account.save()
 
+        self.logger.info(f"{request.user.email} - Done writing {len(categories)*a} articles at {domain}")        
         return Response({"data": response, "tokens": tokens}, status=status.HTTP_201_CREATED)
 
 
@@ -233,6 +237,7 @@ class ManyZapleczesWrite(ZAPIView):
         links = json.loads(request.data.get("links"))
 
         
+        self.logger.info(f"{request.user.email} - Writing {len(links)} links")        
         if 'forward_delta' in request.data:
             forward_delta = True if request.data.get('forward_delta') else False
         else:
@@ -317,6 +322,7 @@ class ManyZapleczesWrite(ZAPIView):
         except Exception as e:
             return Response({"data": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         total_tokens = sum([t for r in res for _, t in r])
-        print([x for r in res for x in r])
+        # print([x for r in res for x in r])
         await channel_layer.group_send(group_name, event)
+        self.logger.info(f"{request.user.email} - Done writing {len(json.loads(request.data.get('links')))} links")        
         return Response({"data": [x for r in res for x, _ in r], "tokens": total_tokens}, status=status.HTTP_201_CREATED)

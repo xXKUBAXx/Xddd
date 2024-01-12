@@ -8,9 +8,13 @@ from django.shortcuts import get_object_or_404
 
 from adrf.views import APIView
 from asgiref.sync import sync_to_async
+import logging
 
 
 class ZAPIView(APIView):
+
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
     async def add_tokens(self, id, toknes:int, openai_api_key:str = ""):
         try:
             account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=id)
@@ -53,7 +57,7 @@ class ZAPIView(APIView):
         total_tokens = 0
                 
         #generate headers & promt for generating image
-        print("Creating headers for - ", title)
+        # print("Creating headers for - ", title)
         headers, img_prompt, headers_tokens = await o.create_headers(title,header_num)
         total_tokens += await self.add_tokens(user.id, headers_tokens)
         
@@ -65,7 +69,7 @@ class ZAPIView(APIView):
         #queue up rest of paragraphs
         for h in headers:
             p_tasks.append(asyncio.create_task(o.write_paragraph(title, h)))
-        print("Writing paragraphs for article - ", title)
+        # print("Writing paragraphs for article - ", title)
         paragraphs = await asyncio.gather(*p_tasks)
         #merge all texts into single string article
         text = ""
@@ -100,7 +104,7 @@ class ZAPIView(APIView):
 
         #shift date of publication for next article
         o.shift_date()
-        print("Uploaded article - ", response)
+        # print("Uploaded article - ", response)
 
         #Update database with article url and mark as done
         l.url = response
@@ -139,7 +143,6 @@ class ZAPIView(APIView):
             ...categories
         ]
         '''
-        print("titles", article_num)
         titles_tasks = []
         # for category in categories:
         #     titles_tasks.append(asyncio.create_task(o.create_titles(category['name'],article_num,category['id'])))
