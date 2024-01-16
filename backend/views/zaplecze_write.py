@@ -41,6 +41,8 @@ class ZapleczeWrite(ZAPIView):
         # throttle = WriteZapleczaThrottle()
         # throttle.get_history(request)
         # throttle.add_timestamp()
+        if (len(json.loads(request.data.get('categories')))*int(request.data.get('a_num')) > 50):
+            return Response({"data": "Too many texts to write. Please reduce the number of texts to 30"}, status=status.HTTP_400_BAD_REQUEST)
         zaplecze = await self.get_object(zaplecze_id)
         if not zaplecze:
             return Response(
@@ -81,7 +83,10 @@ class ZapleczeWrite(ZAPIView):
         
         o = OpenAI_article(**params)
         
-        response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
+        try:
+            response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
+        except Exception as e:
+            return Response({"data": str(e)}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         total_tokens = 0
         result = {}

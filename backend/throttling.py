@@ -25,13 +25,17 @@ class WriteZapleczaThrottle(SimpleRateThrottle):
         On success calls `throttle_success`.
         On failure calls `throttle_failure`.
         """
+        if request.user.account.premium_user:
+            return True
+
+        self.get_history(request)
+
         if self.rate is None:
             return True
 
-        if request.user.account.premium_user:
+        if ( len(json.loads(request.data.get('categories')))*int(request.data.get('a_num')) > 50 ):
             return True
         
-        self.get_history(request)
         # Drop any requests from the history which have now passed the
         # throttle duration
         while self.history and self.history[-1] <= self.now - self.duration:
