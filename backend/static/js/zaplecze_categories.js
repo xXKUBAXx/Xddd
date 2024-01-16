@@ -184,7 +184,7 @@ $(document).ready(function() {
                     $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                 }
                 $("div#articles_spinner").remove()
-                console.error(response);
+                console.error(error);
             }
         })
     });
