@@ -13,6 +13,7 @@ import asyncio
 import os
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync, sync_to_async
+from threading import Thread
 
 from ..src.CreateWPblog.openai_article import OpenAI_article
 from ..src.CreateWPblog.openai_api import OpenAI_API
@@ -41,8 +42,6 @@ class ZapleczeWrite(ZAPIView):
         # throttle = WriteZapleczaThrottle()
         # throttle.get_history(request)
         # throttle.add_timestamp()
-        if (len(json.loads(request.data.get('categories')))*int(request.data.get('a_num')) > 50):
-            return Response({"data": "Too many texts to write. Please reduce the number of texts to 30"}, status=status.HTTP_400_BAD_REQUEST)
         zaplecze = await self.get_object(zaplecze_id)
         if not zaplecze:
             return Response(
@@ -83,10 +82,7 @@ class ZapleczeWrite(ZAPIView):
         
         o = OpenAI_article(**params)
         
-        try:
-            response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
-        except Exception as e:
-            return Response({"data": str(e)}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
 
         total_tokens = 0
         result = {}
@@ -238,11 +234,20 @@ class ManyZapleczesWrite(ZAPIView):
         p_num = int(request.data.get("p_num"))
         start_date = datetime.strptime(request.data.get('start_date'), "%Y-%m-%d")
         days_delta = int(request.data.get("days_delta"))
-        zapleczas = json.loads(request.data.get("zapleczas"))
-        links = json.loads(request.data.get("links"))
+        if type(request.data.get("zapleczas")) == str:
+            zapleczas = json.loads(request.data.get("zapleczas"))
+        else:
+            zapleczas = request.data.get("zapleczas")
+        if type(request.data.get("links")) == str:
+            links = json.loads(request.data.get("links"))
+        else:
+            links = request.data.get("links")
 
         
-        self.logger.info(f"{request.user.email} - Writing {len(links)} links")        
+        try:
+            self.logger.info(f"{request.user.email} - Writing {len(links)} links")        
+        except:
+            self.logger.info(f"Anonym - Writing {len(links)} links")        
         if 'forward_delta' in request.data:
             forward_delta = True if request.data.get('forward_delta') else False
         else:
@@ -280,7 +285,7 @@ class ManyZapleczesWrite(ZAPIView):
         except AttributeError:
             task_id = 1
         
-        tasks = set()
+        tasks = []
         for article_links, zaplecze, sd in zip(articles, zapleczas, start_dates):
             if len(topic) < 4:
                 topic = article_links[0]['keyword']
@@ -296,7 +301,8 @@ class ManyZapleczesWrite(ZAPIView):
                 continue
                 
             
-            task = asyncio.create_task(
+            tasks.append(
+                asyncio.create_task(
                     self.write_task(
                         wp,
                         request.user,
@@ -309,10 +315,7 @@ class ManyZapleczesWrite(ZAPIView):
                         article_links, 
                         0,
                         topic
-                        ))
-            
-            tasks.add(task)
-            task.add_done_callback(tasks.discard)
+                        )))
                 
         
         channel_layer = get_channel_layer()
@@ -324,12 +327,23 @@ class ManyZapleczesWrite(ZAPIView):
             "email": request.user.id
         }
         
+        loop = asyncio.new_event_loop()
+        # t = Thread(target=self.start_background_loop, args=(loop,), daemon=True)
+        # t.start()
+
+        # res = asyncio.run_coroutine_threadsafe(self.write_all_articles(tasks), loop)
+
         try:
             res = await asyncio.gather(*tasks)
         except Exception as e:
             return Response({"data": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+        loop.stop()
         total_tokens = sum([t for r in res for _, t in r])
         # print([x for r in res for x in r])
         await channel_layer.group_send(group_name, event)
-        self.logger.info(f"{request.user.email} - Done writing {len(json.loads(request.data.get('links')))} links")        
+        
+        try:
+            self.logger.info(f"{request.user.email} - Done writing {len(json.loads(request.data.get('links')))} links")        
+        except:
+            self.logger.info(f"Anonym - Done writing links")        
         return Response({"data": [x for r in res for x, _ in r], "tokens": total_tokens}, status=status.HTTP_201_CREATED)
