@@ -280,7 +280,7 @@ class ManyZapleczesWrite(ZAPIView):
         except AttributeError:
             task_id = 1
         
-        tasks = []
+        tasks = set()
         for article_links, zaplecze, sd in zip(articles, zapleczas, start_dates):
             if len(topic) < 4:
                 topic = article_links[0]['keyword']
@@ -296,8 +296,7 @@ class ManyZapleczesWrite(ZAPIView):
                 continue
                 
             
-            tasks.append(
-                asyncio.create_task(
+            task = asyncio.create_task(
                     self.write_task(
                         wp,
                         request.user,
@@ -310,7 +309,10 @@ class ManyZapleczesWrite(ZAPIView):
                         article_links, 
                         0,
                         topic
-                        )))
+                        ))
+            
+            tasks.add(task)
+            task.add_done_callback(tasks.discard)
                 
         
         channel_layer = get_channel_layer()
