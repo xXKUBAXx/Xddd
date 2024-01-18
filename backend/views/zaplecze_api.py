@@ -160,7 +160,7 @@ class ZAPIView(APIView):
 
 
         articles_tasks = set()
-        for x, cat in zip([titles_list.result()],categories):
+        for x, cat in zip([titles_list],categories):
             titles, _, tokens = x
             await self.add_tokens(user.id, tokens)
             for title, link in zip(titles,links):
