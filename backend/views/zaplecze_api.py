@@ -156,8 +156,7 @@ class ZAPIView(APIView):
         '''
         # for category in categories:
         #     titles_tasks.append(asyncio.create_task(o.create_titles(category['name'],article_num,category['id'])))
-        async with asyncio.TaskGroup() as tg:
-            titles_list = tg.create_task(o.create_titles(topic,article_num,0))
+        titles_list = asyncio.run(o.create_titles(topic,article_num,0))
 
 
         articles_tasks = set()
