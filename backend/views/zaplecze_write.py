@@ -290,9 +290,6 @@ class ManyZapleczesWrite(ZAPIView):
         
         tasks = []
         for article_links, zaplecze, sd in zip(articles, zapleczas, start_dates):
-            if len(topic) < 4:
-                topic = article_links[0]['keyword']
-            #select random categories from WP
             try:
                 wp, cats = await self.select_wp_cats(article_links, zaplecze, openai_key, topic, lang, sd, days_delta, forward_delta)
             except Exception as e:
@@ -317,7 +314,7 @@ class ManyZapleczesWrite(ZAPIView):
                         "backend/src/CreateWPblog/", 
                         article_links, 
                         0,
-                        topic
+                        topic if len(topic) > 3 else article_links[0]['keyword']
                         )))
                 
         
