@@ -82,7 +82,10 @@ class ZapleczeWrite(ZAPIView):
         
         o = OpenAI_article(**params)
         
-        response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
+        try:
+            response = await o.main(a, p, categories, "backend/src/CreateWPblog/", links)
+        except Exception as e:
+            return Response({"data": str(e)}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
         total_tokens = 0
         result = {}
