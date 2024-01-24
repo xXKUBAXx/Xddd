@@ -158,13 +158,14 @@ $(document).ready(function() {
             data: formData,
             success: function(response) {
                 $("#write-details").append("<p>Tokens used: "+response.tokens+"</p>");
+                $("#write-details").append("<p>Estimated cost: "+response.cost+"USD</p>");
                 $("div#articles_spinner").remove()
             },
             error: function(error) {
                 // Handle error response here
-                if (error.responseJSON.data){
+                try{
                     $("#write-details").append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                }else{
+                }catch{
                     $("#write-details").append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                 }
                 $("div#articles_spinner").remove();

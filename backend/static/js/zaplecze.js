@@ -50,9 +50,9 @@ $(document).ready(function() {
                 },
                 error: function(error) {
                     // Handle error response here
-                    if (error.responseJSON.data){
+                    try{
                         $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                    } else {
+                    } catch {
                         $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                     }
                     $("div#class_spinner").remove();
@@ -93,13 +93,14 @@ $(document).ready(function() {
                 fragment.appendChild(ul);
                 $("div#class_spinner").parent().append(fragment);
                 $("div#class_spinner").parent().append("<p>Tokens used: "+response.tokens+"</p>");
+                $("div#class_spinner").parent().append("<p>Estimated cost: "+response.cost+"USD</p>");
                 $("div#class_spinner").remove();
             },
             error: function(error) {
                 // Handle error response here
-                if(error.responseJSON.data){
+                try{
                     $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                } else {
+                } catch {
                     $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                 }
                 $("div#class_spinner").remove();

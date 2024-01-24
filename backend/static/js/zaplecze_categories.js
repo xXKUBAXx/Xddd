@@ -75,9 +75,9 @@ $(document).ready(function() {
             },
             error: (error) => {
                 // Handle error response here
-                if (error.responseJSON.data){
+                try{
                     $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                } else {
+                } catch {
                     $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
 
                 }
@@ -176,11 +176,12 @@ $(document).ready(function() {
                     })
                 }
                 $("#selected_cats").parent().append("<p>Tokens used: "+response.tokens+"</p>");
+                $("#selected_cats").parent().append("<p>Estimated cost: "+response.cost+"USD</p>");
             },
             error: function(error) {
-                if (error.responseJSON.data){
+                try{
                     $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                } else {
+                } catch {
                     $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                 }
                 $("div#articles_spinner").remove()
