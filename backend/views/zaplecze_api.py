@@ -48,7 +48,7 @@ class ZAPIView(APIView):
                             path:str = '',
                             links:list[dict] = None,
                             nofollow:int = 0,
-                            ) -> tuple[str, int, int]:
+                            ) -> tuple[str, int, float]:
         
         #add article to db
         if not settings.DEBUG:

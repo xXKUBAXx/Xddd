@@ -347,4 +347,4 @@ class ManyZapleczesWrite(ZAPIView):
             self.logger.info(f"{request.user.email} - Done writing {len(json.loads(request.data.get('links')))} links")        
         except:
             self.logger.info(f"Anonym - Done writing links")        
-        return Response({"data": [x for r in res for x, _ in r], "tokens": sum([t for r in res for _, t, _ in r]), "cost": sum([t for r in res for _, t, _ in r])}, status=status.HTTP_201_CREATED)
+        return Response({"data": [x for r in res for x, _, _ in r], "tokens": sum([t for r in res for _, t, _ in r]), "cost": sum([t for r in res for _, t, _ in r])}, status=status.HTTP_201_CREATED)
