@@ -88,18 +88,20 @@ class ZapleczeWrite(ZAPIView):
             return Response({"data": str(e)}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
         total_tokens = 0
+        total_cost = 0
         result = {}
-        for url, cat_id, t in response:
+        for url, cat_id, t, c in response:
             total_tokens += t
+            total_cost += c
             if cat_id in result.keys():
                 result[cat_id].append(url)
             else:
                 result[cat_id] = [url]
                 
-        await self.add_tokens(request.user.id, total_tokens, openai_key)
+        await self.add_tokens(request.user.id, total_tokens, total_cost, openai_key)
         
         self.logger.info(f"{request.user.email} - Done writing {len(categories)*a} articles at {data['domain']}")        
-        return Response({"data": result, "tokens": total_tokens}, status=status.HTTP_201_CREATED)
+        return Response({"data": result, "tokens": total_tokens, "cost": total_cost}, status=status.HTTP_201_CREATED)
     
 
 class AnyZapleczeWrite(APIView):
@@ -338,7 +340,6 @@ class ManyZapleczesWrite(ZAPIView):
         except Exception as e:
             return Response({"data": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         loop.stop()
-        total_tokens = sum([t for r in res for _, t in r])
         # print([x for r in res for x in r])
         await channel_layer.group_send(group_name, event)
         
@@ -346,4 +347,4 @@ class ManyZapleczesWrite(ZAPIView):
             self.logger.info(f"{request.user.email} - Done writing {len(json.loads(request.data.get('links')))} links")        
         except:
             self.logger.info(f"Anonym - Done writing links")        
-        return Response({"data": [x for r in res for x, _ in r], "tokens": total_tokens}, status=status.HTTP_201_CREATED)
+        return Response({"data": [x for r in res for x, _ in r], "tokens": sum([t for r in res for _, t, _ in r]), "cost": sum([t for r in res for _, t, _ in r])}, status=status.HTTP_201_CREATED)

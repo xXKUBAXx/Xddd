@@ -18,15 +18,18 @@ class ZAPIView(APIView):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    async def add_tokens(self, id, toknes:int, openai_api_key:str = ""):
+    async def add_tokens(self, id, toknes:int, cost:float, openai_api_key:str = ""):
         try:
             try:
                 account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=id)
                 account.tokens_used += toknes
+                account.USD += cost
+                print(f"added {toknes} tokens and {cost} USD to account")
             except:
                 account = Account(
                     user_id=id, 
                     tokens_used=toknes, 
+                    USD=cost,
                     openai_api_key=openai_api_key
                     )
             await sync_to_async(account.save, thread_sensitive=False)()
@@ -62,12 +65,14 @@ class ZAPIView(APIView):
             await sync_to_async(l.save, thread_sensitive=False)()
 
         total_tokens = 0
+        total_cost = 0
                 
         #generate headers & promt for generating image
         if settings.DEBUG:
             print("Creating headers for - ", title)
-        headers, img_prompt, headers_tokens = await o.create_headers(title,header_num)
-        total_tokens += await self.add_tokens(user.id, headers_tokens)
+        headers, img_prompt, headers_tokens, cost = await o.create_headers(title,header_num)
+        total_tokens += await self.add_tokens(user.id, headers_tokens, cost)
+        total_cost += cost
         
         p_tasks = []
         #write paragraphs with links first
@@ -82,26 +87,35 @@ class ZAPIView(APIView):
         paragraphs = await asyncio.gather(*p_tasks)
         #merge all texts into single string article
         text = ""
-        for header, paragraph, tokens in paragraphs:
-            total_tokens += await self.add_tokens(user.id, tokens)
+        for header, paragraph, tokens, cost in paragraphs:
+            total_tokens += await self.add_tokens(user.id, tokens, cost)
+            total_cost += cost
             text += "<h2>"+header+"</h2>"
             text += paragraph
 
         #Write description
-        desc, tokens = await o.write_description(text)
-        total_tokens += await self.add_tokens(user.id, tokens)
+        desc, tokens, cost = await o.write_description(text)
+        total_tokens += await self.add_tokens(user.id, tokens, cost)
+        total_cost += cost
         
 
         #Generate & download image
         if img_prompt != "":
-            img = await o.download_img(img_prompt, f"{path}files/test_photo{datetime.now().microsecond}.webp")
+            img, cost = await o.download_img(img_prompt, f"{path}files/test_photo{datetime.now().microsecond}.webp")
             #Upload image to WordPress
             img_id = o.upload_img(img)
             #Delete local image
             os.remove(img)
         else:
-            print("No img prompt - TARAPATAS!!")
-            img_id = None
+            print("No img prompt - generating image from title!!")
+            img, cost = await self.download_img(
+                f"Create image for article titled - {title}", 
+                f"{path}files/test_photo{datetime.now().microsecond}.webp")
+            #Upload image to WordPress
+            img_id = self.upload_img(img)
+            #Delete local image
+            os.remove(img)
+        total_cost += cost
         
         #Upload article to Wordpress
         if img_id:
@@ -121,7 +135,7 @@ class ZAPIView(APIView):
             l.url = response
             l.done = True
             await sync_to_async(l.save, thread_sensitive=False)()
-        return response, total_tokens
+        return response, total_tokens, total_cost
     
     
     async def write_task(self, 
@@ -161,8 +175,8 @@ class ZAPIView(APIView):
 
         articles_tasks = set()
         for x, cat in zip([titles_list],categories):
-            titles, _, tokens = x
-            await self.add_tokens(user.id, tokens)
+            titles, _, tokens, cost = x
+            await self.add_tokens(user.id, tokens, cost)
             for title, link in zip(titles,links):
                 articles_task = asyncio.create_task(
                         self.write_article(

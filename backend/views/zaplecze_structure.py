@@ -83,14 +83,11 @@ class ZapleczeAPIStructure(ZAPIView):
             return Response({"data": str(e), "tokens": 0}, status=status.HTTP_400_BAD_REQUEST)
 
 
-        structure, tokens = await o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
-
-        account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=request.user.id)
-        account.tokens_used += tokens
-        await sync_to_async(account.save,thread_sensitive=False)()
+        structure, tokens, cost = await o.create_structure(topic, request.data.get('cat_num'), request.data.get('subcat_num'))
+        self.add_tokens(request.user.id, tokens, cost, request.data.get("openai_api_key"))
 
         self.logger.info(f"{request.user.email} - Done generating {int(request.data.get('cat_num'))*int(request.data.get('subcat_num'))} categories at {data['domain']}")        
-        return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
+        return Response({"data": structure, "tokens": tokens, "cost":  cost}, status=status.HTTP_201_CREATED)
 
 
 
@@ -110,12 +107,8 @@ class AnyZapleczeAPIStructure(ZAPIView):
             lang=request.data.get('lang')
         )
 
-        structure, tokens = await o.create_structure(request.data.get("topic"), request.data.get('cat_num'), request.data.get('subcat_num'))
-        self.add_tokens(request.user.id, tokens, request.data.get("openai_api_key"))
-
-        account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=request.user.id)
-        account.tokens_used += tokens
-        await sync_to_async(account.save,thread_sensitive=False)()
+        structure, tokens, cost = await o.create_structure(request.data.get("topic"), request.data.get('cat_num'), request.data.get('subcat_num'))
+        self.add_tokens(request.user.id, tokens, cost, request.data.get("openai_api_key"))
 
         self.logger.info(f"{request.user.email} - Done generating {int(request.data.get('cat_num'))*int(request.data.get('subcat_num'))} categories at {request.data.get('domain')}")        
-        return Response({"data": structure, "tokens": tokens}, status=status.HTTP_201_CREATED)
+        return Response({"data": structure, "tokens": tokens, "cost": cost}, status=status.HTTP_201_CREATED)
