@@ -24,7 +24,6 @@ class ZAPIView(APIView):
                 account = await sync_to_async(get_object_or_404, thread_sensitive=False)(Account, user_id=id)
                 account.tokens_used += toknes
                 account.USD += cost
-                print(f"added {toknes} tokens and {cost} USD to account")
             except:
                 account = Account(
                     user_id=id, 
