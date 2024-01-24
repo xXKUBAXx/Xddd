@@ -49,6 +49,7 @@ class Account(models.Model):
     openai_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
     semstorm_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
     tokens_used = models.IntegerField(default=0)
+    USD = models.FloatField(default=0.0)
     cursor_followed = models.BooleanField(default=False)
     premium_user = models.BooleanField(default=False)
 
