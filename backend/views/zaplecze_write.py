@@ -45,13 +45,13 @@ class ZapleczeWrite(ZAPIView):
         if ( len(json.loads(request.data.get('categories')))*int(request.data.get('a_num')) > 50 ):
             self.logger.info(f"{request.user.email} - Cannot write {len(json.loads(request.data.get('categories')))*int(request.data.get('a_num'))} categories - limit surpassed!")
             return Response(
-                {"res": "Maximum article noumber exceeded. Please submit at most 30 articles at once"},
+                {"data": "Maximum article noumber exceeded. Please submit at most 30 articles at once"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         zaplecze = await self.get_object(zaplecze_id)
         if not zaplecze:
             return Response(
-                {"res": "Object with this id does not exists"},
+                {"data": "Object with this id does not exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         serializer = ZapleczeSerializer(zaplecze)
