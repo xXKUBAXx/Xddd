@@ -193,7 +193,7 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'write-zaplecza': '100/day',
+        'write-zaplecza': '90/day',
         'structure': '20/h'
     }
 }
