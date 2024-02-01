@@ -128,8 +128,11 @@ class ZapleczeCreateTweakWP(ZapleczeCreate):
             )
         serializer = ZapleczeSerializer(zaplecze)
         data = serializer.data
-        if data['wp_post_count'] > 0:
-            return Response({"res": "This zaplecze is alive"}, status=status.HTTP_200_OK)
+        try:
+            if data['wp_post_count'] > 0:
+                return Response({"res": "This zaplecze is alive"}, status=status.HTTP_200_OK)
+        except:
+            pass
         domain = data['domain']
         wp = Setup_WP(domain, ssl=True)
         wp.setup(data['wp_user'], data['wp_password'])
