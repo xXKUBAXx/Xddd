@@ -75,11 +75,10 @@ $(document).ready(function() {
             },
             error: (error) => {
                 // Handle error response here
-                try{
+                if(error.responseJSON.data){
                     $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                } catch {
+                } else {
                     $("button#categories").parent().parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
-
                 }
                 $("button#categories").remove();
                 console.error(error);
@@ -179,9 +178,9 @@ $(document).ready(function() {
                 $("#selected_cats").parent().append("<p>Estimated cost: "+response.cost+"USD</p>");
             },
             error: function(error) {
-                try{
+                if(error.responseJSON.data){
                     $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                } catch {
+                } else {
                     $("#selected_cats").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                 }
                 $("div#articles_spinner").remove()

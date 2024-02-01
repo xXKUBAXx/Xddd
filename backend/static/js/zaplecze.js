@@ -50,9 +50,9 @@ $(document).ready(function() {
                 },
                 error: function(error) {
                     // Handle error response here
-                    try{
+                    if(error.responseJSON.data){
                         $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.data+"</p>");
-                    } catch {
+                    } else {
                         $("div#class_spinner").parent().append("<p>An error ocurred: "+error.responseJSON.detail+"</p>");
                     }
                     $("div#class_spinner").remove();
