@@ -43,6 +43,7 @@ class WriteZapleczaThrottle(SimpleRateThrottle):
 
         
         if len(self.history) >= self.num_requests:
+            print(f"User {request.user.email} has {len(self.history)} in qeueue")
             return self.throttle_failure()
         return self.throttle_success(request)
 
