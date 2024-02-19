@@ -156,7 +156,7 @@ class ZapleczeCreateWPapi(ZapleczeCreate):
         try:
             data['wp_api_key'] = wp.get_api_key(data['wp_user'], data['wp_password'])
         except:
-            raise Exception("Cannot obtain WordPress API key")
+            return Response({"data": "Error obtaining API key"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         serializer = ZapleczeSerializer(instance = zaplecze, data=data, partial = True)
         if serializer.is_valid():
             serializer.save()
