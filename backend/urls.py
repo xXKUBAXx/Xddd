@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('api/all/', views.ZapleczeAPIView.as_view()),
     path('api/<int:zaplecze_id>/', views.ZapleczeAPIDetail.as_view()),
+    path('api/update/<int:id>/', views.ZapleczeHealth.as_view()),
     path('api/create/', views.ZapleczeCreateAll.as_view()),
     path('api/create/<int:zaplecze_id>/domain/', views.ZapleczeCreateDomain.as_view()),
     path('api/create/<int:zaplecze_id>/db/', views.ZapleczeCreateDB.as_view()),
@@ -24,6 +25,8 @@ urlpatterns = [
     path('logout', views.logout_view),
     path('user/', views.UpdateProfile.as_view()),
     path('create/', views.CreateZaplecze.as_view()),
+    path('register/', views.RegisterZapleczeFormView.as_view()),
+    path('all/', views.ZapleczaTable.as_view()),
     path('links_panel/', views.LinksPanel.as_view()),
     path('links/<int:umowa_id>/', views.WriteLink.as_view()),
     path('<int:zaplecze_id>/', views.ZapleczeUnit.as_view()),
