@@ -2,13 +2,13 @@ from django.shortcuts import render, get_object_or_404
 from ..models import Zaplecze, Account, Link, Banner
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
-from django.views.generic import View
-from django.http import HttpResponse
-from django.template.loader import get_template
+from django.views.generic import View, edit
 from django.utils.decorators import method_decorator
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from ..src.CreateWPblog.openai_api import OpenAI_API
+from backend.forms import RegisterZapleczeForm
+from django.shortcuts import redirect
 
 import json
 import urllib
@@ -37,6 +37,12 @@ class Front(View):
         }
 
         return render(request, 'index.html', context)
+        
+
+@method_decorator(log_user(), name='dispatch')
+class ZapleczaTable(View):
+    def get(self, request):
+        return render(request, "zaplecza.html", {"queryset": Zaplecze.objects.values()})
     
 @method_decorator(log_user(), name='dispatch')
 class CreateZaplecze(View):
@@ -56,6 +62,22 @@ class CreateZaplecze(View):
 
 
         return render(request, 'create.html', context)
+
+
+@method_decorator(log_user(), name='dispatch')
+class RegisterZapleczeFormView(edit.FormView):
+    def get(self, request):
+        form = RegisterZapleczeForm()
+        context = {"form": form}
+        return render(request, "register.html", context)
+
+    def post(self, request):
+        form = RegisterZapleczeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("/")
+            
+
     
 @method_decorator(log_user(), name='dispatch')
 class UpdateZaplecze(View):        

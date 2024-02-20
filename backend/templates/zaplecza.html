@@ -1,0 +1,63 @@
+{% extends "base.html" %}  
+
+{% block style %}
+{% endblock %}
+
+{% block h1 %}
+Najważniejsze parametry wszystkich zaplecz
+{% endblock %}
+
+
+
+
+{% block content %}
+
+<div class="container mt-5">
+    <table>
+        <thead>
+            <td>Domain</td>
+            <td>IP</td>
+            <td>Status</td>
+            <td>SSL</td>
+            <td>SSL expiration</td>
+            <td>Registdar</td>
+            <td>Servername</td>
+            <td>Lang</td>
+            <td>Category</td>
+            <td>Post count</td>
+            <td>Category count</td>
+            <td>Linked websites</td>
+            <td>Outgoing links</td>
+        </thead>
+        <tbody>
+            {% for i in queryset %}
+                <tr>
+                    <td>{{i.domain}}</td>
+                    <td>{{i.domain_ip}}</td>
+                    <td>{{i.domain_status_code}}</td>
+                    <td>{% if i.ssl_active %} {% include 'icons/check-circle.html' %} {%else%} {%include 'icons/x-circle.html'%} {% endif %}</td>
+                    <td>{{i.ssl_expiration_date}}</td>
+                    <td>{{i.domain_registrar}}</td>
+                    <td>{{i.domain_servername}}</td>
+                    <td>{{i.lang}}</td>
+                    <td>{{i.category_id}}</td>
+                    <td>{{i.wp_post_count}}</td>
+                    <td>{{i.wp_category_count}}</td>
+                    <td>{{i.linked_websites}}</td>
+                    <td>{{i.outgoing_links}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+    // Add event listener to toggle table visibility
+    $(document).ready(function() {
+    });
+</script>
+{% endblock %}
