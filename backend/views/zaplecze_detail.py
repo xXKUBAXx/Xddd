@@ -5,7 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from drf_yasg.utils import swagger_auto_schema
-from django.views.generic import View
+from django.db import IntegrityError
+import ssl
+import socket
+import requests
+import datetime
 
 
 class ZapleczeAPIDetail(APIView):
@@ -32,6 +36,17 @@ class ZapleczeAPIDetail(APIView):
         
         serializer = ZapleczeSerializer(zaplecze)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    def post(self, request, *args, **kwargs):
+        try:
+            z = Zaplecze(**request.data)
+            z.save()
+        except IntegrityError:
+            return Response({"res": "This domain already exists in database"}, status=status.HTTP_400_BAD_REQUEST)
+        print(request.data)
+        return Response(request.data, status=status.HTTP_201_CREATED)
+    
     
     @swagger_auto_schema(
             operation_description="Update Zaplecze data", 
@@ -73,3 +88,39 @@ class ZapleczeAPIDetail(APIView):
             status=status.HTTP_200_OK
         )
     
+
+class ZapleczeHealth(APIView):
+    serializer_class = ZapleczeSerializer
+
+    def check_ssl(self, domain):
+        context = ssl.create_default_context()
+        with socket.create_connection((domain, 443)) as sock:
+            with context.wrap_socket(sock, server_hostname=domain) as ssock:
+                try:
+                    cert = ssock.getpeercert()
+                    return True, datetime.datetime.strptime(cert['notAfter'], '%b %d %H:%M:%S %Y %Z').strftime("%Y-%m-%d")
+
+                except:
+                    return False, datetime.date.today()
+
+
+    def post(self, request, id):
+        try:
+            zaplecze =  Zaplecze.objects.get(id=id)
+        except Zaplecze.DoesNotExist:
+            return Response({"res": "This zaplecze does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not zaplecze.domain_ip:
+            zaplecze.domain_ip = socket.gethostbyname(zaplecze.domain)
+            zaplecze.save()
+        
+        zaplecze.domain_status_code = requests.get("https://"+zaplecze.domain).status_code
+        zaplecze.save()
+
+        zaplecze.ssl_active, zaplecze.ssl_expiration_date = self.check_ssl(zaplecze.domain)
+        zaplecze.save()
+
+        # zaplecze.domain_creation, zaplecze.domain_expiration, zaplecze.domain_registrar, zaplecze.domain_servername = \
+        
+
+        return Response({"res":ZapleczeSerializer(zaplecze).data}, status=status.HTTP_201_CREATED)
