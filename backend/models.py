@@ -1,5 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.forms import ModelForm
+
+
+class ZapleczeCategory(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+    
+    def __str__(self):
+        return self.name
 
 
 class Zaplecze(models.Model):
@@ -24,8 +32,28 @@ class Zaplecze(models.Model):
     wp_user = models.CharField(max_length=32, blank=True, null=True)
     wp_password = models.CharField(max_length=64, blank=True, null=True)
     wp_api_key = models.CharField(max_length=128, blank=True, null=True)
-    wp_post_count = models.IntegerField(default=0, null=True, blank=True)
 
+    #Website stats
+    category = models.ForeignKey(ZapleczeCategory, blank=True, null=True, on_delete=models.DO_NOTHING) 
+    wp_post_count = models.IntegerField(default=0, null=True, blank=True)
+    wp_category_count = models.IntegerField(default=0, null=True, blank=True)
+    wp_last_edit = models.DateField(blank=True, null=True)
+    linked_websites = models.IntegerField(default=0)
+    outgoing_links = models.IntegerField(default=0)
+    semstorm_top10 = models.IntegerField(default=0)
+    semstorm_top10prev = models.IntegerField(default=0)
+    semstorm_top50 = models.IntegerField(default=0)
+    semstorm_top50prev = models.IntegerField(default=0)
+
+    #Zaplecze health
+    domain_ip = models.CharField(max_length=32, blank=True, null=True)
+    domain_status_code = models.IntegerField(null=True, blank=True)
+    ssl_active = models.BooleanField(null=True, blank=True)
+    ssl_expiration_date = models.DateField(null=True, blank=True)
+    domain_creation = models.DateField(null=True, blank=True)
+    domain_expiration = models.DateField(null=True, blank=True)
+    domain_registrar = models.CharField(max_length=256, blank=True, null=True)
+    domain_servername = models.CharField(max_length=128, blank=True, null=True)
 
 class Link(models.Model):
     task_id = models.IntegerField(default=0)
