@@ -153,10 +153,13 @@ class ZapleczeHealth(APIView):
             zaplecze.wp_api_key = setup.get_api_key(zaplecze.login, zaplecze.password)
         
         if zaplecze.wp_api_key and zaplecze.ssl_active:
-            wp = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
-            zaplecze.wp_post_count = wp.get_post_count()
-            zaplecze.wp_category_count = wp.get_category_count()
-            zaplecze.save()
+            try:
+                wp = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
+                zaplecze.wp_post_count = wp.get_post_count()
+                zaplecze.wp_category_count = wp.get_category_count()
+                zaplecze.save()
+            except Exception as e:
+                print(e)
 
 
         return render(request, "partials/zaplecza_row.html", context={"i": zaplecze})

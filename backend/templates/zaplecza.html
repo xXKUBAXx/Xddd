@@ -1,6 +1,7 @@
 {% extends "base.html" %}  
 
 {% block style %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.0/css/dataTables.dataTables.css">
 {% endblock %}
 
 {% block h1 %}
@@ -13,7 +14,7 @@ Najważniejsze parametry wszystkich zaplecz
 {% block content %}
 
 <div class="container mt-5" style="display: flex; justify-content: center;">
-    <table>
+    <table id="zaplecza-table">
         <thead style="position: sticky; top: -1px; background-color: #343a40;">
             <td></td>
             <td>Domain</td>
@@ -22,6 +23,7 @@ Najważniejsze parametry wszystkich zaplecz
             <td>SSL</td>
             <td>SSL expiration</td>
             <td>Registrar</td>
+            <td>Expiration date</td>
             <td>Servername</td>
             <td>Lang</td>
             <td>Category</td>
@@ -44,10 +46,15 @@ Najważniejsze parametry wszystkich zaplecz
 {% endblock %}
 
 {% block script %}
-
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.0/css/dataTables.dataTables.css" />
+  
+<script src="https://cdn.datatables.net/2.0.0/js/dataTables.js"></script>
 <script>
     // Add event listener to toggle table visibility
     $(document).ready(function() {
+        let zaplecza_table = new DataTable("#zaplecza-table", {
+            pagingType: 'simple_numbers'
+        })
     });
 </script>
 {% endblock %}
