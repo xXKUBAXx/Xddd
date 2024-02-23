@@ -1,0 +1,28 @@
+{% load static %}
+<tr id="tr-{{i.id}}">
+    <td>
+        <button 
+            hx-post="/api/update/{{i.id}}/" 
+            hx-trigger="click"
+            hx-target="#tr-{{i.id}}"
+            hx-swap="outerHTML"
+            style="padding: 10px 10px;">
+            {%include 'icons/circle-arrows.html'%}
+            <img src="{% static 'papaj.gif' %}" class="papaj-spin">
+        </button>
+    </td>
+    <td><a href="/{{i.id}}">{{i.domain}}</a></td>
+    <td>{{i.domain_ip}}</td>
+    <td>{{i.domain_status_code}}</td>
+    <td>{% if i.ssl_active %} {% include 'icons/check-circle.html' %} {%else%} {%include 'icons/x-circle.html'%} {% endif %}</td>
+    <td>{{i.ssl_expiration_date}}</td>
+    <td>{{i.domain_registrar}}</td>
+    <td>{{i.domain_servername}}</td>
+    <td>{{i.lang}}</td>
+    <td>{{i.category_id}}</td>
+    <td>{% if i.wp_api_key %} {% include 'icons/check-circle.html' %} {%else%} {%include 'icons/x-circle.html'%} {% endif %}</td>
+    <td>{{i.wp_post_count}}</td>
+    <td>{{i.wp_category_count}}</td>
+    <td>{{i.linked_websites}}</td>
+    <td>{{i.outgoing_links}}</td>
+</tr>

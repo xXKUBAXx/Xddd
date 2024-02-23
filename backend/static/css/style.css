@@ -327,3 +327,29 @@ th {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+
+.papaj-spin {
+    width: 30px;
+    display: none;
+}
+
+.htmx-request .papaj-spin {
+    display: inline;
+}
+
+.htmx-request.papaj-spin {
+    display: inline;
+}
+
+
+.spin-arrows {
+    width: 20px;
+}
+
+.htmx-request .spin-arrows {
+    display: none;
+}
+.htmx-request.spin-arrows{
+    display: none;
+}

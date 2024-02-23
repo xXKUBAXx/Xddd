@@ -12,18 +12,20 @@ Najważniejsze parametry wszystkich zaplecz
 
 {% block content %}
 
-<div class="container mt-5">
+<div class="container mt-5" style="display: flex; justify-content: center;">
     <table>
-        <thead>
+        <thead style="position: sticky; top: 0; background-color: #343a40;">
+            <td></td>
             <td>Domain</td>
             <td>IP</td>
             <td>Status</td>
             <td>SSL</td>
             <td>SSL expiration</td>
-            <td>Registdar</td>
+            <td>Registrar</td>
             <td>Servername</td>
             <td>Lang</td>
             <td>Category</td>
+            <td>WP API Key</td>
             <td>Post count</td>
             <td>Category count</td>
             <td>Linked websites</td>
@@ -31,21 +33,9 @@ Najważniejsze parametry wszystkich zaplecz
         </thead>
         <tbody>
             {% for i in queryset %}
-                <tr>
-                    <td>{{i.domain}}</td>
-                    <td>{{i.domain_ip}}</td>
-                    <td>{{i.domain_status_code}}</td>
-                    <td>{% if i.ssl_active %} {% include 'icons/check-circle.html' %} {%else%} {%include 'icons/x-circle.html'%} {% endif %}</td>
-                    <td>{{i.ssl_expiration_date}}</td>
-                    <td>{{i.domain_registrar}}</td>
-                    <td>{{i.domain_servername}}</td>
-                    <td>{{i.lang}}</td>
-                    <td>{{i.category_id}}</td>
-                    <td>{{i.wp_post_count}}</td>
-                    <td>{{i.wp_category_count}}</td>
-                    <td>{{i.linked_websites}}</td>
-                    <td>{{i.outgoing_links}}</td>
-                </tr>
+                {%with i as i %}
+                    {% include 'partials/zaplecza_row.html' %}
+                {%endwith%}
             {% endfor %}
         </tbody>
     </table>
