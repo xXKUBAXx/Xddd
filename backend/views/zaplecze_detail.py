@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from drf_yasg.utils import swagger_auto_schema
 from django.db import IntegrityError
+from backend.src.CreateWPblog.wp_api import WP_API
+from backend.src.CreateWPblog.setup_wp import Setup_WP
 import ssl
 import socket
 import requests
@@ -111,8 +113,11 @@ class ZapleczeHealth(APIView):
             return Response({"res": "This zaplecze does not exist."}, status=status.HTTP_400_BAD_REQUEST)
         
         if not zaplecze.domain_ip:
-            zaplecze.domain_ip = socket.gethostbyname(zaplecze.domain)
-            zaplecze.save()
+            try:
+                zaplecze.domain_ip = socket.gethostbyname(zaplecze.domain)
+                zaplecze.save()
+            except:
+                print("IP unreachable")
         
         zaplecze.domain_status_code = requests.get("https://"+zaplecze.domain).status_code
         zaplecze.save()
@@ -120,7 +125,32 @@ class ZapleczeHealth(APIView):
         zaplecze.ssl_active, zaplecze.ssl_expiration_date = self.check_ssl(zaplecze.domain)
         zaplecze.save()
 
-        # zaplecze.domain_creation, zaplecze.domain_expiration, zaplecze.domain_registrar, zaplecze.domain_servername = \
-        
+        try:
+            response = requests.get(
+                url="https://api.api-ninjas.com/v1/whois?domain="+zaplecze.domain, 
+                headers={"X-Api-Key": "ty5dkesssA9wHIteFlOK7w==hhRH0WN9hHaNIiwH"}
+                ).json()
+        except:
+            print("Ninjas WhoIs API unreachable")
+        try:
+            zaplecze.domain_creation, zaplecze.domain_expiration, zaplecze.domain_registrar, zaplecze.domain_servername = \
+                datetime.datetime.fromtimestamp(response["creation_date"]).date(), \
+                datetime.datetime.fromtimestamp(response["expiration_date"]).date(), \
+                response["registrar"], \
+                response["name_servers"]
+            zaplecze.save()
+        except:
+            print("Ninjas WhoIs API incomplete data")
 
-        return Response({"res":ZapleczeSerializer(zaplecze).data}, status=status.HTTP_201_CREATED)
+        if not zaplecze.wp_api_key and zaplecze.wp_password:
+            setup = Setup_WP(zaplecze.domain)
+            zaplecze.wp_api_key = setup.get_api_key(zaplecze.login, zaplecze.password)
+        
+        if zaplecze.wp_api_key:
+            wp = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
+            zaplecze.wp_post_count = wp.get_post_count()
+            zaplecze.wp_category_count = wp.get_category_count()
+            zaplecze.save()
+
+
+        return render(request, "partials/zaplecza_row.html", context={"i": zaplecze})
