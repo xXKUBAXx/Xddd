@@ -119,10 +119,16 @@ class ZapleczeHealth(APIView):
             except:
                 print("IP unreachable")
         
-        zaplecze.domain_status_code = requests.get("https://"+zaplecze.domain).status_code
+        try:
+            zaplecze.domain_status_code = requests.get("https://"+zaplecze.domain).status_code
+        except:
+            zaplecze.domain_status_code = requests.get("http://"+zaplecze.domain).status_code
         zaplecze.save()
 
-        zaplecze.ssl_active, zaplecze.ssl_expiration_date = self.check_ssl(zaplecze.domain)
+        try:
+            zaplecze.ssl_active, zaplecze.ssl_expiration_date = self.check_ssl(zaplecze.domain)
+        except:
+            zaplecze.ssl_active = False
         zaplecze.save()
 
         try:
@@ -146,7 +152,7 @@ class ZapleczeHealth(APIView):
             setup = Setup_WP(zaplecze.domain)
             zaplecze.wp_api_key = setup.get_api_key(zaplecze.login, zaplecze.password)
         
-        if zaplecze.wp_api_key:
+        if zaplecze.wp_api_key and zaplecze.ssl_active:
             wp = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
             zaplecze.wp_post_count = wp.get_post_count()
             zaplecze.wp_category_count = wp.get_category_count()
