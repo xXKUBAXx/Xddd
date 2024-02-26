@@ -36,9 +36,6 @@ class ZapleczeAPIView(APIView):
         #     'email': request.data.get('email')
         # }
 
-
-        print(type(request.data))
-        print(request.data)
         try:
             z = Zaplecze(**request.data)
         except:
