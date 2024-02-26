@@ -16,7 +16,7 @@ Dostępne zaplecza dla {{user.username}}
 
 <div class="container mt-5">
 {% for i in queryset %}
-{% if i.email == social_data.email or user.is_staff %}
+{% if i.email == social_data.email %}
     <div class="row">
         <div class="col-md-12">
             <a href="/{{i.id}}/">

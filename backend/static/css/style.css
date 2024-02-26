@@ -353,3 +353,19 @@ th {
 .htmx-request.spin-arrows{
     display: none;
 }
+
+
+/* Dropdown colors */
+
+.dropdown-menu {
+    background-color: #1a1a1a; /* Match background color */
+    color: #ccc; /* Match text color */
+  }
+  
+  .dropdown-item {
+    color: #66ccff; /* Match link color */
+    
+    &:hover {
+      color: #3399ff; /* Match hover link color */
+    }
+  }
