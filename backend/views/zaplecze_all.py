@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
+from django.forms.models import model_to_dict
+
 
 
 class ZapleczeAPIView(APIView):
@@ -25,20 +27,25 @@ class ZapleczeAPIView(APIView):
             responses={201:ZapleczeSerializer, 400:"Bad Request"}
             )
     def post(self, request, *args, **kwargs):
-        data = {
-            'domain':request.data.get('domain'),
-            'url': request.data.get('url'),
-            'login': request.data.get('login'),
-            'password': request.data.get('password'),
-            'lang': request.data.get('lang'),
-            'email': request.data.get('email')
-        }
+        # data = {
+        #     'domain':request.data.get('domain'),
+        #     'url': request.data.get('url'),
+        #     'login': request.data.get('login'),
+        #     'password': request.data.get('password'),
+        #     'lang': request.data.get('lang'),
+        #     'email': request.data.get('email')
+        # }
 
-        serializer = ZapleczeSerializer(data=data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        print(type(request.data))
+        print(request.data)
+        try:
+            z = Zaplecze(**request.data)
+        except:
+            input = request.data.dict()
+            input.pop('csrfmiddlewaretoken', None)
+            print(input)
+            z = Zaplecze(**input)
+
+        z.save()
+        return Response(model_to_dict(z))
