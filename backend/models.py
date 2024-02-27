@@ -80,6 +80,7 @@ class Account(models.Model):
     USD = models.FloatField(default=0.0)
     cursor_followed = models.BooleanField(default=False)
     premium_user = models.BooleanField(default=False)
+    zaplecza_shady = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

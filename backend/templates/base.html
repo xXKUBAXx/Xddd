@@ -54,7 +54,7 @@
                 <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                     <li><a href="/zaplecza" class="dropdown-item">My Zaplecza</a></li>
                     <li><a href="/create" class="dropdown-item">Create</a></li>
-                    {% if user.account.premium_user %}
+                    {% if user.account.zaplecza_shady %}
                         <li><a href="/register" class="dropdown-item">Register</a></li>
                         <li><a href="/all" class="dropdown-item">All Zaplecza</a></li>
                     {% endif %}
