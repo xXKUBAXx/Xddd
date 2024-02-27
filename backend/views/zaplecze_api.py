@@ -107,7 +107,7 @@ class ZAPIView(APIView):
             os.remove(img)
         else:
             print("No img prompt - generating image from title!!")
-            img, cost = await self.download_img(
+            img, cost = await o.download_img(
                 f"Create image for article titled - {title}", 
                 f"{path}files/test_photo{datetime.now().microsecond}.webp")
             #Upload image to WordPress
