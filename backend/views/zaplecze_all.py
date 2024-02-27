@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from ..models import Zaplecze
+from ..models import Zaplecze, ZapleczeCategory
 from ..serializers import ZapleczeSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from django.forms.models import model_to_dict
+import json
 
 
 
@@ -37,7 +38,10 @@ class ZapleczeAPIView(APIView):
         # }
 
         try:
-            z = Zaplecze(**request.data)
+            print(request.data)
+            data = json.loads(request.data)
+            category = data.pop('category')
+            z = Zaplecze(category=ZapleczeCategory.objects.get(name=category), **data)
         except:
             input = request.data.dict()
             input.pop('csrfmiddlewaretoken', None)
