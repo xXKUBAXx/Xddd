@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from ..src.CreateWPblog.openai_api import OpenAI_API
-from backend.forms import RegisterZapleczeForm
+from backend.forms import RegisterZapleczeForm, AddZapleczeCategory
 from django.shortcuts import redirect
 
 import json
@@ -106,6 +106,8 @@ class ZapleczeUnit(View):
         
         context = {'data': serializer.data}
 
+        category_form = AddZapleczeCategory()
+
         try:
             papaj_spi = User.objects.get(username='papaj_spi')
         except User.DoesNotExist:
@@ -113,10 +115,19 @@ class ZapleczeUnit(View):
 
         context = {
             'data': serializer.data,
-            'papaj_spi': papaj_spi
+            'papaj_spi': papaj_spi,
+            'category_form': category_form
         }
 
         return render(request, 'zaplecze.html', context)
+
+    def post(self, request, zaplecze_id):
+        zaplecze = Zaplecze.objects.get(id=zaplecze_id)
+        category_form = AddZapleczeCategory(request.POST, instance=zaplecze)
+        if category_form.is_valid():
+            category_form.save()
+            return redirect(f'/{zaplecze_id}')
+
     
 
 @method_decorator(log_user(), name='dispatch')
