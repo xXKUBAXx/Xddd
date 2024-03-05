@@ -176,7 +176,7 @@ $(document).ready(function () {
 		return textArea.value;
 	}
 
-	setInterval(getWordpressPostsTitles, 90000);
+	// setInterval(getWordpressPostsTitles, 90000);
 
 	function updateStatusCells(posts) {
 		const wordpressTitles = posts.map((post) =>
