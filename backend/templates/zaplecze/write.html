@@ -1,0 +1,71 @@
+<div class="col-md-6">
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="card-title">Categoires</h5>
+        </div>
+        <div class="additional-attributes" style="display: none; padding: 20px;">
+            <div>
+                <button id="categories" type="submit" data-card-id="{{ data.id }}">Get categories</button>
+                <div class="table-responsive" style="display: none;">
+                    <table class="table table-bordered" id="cat_table">
+                        <thead class="thead-gray">
+                            <tr>
+                                <th>Write</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <button id="articles" type="submit" data-card-id="{{ data.id }}"
+                    style="display: none;">Select</button>
+                <button id="selectAll" style="display: none;">Select All</button>
+            </div>
+            <form id="writeForm" type="post" style="display: none;">
+                {% csrf_token %}
+                {% if not data.topic and data.topic != "None" %}
+                <div class="form-group">
+                    <label class="form-label" for="topic">Zapleczes topic:</label>
+                    <input type="text" class="form-control" id="topic" name="topic">
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label class="form-label" for="openai_api_key">OpenAI API key:</label>
+                    <input type="text" class="form-control" id="openai_api_key" name="openai_api_key"
+                        value="{{user.account.openai_api_key}}">
+                </div>
+                <h6>Articles</h6>
+                <div class="slider-container">
+                    <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1"
+                        name="a_num">
+                    <input type="text" id="ArtSliderValue" class="range-value" value="1" readonly>
+                </div>
+                <h6>Paragraphs per article</h6>
+                <div class="slider-container">
+                    <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4"
+                        name="p_num">
+                    <input type="text" id="ParagraphsSliderValue" class="range-value" value="4" readonly>
+                </div>
+                <div class="date-container">
+                    <label>Start date</label>
+                    <input type="date" value="2005-04-02" id="start_date" name="start_date"
+                        style="margin-left: 12px;" />
+                </div>
+                <h6>Days between articles</h6>
+                <div class="slider-container">
+                    <input type="range" id="DaysSlider" class="range-slider" min="2" max="14" value="7"
+                        name="days_delta">
+                    <input type="text" id="DaysSliderValue" class="range-value" value="7" readonly>
+                </div>
+                <div class="checkbox-container">
+                    <label>Publish forward</label>
+                    <input type="checkbox" id="forward_delta" class="checkbox" name="forward_delta">
+                </div>
+                <button type="submit">Submit</button>
+                <button type="button" id="addlinks">Add links</button>
+            </form>
+        </div>
+    </div>
+
+</div>

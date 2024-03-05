@@ -1,0 +1,36 @@
+<div class="col-md-6">
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="card-title">Create categories</h5>
+        </div>
+        <div class="additional-attributes" style="display: none; padding: 20px;">
+            <form id="catForm" type="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="openai_api_key">OpenAI API key:</label>
+                    <input type="text" class="form-control" id="openai_api_key" name="openai_api_key"
+                        value="{{user.account.openai_api_key}}">
+                </div>
+                {% if not data.topic and data.topic != "None" %}
+                <div class="form-group">
+                    <label class="form-label" for="topic">Zapleczes topic:</label>
+                    <input type="text" class="form-control" id="topic" name="topic">
+                </div>
+                {% endif %}
+                <h6>Categories</h6>
+                <div class="slider-container">
+                    <input type="range" id="CatSlider" class="range-slider" min="2" max="7" value="4"
+                        name="cat_num">
+                    <input type="text" id="CatSliderValue" class="range-value" value="4" readonly>
+                </div>
+                <h6>Subcategories</h6>
+                <div class="slider-container">
+                    <input type="range" id="SubCatSlider" class="range-slider" min="2" max="7" value="4"
+                        name="subcat_num">
+                    <input type="text" id="SubCatSliderValue" class="range-value" value="4" readonly>
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>

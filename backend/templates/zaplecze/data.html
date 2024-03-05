@@ -1,0 +1,36 @@
+<div class="col-md-12">
+    <div class="card shadow" id="main" data-card-id="{{ data.id }}">
+        <div class="card-icons">
+            {% csrf_token %}
+            {% if not data.wp_api_key %}
+            <i class="fas fa-plus-circle icon" id="create"></i>
+            {% endif %}
+            <i class="fas fa-pen icon" id="write"></i>
+            <i class="fas fa-trash icon" id="delete"></i>
+        </div>
+        <div class="card-body">
+            <a href="https://{{data.domain}}">
+                <h5 class="card-title">{{ data.domain }}</h5>
+            </a>
+            <p class="card-text">Click to view additional details</p>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered additional-attributes" style="display: none;">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for k, v in data.items %}
+                    <tr>
+                        <td>{{ k }}</td>
+                        <td id="{{k}}">{{ v }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

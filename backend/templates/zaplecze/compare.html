@@ -1,0 +1,82 @@
+<div id="comp-card" class="col-md-6">
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="card-title">Porównywarka</h5>
+        </div>
+        <div class="additional-attributes" style="display: none; padding: 20px;">
+            <div class="form-group">
+                <label for="comparisonSelect">Dostępne porównania:</label>
+                <select class="form-control" id="comparisonSelect">
+                    <option value="keyboard">Klawiatury</option>
+                    <option value="mouse">Myszki</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="compQuant">Ile porównań wygenerować?</label>
+                <input type="number" id="compQuant" class="form-control" min="1" max="99">
+            </div>
+
+
+
+            <div class="form-group">
+                <label>Grafiki:</label>
+                <div class="checkbox-container">
+                    <input type="radio" id="pixabay_comp" name="graphicSource_comp" value="pixabay" checked>
+                    <label for="pixabay">Pixabay</label>
+                    <input type="radio" id="pexels_comp" name="graphicSource_comp" value="pexels">
+                    <label for="pexels">Pexels</label>
+                    <input type="radio" id="ai_comp" name="graphicSource_comp" value="ai">
+                    <label for="ai">AI</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nakładka?:</label>
+                <div class="checkbox-container">
+                    <input type="radio" id="withOverlay_comp" name="overlayOption_comp" value="withOverlay" checked>
+                    <label for="withOverlay">Z nakładką</label>
+                    <input type="radio" id="withoutOverlay_comp" name="overlayOption_comp"
+                        value="withoutOverlay">
+                    <label for="withoutOverlay">Bez nakładki</label>
+                </div>
+            </div>
+
+            <div class="color-picker-container">
+                <label for="colorPicker_comp">Wybierz kolor:</label>
+                <input type="color" id="colorPicker_comp" name="color" onchange="updateCompRGB(this.value)">
+            </div>
+
+            <div style="display:none;">
+                <input type="hidden" id="rgbValue_comp" name="rgbValue">
+            </div>
+
+
+            <div class="form-group">
+                <label for="dateInput">Wybierz datę dla początku publikacji:</label>
+                <input type="date" id="dateInput_comp" class="form-control" pattern="\d{2}-\d{2}-\d{4}"
+                    placeholder="DD-MM-YYYY">
+            </div>
+
+            <div class="form-group">
+                <label for="publishIntervalInput_comp">Co ile mają publikować się wpisy?:</label>
+                <input type="number" id="publishInterval_comp" class="form-control" min="1" max="99">
+            </div>
+
+            <div class="form-group">
+                <label for="withFaq_comp">Czy chcesz wygenerować FAQ dla tekstów?</label>
+                <input type="radio" id="withFaq_comp" name="faqOption_comp" value="withFaq">
+                <label for="withFaq_comp">Tak</label>
+                <input type="radio" id="withoutFaq_comp" name="faqOption_comp" value="withoutFaq" checked>
+                <label for="withoutFaq_comp">Nie</label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="openai_api_key_classic">OpenAI API key:</label>
+                <input type="text" class="form-control" id="openai_api_key_comp" name="openai_api_key_classic"
+                    value="{{user.account.openai_api_key}}">
+            </div>
+
+            <button type="submit_comp" data-card-id="{{ data.id }}" id="classic_comp">Submit</button>
+    </div>
+</div>
