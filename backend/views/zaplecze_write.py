@@ -335,7 +335,7 @@ class ManyZapleczesWrite(ZAPIView):
             "email": request.user.id
         }
         
-        loop = asyncio.new_event_loop()
+        # loop = asyncio.new_event_loop()
         # t = Thread(target=self.start_background_loop, args=(loop,), daemon=True)
         # t.start()
 
@@ -345,7 +345,7 @@ class ManyZapleczesWrite(ZAPIView):
             res = await asyncio.gather(*tasks)
         except Exception as e:
             return Response({"data": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-        loop.stop()
+        # loop.stop()
         # print([x for r in res for x in r])
         await channel_layer.group_send(group_name, event)
         
