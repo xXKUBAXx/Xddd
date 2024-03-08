@@ -1,0 +1,32 @@
+<div class="col-md-12">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3>Dostępne zaplecza</h3>
+            <p>Select any zaplecze to publish texts</p>
+        </div>
+        <div class="additional-attributes-show" style="padding-top: 0;">
+            <table id="zaplacza-table" data-order='[[ 1, "asc" ]]' style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Linkować</th>
+                        <th>Tematyka</th>
+                        <th>Adres</th>
+                        <th>top10</th>
+                        <th>top50</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for z in zaplecza %}
+                    <tr>
+                        <td><input type="checkbox" data-user="{{z.login}}" data-key="{{z.wp_api_key}}"></td>
+                        <td>{{z.category.name}}</td>
+                        <td>{{z.domain}}</td>
+                        <td style="color: black; background-color: {% if z.semstorm_top10 > z.semstorm_top10prev %}#cfecd0{% elif z.semstorm_top10 == z.semstorm_top10prev %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.semstorm_top10}}</td>
+                        <td style="color: black; background-color: {% if z.semstorm_top50 > z.semstorm_top50prev %}#cfecd0{% elif z.semstorm_top50 == z.semstorm_top50prev %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.semstorm_top50}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
