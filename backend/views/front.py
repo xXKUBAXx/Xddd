@@ -1,14 +1,17 @@
 from django.shortcuts import render, get_object_or_404
-from ..models import Zaplecze, Account, Link, Banner
+from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View, edit
 from django.utils.decorators import method_decorator
+from django.db.models.functions import Length
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from ..src.CreateWPblog.openai_api import OpenAI_API
 from backend.forms import RegisterZapleczeForm, AddZapleczeCategory
 from django.shortcuts import redirect
+from django.core.mail import send_mail
+
 
 import json
 import urllib
@@ -164,71 +167,23 @@ class WriteLink(View):
         
         umowa['frazy'] = parsed_umowa
 
-        zaplecza = [l.split("\t") for l in open("../zaplecza.tsv", encoding="utf-8").read().split("\n") if len(l.split("\t")[-1])>20]
-
-        zaplecza_unique = list(set([z[0] for z in zaplecza]))
-
-        visibility = [v.split("\t") for v in open("../visibility_data.tsv", encoding="utf-8").read().split("\n")]
-
-        zaplecza_data = {}
-        for z in zaplecza:
-            zaplecza_data[z[1]] = {
-                "domain": z[1].lower(),
-                "topic": z[0], 
-                "login": z[2],
-                "wp_password": z[3],
-                "wp_api_key": z[4],
-                "date": ""
-            }
-        
-        for v in visibility:
-            dom = v[0].lower()
-            try:
-                if zaplecza_data[dom]["date"] == "":
-                    zaplecza_data[dom].update({
-                        "date": v[1],
-                        "top3": v[2],
-                        "top3_growth": 0,
-                        "top10": v[3],
-                        "top10_growth": 0,
-                        "top50": v[4],
-                        "top50_growth": 0
-                    })
-                elif zaplecza_data[dom]["date"] > v[1]:
-                    top3_growth = self.detect_change(zaplecza_data[dom]["top3"], v[2])
-                    top10_growth = self.detect_change(zaplecza_data[dom]["top10"], v[3])
-                    top50_growth = self.detect_change(zaplecza_data[dom]["top50"], v[4])
-                    zaplecza_data[dom].update({
-                        "date": v[1],
-                        "top3_growth": top3_growth,
-                        "top10_growth": top10_growth,
-                        "top50_growth": top50_growth
-                    })
-                else:
-                    top3_growth = self.detect_change(v[2], zaplecza_data[dom]["top3"])
-                    top10_growth = self.detect_change(v[3], zaplecza_data[dom]["top10"])
-                    top50_growth = self.detect_change(v[4], zaplecza_data[dom]["top50"])
-                    zaplecza_data[dom].update({
-                        "date": v[1],
-                        "top3": v[2],
-                        "top3_growth": top3_growth,
-                        "top10": v[3],
-                        "top10_growth": top10_growth,
-                        "top50": v[4],
-                        "top50_growth": top50_growth
-                    })
-            except:
-                pass
-
         try:
             papaj_spi = User.objects.get(username='papaj_spi')
         except User.DoesNotExist:
             papaj_spi = None
 
+        categories = ZapleczeCategory.objects.all()
+        category_data = []
+        for category in categories:
+            num_zaplecze = category.zaplecze_set.count()
+            category_data.append({'category': category, 'id':category.id, 'num_zaplecze': num_zaplecze})
+
+        zaplecza_data = Zaplecze.objects.filter(ssl_active=True).annotate(wp_api_key_length=Length('wp_api_key')).filter(wp_api_key_length__gt=20)
+
         context = {
                     "umowa": umowa, 
                     "zaplecza": zaplecza_data, 
-                    "zaplecza_unique": sorted(zaplecza_unique),
+                    "zaplecza_unique": category_data,
                     'papaj_spi': papaj_spi
                    }
         
