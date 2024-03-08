@@ -22,7 +22,7 @@
         {% if data.wp_api_key and data.wp_api_key != "None" %}
             {% if not data.category %}
                 <div class="col-md-6 form-container">
-                    <form action="" method="post">
+                    <form action="" method="post" class="register">
                         {% csrf_token %}
                         {{category_form}}
                         <button type="submit" class="btn btn-primary btn-block">Submit</button>
