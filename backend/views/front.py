@@ -45,7 +45,7 @@ class Front(View):
 @method_decorator(log_user(), name='dispatch')
 class ZapleczaTable(View):
     def get(self, request):
-        return render(request, "zaplecza.html", {"queryset": Zaplecze.objects.values()})
+        return render(request, "zaplecza.html", {"queryset": Zaplecze.objects.order_by("-id").values()})
     
 @method_decorator(log_user(), name='dispatch')
 class CreateZaplecze(View):
