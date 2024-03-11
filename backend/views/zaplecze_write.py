@@ -245,16 +245,28 @@ class ManyZapleczesWrite(ZAPIView):
         p_num = int(request.data.get("p_num"))
         start_date = datetime.strptime(request.data.get('start_date'), "%Y-%m-%d")
         days_delta = int(request.data.get("days_delta"))
-        if type(request.data.get("zapleczas")) == str:
-            zapleczas = json.loads(request.data.get("zapleczas"))
-        else:
-            zapleczas = request.data.get("zapleczas")
+        try:
+            if type(request.data.get("zapleczas")) == str:
+                zapleczas = json.loads(request.data.get("zapleczas"))
+            else:
+                zapleczas = request.data.get("zapleczas")
+        except:
+            zapleczas = []
         if type(request.data.get("links")) == str:
             links = json.loads(request.data.get("links"))
         else:
             links = request.data.get("links")
-
-        
+        category_id = int(request.data.get("category_id"))
+        zaplecza_num = int(request.data.get("zaplecza_num"))
+        zapleczas_queryset = await sync_to_async(Zaplecze.objects.filter)(category=category_id)
+        zapleczas_queryset = await sync_to_async(zapleczas_queryset.order_by)('?')
+        async for z in zapleczas_queryset[:zaplecza_num]:
+            z_dict = {
+                "domain": z.domain,
+                "wp_user": z.wp_user,
+                "wp_api_key": z.wp_api_key
+            }
+            zapleczas.append(z_dict)        
         try:
             self.logger.info(f"{request.user.email} - Writing {len(links)} links")        
         except:
@@ -276,7 +288,7 @@ class ManyZapleczesWrite(ZAPIView):
                     try:
                         articles[i].append(links.pop())
                     except IndexError:
-                        break
+                        pass
 
             
         #calculate start dates for each articles group
@@ -298,16 +310,20 @@ class ManyZapleczesWrite(ZAPIView):
         
         tasks = []
         for article_links, zaplecze, sd in zip(articles, zapleczas, start_dates):
-            try:
-                wp, cats = await self.select_wp_cats(article_links, zaplecze, openai_key, topic, lang, sd, days_delta, forward_delta)
-            except Exception as e:
-                print(e)
-                continue
+            wp = None
+            while wp==None:
+                try:
+                    wp, cats = await self.select_wp_cats(article_links, zaplecze, openai_key, topic, lang, sd, days_delta, forward_delta)
+                except Exception as e:
+                    self.logger.info(f"Error while obraining zaplecze {zaplecze['domain']} - new one will be selected")
+                    zaplecze = await sync_to_async(Zaplecze.objects.filter)(category=category_id)
+                    zaplecze = await sync_to_async(zaplecze.order_by)("?")
+                    zaplecze = await zaplecze.afirst()
+                    zaplecze = zaplecze.__dict__
 
             if cats == None:
                 print(f"Wrong credentials to {zaplecze['domain']} - {zaplecze['wp_user']}:{zaplecze['wp_api_key']}")
                 continue
-                
             
             tasks.append(
                 asyncio.create_task(
