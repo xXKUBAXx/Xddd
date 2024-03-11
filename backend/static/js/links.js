@@ -78,11 +78,13 @@ $(document).ready(function() {
         const zaplecza = document.querySelectorAll("#zaplacza-table tbody tr");
         let topic_list = [];
         zaplecza.forEach(z => {
-            if (z.children[1].innerText == collection[0].value) {
+            if (z.children[1].getAttribute('value') == collection[0].value) {
                 topic_list.push(z);
             }
         })
-        topic_list.sort((a, b) => 0.5 - Math.random()).slice(0,parseInt(z_value.val())).forEach(e => {
+        console.log($("#zapleczaSliderValue").val());
+        topic_list.sort((a, b) => 0.5 - Math.random()).slice(0,parseInt($("#zapleczaSliderValue").val())).forEach(e => {
+            console.log(e);
             checkedRows.push({
                 domain: e.children[2].innerText,
                 wp_user: e.children[0].children[0].getAttribute("data-user"),

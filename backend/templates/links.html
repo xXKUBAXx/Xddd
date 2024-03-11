@@ -34,7 +34,7 @@ Write linked article for {{umowa.domena}}
             {% include "links/zaplecza_categories.html" with zaplecza_unique=zaplecza_unique %} 
             {% include "links/links_custom.html" %} 
             {% include "links/links_panel.html" with umowa=umowa %}
-            {% include "links/links_form.html" %}
+            {% include "links/links_form.html" with csrf_token=csrf_token %}
         </div>        
     </div>
 

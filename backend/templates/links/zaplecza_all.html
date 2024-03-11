@@ -18,8 +18,8 @@
                 <tbody>
                     {% for z in zaplecza %}
                     <tr>
-                        <td><input type="checkbox" data-user="{{z.login}}" data-key="{{z.wp_api_key}}"></td>
-                        <td>{{z.category.name}}</td>
+                        <td><input type="checkbox" data-user="{{z.wp_user}}" data-key="{{z.wp_api_key}}"></td>
+                        <td value="{{z.category_id}}">{{z.category.name}}</td>
                         <td>{{z.domain}}</td>
                         <td style="color: black; background-color: {% if z.semstorm_top10 > z.semstorm_top10prev %}#cfecd0{% elif z.semstorm_top10 == z.semstorm_top10prev %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.semstorm_top10}}</td>
                         <td style="color: black; background-color: {% if z.semstorm_top50 > z.semstorm_top50prev %}#cfecd0{% elif z.semstorm_top50 == z.semstorm_top50prev %}#dfdacf{% else %}#ffc5ca{% endif %}">{{z.semstorm_top50}}</td>
