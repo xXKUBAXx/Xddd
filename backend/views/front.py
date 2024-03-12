@@ -70,7 +70,7 @@ class CreateZaplecze(View):
 @method_decorator(log_user(), name='dispatch')
 class RegisterZapleczeFormView(edit.FormView):
     def get(self, request):
-        form = RegisterZapleczeForm()
+        form = RegisterZapleczeForm(request.GET)
         context = {"form": form}
         return render(request, "register.html", context)
 
@@ -109,7 +109,7 @@ class ZapleczeUnit(View):
         
         context = {'data': serializer.data}
 
-        category_form = AddZapleczeCategory()
+        category_form = AddZapleczeCategory(instance=Zaplecze.objects.get(id=zaplecze_id))
 
         try:
             papaj_spi = User.objects.get(username='papaj_spi')
