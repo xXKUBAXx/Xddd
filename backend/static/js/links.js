@@ -74,26 +74,11 @@ $(document).ready(function() {
                 wp_api_key: box.getAttribute("data-key")
             });
         })
-        let collection = document.getElementById("topics").selectedOptions;
-        const zaplecza = document.querySelectorAll("#zaplacza-table tbody tr");
-        let topic_list = [];
-        zaplecza.forEach(z => {
-            if (z.children[1].getAttribute('value') == collection[0].value) {
-                topic_list.push(z);
-            }
-        })
-        console.log($("#zapleczaSliderValue").val());
-        topic_list.sort((a, b) => 0.5 - Math.random()).slice(0,parseInt($("#zapleczaSliderValue").val())).forEach(e => {
-            console.log(e);
-            checkedRows.push({
-                domain: e.children[2].innerText,
-                wp_user: e.children[0].children[0].getAttribute("data-user"),
-                wp_api_key: e.children[0].children[0].getAttribute("data-key"),
-            })
-        })
+        formData += "&zaplecza_num="+$("#zapleczaSliderValue").val();
+        formData += "&category_id="+document.getElementById("topics").selectedOptions[0].value;
 
         //check if any zaplecza selected
-        if(checkedRows.length == 0) {
+        if(checkedRows.length == 0 & $("#zapleczaSliderValue").val() == 0) {
             alert("Please select zaplecza!");
             return;
         }
