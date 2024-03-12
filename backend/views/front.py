@@ -70,7 +70,7 @@ class CreateZaplecze(View):
 @method_decorator(log_user(), name='dispatch')
 class RegisterZapleczeFormView(edit.FormView):
     def get(self, request):
-        form = RegisterZapleczeForm(request.GET)
+        form = RegisterZapleczeForm()
         context = {"form": form}
         return render(request, "register.html", context)
 
@@ -79,7 +79,9 @@ class RegisterZapleczeFormView(edit.FormView):
         if form.is_valid():
             form.save()
             return redirect("/")
-            
+        else:
+            context = {"form": form}
+            return render(request, "register.html", context)
 
     
 @method_decorator(log_user(), name='dispatch')
