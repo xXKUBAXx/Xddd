@@ -5,6 +5,7 @@ from .zaplecze_create import *
 from .zaplecze_write import *
 from .zaplecze_classic import *
 from .zaplecze_comp import *
+from .zaplecze_ceneo import *
 from .zaplecze_vis import *
 from .front import *
 
