@@ -94,7 +94,7 @@ $(document).ready(function () {
 		};
 
 		$.ajax({
-			url: '/api/create/' + cardId + '/zaplecze_comp/',
+			url: '/api/create/' + cardId + '/zaplecze_ceneo/',
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
