@@ -1,0 +1,44 @@
+<div id="ceneo-card" class="col-md-6">
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="card-title">Produkty Ceneo</h5>
+        </div>
+        <div class="additional-attributes" style="padding: 20px;">
+            <div class="form-group">
+                <label for="ceneoQuant">Ile produktów:</label>
+                <input type="number" id="ceneoQuant" class="form-control" min="1" max="99">
+            </div>
+
+            <div class="form-group">
+                <label for="ceneoDataDropdown">Wybierz dane z Ceneo:</label>
+                <select id="ceneoDataDropdown" class="form-control">
+                    <option value="wesele_1">wesele_1</option>
+                    <option value="wesele_2">wesele_2</option>
+                    <option value="wesele_3">wesele_3</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pixabay_api_key_ceneo">Pixabay API key:</label>
+                <input type="text" id="pixabay_api_key_ceneo" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="publishInterval_ceneo">Interwał publikacji:</label>
+                <input type="number" id="publishInterval_ceneo" class="form-control" min="1" max="99">
+            </div>
+
+            <div class="form-group">
+                <label for="openai_api_key_ceneo">OpenAI API key:</label>
+                <input type="text" id="openai_api_key_ceneo" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="dateInput_ceneo">Data początku publikacji:</label>
+                <input type="date" id="dateInput_ceneo" class="form-control">
+            </div>
+
+            <button type="submit" data-card-id="{{ data.id }}" id="submit_ceneo">Submit</button>
+        </div>
+    </div>
+</div>
