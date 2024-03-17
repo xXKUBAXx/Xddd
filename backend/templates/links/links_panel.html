@@ -1,0 +1,32 @@
+<div class="col-md-12">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3>Frazy z panelu</h3>
+            <p>Select keywords to write texts about (position 0 means unobtained yet)</p>
+        </div>
+        <div class="additional-attributes-show">
+            <table id="frazy-table">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Fraza</th>
+                        <th>{{umowa.frazy.0.data_wczoraj}}</th>
+                        <th>{{umowa.frazy.0.data_dzisiaj}}</th>
+                        <th>Linki</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in umowa.frazy %}
+                        <tr>
+                            <td>{{r.url}}</td>
+                            <td>{{r.fraza}}</td>
+                            <td>{{r.pozycja_wczoraj}}</td>
+                            <td>{{r.pozycja_dzisiaj}}</td>
+                            <td><input type="number" min="0" max="5" value="0"></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

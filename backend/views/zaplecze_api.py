@@ -111,7 +111,7 @@ class ZAPIView(APIView):
                 f"Create image for article titled - {title}", 
                 f"{path}files/test_photo{datetime.now().microsecond}.webp")
             #Upload image to WordPress
-            img_id = self.upload_img(img)
+            img_id = o.upload_img(img)
             #Delete local image
             os.remove(img)
         total_cost += cost

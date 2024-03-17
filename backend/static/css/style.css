@@ -164,14 +164,16 @@ button:hover {
 }
 
 .form-control, form input {
-    margin-bottom: 15px;
+    margin: 5px;
     background-color: #333;
     color: #ccc;
     border: 1px solid #666;
     border-radius: 4px;
     padding: 8px;
+}
+
+form.register input {
     width: 100%;
-    box-sizing: border-box;
 }
 
 /* Table Styles */

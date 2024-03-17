@@ -1,0 +1,48 @@
+<div class="col-md-6">
+    <div class="card shadow" ws-connect="/ws/links/">
+        <div class="card-body">
+            <h3 class="card-title">Details</h3>
+            <p>Complete publication details</p>
+        </div>
+        <div class="additional-attributes-show" id="write-details">
+            <form id="writeLinks" type="post">
+                {% csrf_token %}
+                {% if not data.topic %}
+                <div class="form-group">
+                    <label class="form-label" for="topic">Articles topic:</label>
+                    <input type="text" class="form-control" id="topic" name="topic">
+                </div>
+                {% endif %}
+                <input type="hidden" name="lang" value="{{umowa.lang}}">
+                <div class="form-group">
+                    <label class="form-label" for="openai_api_key">OpenAI API key:</label>
+                    <input type="text" class="form-control" id="openai_api_key" name="openai_api_key" value="{{user.account.openai_api_key}}">
+                </div>
+                {% comment %} <h6>Articles</h6>
+                <div class="slider-container">
+                    <input type="range" id="ArtSlider" class="range-slider" min="1" max="5" value="1" name="a_num">
+                    <input type="text" id="ArtSliderValue" class="range-value" value="1" readonly>
+                </div> {% endcomment %}
+                <div class="slider-container">
+                    <label>Paragraphs per article</label>
+                    <input type="range" id="ParagraphsSlider" class="range-slider" min="2" max="8" value="4" name="p_num">
+                    <input type="text" id="ParagraphsSliderValue" class="range-value" value="4" readonly>
+                </div>
+                <div class="date-container">
+                    <label>Start date</label>
+                    <input type="date" value="2005-04-02" id="start_date" name="start_date" style="margin-left: 12px;"/>
+                </div>
+                <div class="slider-container">
+                    <label>Days between articles</label>
+                    <input type="range" id="DaysSlider" class="range-slider" min="2" max="14" value="7" name="days_delta">
+                    <input type="text" id="DaysSliderValue" class="range-value" value="7" readonly>
+                </div>
+                <div class="checkbox-container">
+                    <label>Publish forward</label>
+                    <input type="checkbox" id="forward_delta" class="checkbox" name="forward_delta">
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>

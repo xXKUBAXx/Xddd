@@ -62,14 +62,14 @@ $(document).ready(function() {
                 $("button#categories").remove();
                 $("button#articles").show();
                 $("button#selectAll").show();
-                if (response.length != $("#wp_post_count").innerHTML){
+                if (response.length != $("#wp_category_count").innerHTML){
                     $.ajax({
                         type: 'PUT',
                         url: '/api/' + cardId + '/',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken')
                         },
-                        data: {"wp_post_count": response.length}
+                        data: {"wp_category_count": response.length}
                     });
                 }
             },
