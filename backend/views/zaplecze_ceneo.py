@@ -62,25 +62,26 @@ class ZapleczeCeneo(View):
         # overlay_color = data.get('overlayColor')
             
 
-        ceneoQuant = 5
-        pixabay_api_key = "36043348-2f97c422170679f5ed532a796"
-        publishInterval = 2
-        overlay_color = '204, 255, 102'
-        openai_api_key = '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'
-        date_input = '2021-01-01'
+        ceneoQuant = int(data.get('ceneoQuant'))
+        ceneoFile = data.get('ceneoFile')
+        pixabay_api_key = data.get('pixabay_api_key')
+        publishInterval = data.get('publishInterval')
+        # overlay_color = data.get('overlayColor')
+        openai_api_key = data.get('openai_api_key')
+        date_input = data.get('dateInput')
 
         # overlay_option = 'withOverlay'
         # graphicSource = 'ceneo'
 
        
 
-        rgb_fill_preset = overlay_color.split(",")
-        rgb_fill_preset = [int(channel) for channel in rgb_fill_preset]
+        # rgb_fill_preset = overlay_color.split(",")
+        # rgb_fill_preset = [int(channel) for channel in rgb_fill_preset]
 
         wp_api = WP_API(zaplecze.domain, zaplecze.wp_user, zaplecze.wp_api_key)
         
         # local server
-        filename = '../wesele_1_striped.csv' 
+        filename = f'../{ceneoFile}_striped.csv' 
 
         prod_list = await get_ceneo_by_quant(filename, ceneoQuant)
 

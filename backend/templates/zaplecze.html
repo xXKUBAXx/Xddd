@@ -32,6 +32,7 @@
                 {% include 'zaplecze/categories.html' with data=data %}
                 {% include 'zaplecze/write.html' with data=data %}
                 {% include 'zaplecze/classic.html' %}
+                {% include 'zaplecze/ceneo.html' %}
                 {% include 'zaplecze/compare.html' %}
                 <script src="{% static 'js/zaplecze_categories.js' %}"></script>
                 <script src="{% static 'js/links_form.js' %}"></script>
@@ -54,4 +55,5 @@
     <script src="{% static 'js/new_zaplecze.js' %}"></script>
     <script src="{% static 'js/zaplecze_classic.js' %}"></script>
     <script src="{% static 'js/zaplecze_comp.js' %}"></script>
+    <script src="{% static 'js/zaplecze_ceneo.js' %}"></script>
     {% endblock %}
