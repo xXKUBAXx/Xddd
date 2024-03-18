@@ -19,6 +19,10 @@ $(document).ready(function () {
     $('#submit_ceneo').on('click', function (event) {
         event.preventDefault();
 
+        $(this).hide();
+
+        $(this).after('<p>Zlecenie przyjęte.<br>Możesz wyłączyć kartę.</p>');
+
         const data = {
             ceneoFile: $('#ceneoDataDropdown').val(),
             ceneoQuant: $('#ceneoQuant').val(),

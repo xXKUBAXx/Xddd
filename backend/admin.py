@@ -1,10 +1,12 @@
 from django.contrib import admin
-from .models import Zaplecze, Account, Link, Banner, ZapleczeCategory
+from .models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 # Register your models here.
 
 admin.site.register(ZapleczeCategory)
+
+admin.site.register(CeneoFiles)
 
 class ZapleczeAdmin(admin.ModelAdmin):
     list_display = ['domain', 'email', 'url', 'login', 'password', 'topic']
