@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory
+from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View, edit
@@ -16,6 +16,9 @@ from django.core.mail import send_mail
 import json
 import urllib
 from .utils import log_user
+
+
+
 
 
 @method_decorator(log_user(), name='dispatch')
@@ -112,7 +115,9 @@ class ZapleczeUnit(View):
         context = {'data': serializer.data}
 
         category_form = AddZapleczeCategory(instance=Zaplecze.objects.get(id=zaplecze_id))
-
+            
+        ceneo_files = CeneoFiles.objects.all()
+        
         try:
             papaj_spi = User.objects.get(username='papaj_spi')
         except User.DoesNotExist:
@@ -121,7 +126,8 @@ class ZapleczeUnit(View):
         context = {
             'data': serializer.data,
             'papaj_spi': papaj_spi,
-            'category_form': category_form
+            'category_form': category_form,
+            'ceneo_files': ceneo_files
         }
 
         return render(request, 'zaplecze.html', context)

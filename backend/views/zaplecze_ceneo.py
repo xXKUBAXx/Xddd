@@ -48,19 +48,7 @@ class ZapleczeCeneo(View):
         if not zaplecze:
             return
         
-        user_id, user_mail = await sync_to_async(check_user)(request)
-
-        # ceneoCat = data.get('compSelect')  # mouse / keyboard
-        # ceneoQuant = int(data.get('compQuant'))  # ilość porównań
-        # graphicSource = data.get('graphicSource')  # pixabay, pexels, ai
-        # pixabay_api_key = "36043348-2f97c422170679f5ed532a796" #openai, pixa, or unsplash
-        # pexels_api_key = "K4INRjrCzmznTXPESmWi4PyvmoV9VRqj9c9RKq1huu5ouhb4BO23RfFS"
-        # overlay_option = data.get('overlayOption')  # withOverlay, withoutOverlay
-        # date_input = data.get('dateInput')  # 2021-01-01
-        # publishInterval = data.get('publishInterval')  # 2
-        # openai_api_key = data.get('openai_api_key')  # sk
-        # overlay_color = data.get('overlayColor')
-            
+        user_id, user_mail = await sync_to_async(check_user)(request)            
 
         ceneoQuant = int(data.get('ceneoQuant'))
         ceneoFile = data.get('ceneoFile')

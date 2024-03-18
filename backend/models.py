@@ -8,6 +8,12 @@ class ZapleczeCategory(models.Model):
     
     def __str__(self):
         return self.name
+    
+class CeneoFiles(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+    
+    def __str__(self):
+        return self.name
 
 
 class Zaplecze(models.Model):
@@ -75,6 +81,7 @@ class Banner(models.Model):
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     openai_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
+    pixabay_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
     semstorm_api_key = models.CharField(max_length=64, default="", blank=True, null=True)
     tokens_used = models.IntegerField(default=0)
     USD = models.FloatField(default=0.0)

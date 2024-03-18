@@ -6,31 +6,31 @@
         <div class="additional-attributes" style="padding: 20px;">
             <div class="form-group">
                 <label for="ceneoQuant">Ile produktów:</label>
-                <input type="number" id="ceneoQuant" class="form-control" min="1" max="99">
+                <input type="number" id="ceneoQuant" class="form-control" min="1" max="99" value="2">
             </div>
 
             <div class="form-group">
-                <label for="ceneoDataDropdown">Wybierz dane z Ceneo:</label>
+                <label for="ceneoDataDropdown">Wybierz paczkę z Ceneo:</label>
                 <select id="ceneoDataDropdown" class="form-control">
-                    <option value="wesele_1">wesele_1</option>
-                    <option value="wesele_2">wesele_2</option>
-                    <option value="wesele_3">wesele_3</option>
+                    {% for file in ceneo_files %}
+                        <option value="{{ file.name }}">{{ file.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="pixabay_api_key_ceneo">Pixabay API key:</label>
-                <input type="text" id="pixabay_api_key_ceneo" class="form-control">
-            </div>
-
-            <div class="form-group">
-                <label for="publishInterval_ceneo">Interwał publikacji:</label>
-                <input type="number" id="publishInterval_ceneo" class="form-control" min="1" max="99">
+                <input type="text" value="{{user.account.pixabay_api_key}}" id="pixabay_api_key_ceneo" class="form-control">
             </div>
 
             <div class="form-group">
                 <label for="openai_api_key_ceneo">OpenAI API key:</label>
-                <input type="text" id="openai_api_key_ceneo" class="form-control">
+                <input type="text" id="openai_api_key_ceneo" class="form-control" value="{{user.account.openai_api_key}}">
+            </div>
+
+            <div class="form-group">
+                <label for="publishInterval_ceneo">Interwał publikacji:</label>
+                <input type="number" id="publishInterval_ceneo" class="form-control" min="1" max="99" value="2">
             </div>
 
             <div class="form-group">
