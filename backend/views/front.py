@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles
+from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles, primislaoLinks
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View, edit
@@ -49,6 +49,11 @@ class Front(View):
 class ZapleczaTable(View):
     def get(self, request):
         return render(request, "zaplecza.html", {"queryset": Zaplecze.objects.order_by("-id").values()})
+
+@method_decorator(log_user(), name='dispatch')
+class Panel_Primislao(View):
+    def get(self, request):
+        return render(request, "links_primislao.html", {"queryset": Zaplecze.objects.order_by("-id").values()})
     
 @method_decorator(log_user(), name='dispatch')
 class CreateZaplecze(View):
@@ -227,8 +232,15 @@ class UpdateProfile(APIView):
         except AttributeError:
             print("Anonymus user got into user page!")
             queryset = []
+
+        try:
+            queryset_primislao = primislaoLinks.objects.filter(user=request.user.email)
+        except AttributeError:
+            print("Anonymus user got into user page!")
+            queryset = []
         context = {
-            "data": queryset[::-1]
+            "data": queryset[::-1],
+            "primislao_links" : queryset_primislao[::-1]
         }
         return render(request, 'user.html', context)
     

@@ -9,7 +9,6 @@ Dodaj klucz do API
 {% endblock %}
 
 {% block content %}
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6 form-container">
@@ -30,10 +29,18 @@ Dodaj klucz do API
     </div>
 
     <div class="row" style="margin-top: 3em;">
-        {% regroup data by task_id as task_list %}
+        <div class="col-md-12">
+            <div style="width:100%" class="btn-group" role="group">
+                <button style="width:45%; margin:5px" type="button" class="btn btn-primary active" id="linkiZapleczaraBtn">Linki Zapleczara</button>
+                <button style="width:45%; margin:5px" type="button" class="btn btn-primary" id="linkiPrzemekBtn">Linki Przemek</button>
+            </div>
+        </div>
+    </div>
 
+    <div id="linkiZapleczaraData" class="row" style="margin-top: 3em;">
+        {% regroup data by task_id as task_list %}
         {% for task in task_list %}
-          <div class="col-md-12">
+        <div class="col-md-12">
             <div class="card shadow">
                 <div class="card-body">
                     <h3>Task ID: {{ task.grouper }} - {{ task.list.0.link|split_url }}
@@ -44,32 +51,67 @@ Dodaj klucz do API
                 </div>
                 <div class="additional-attributes">
                   <table class="keywordsTable">
-                    <thead>
-                      <tr>
-                        <th>Status</th>
-                        <th>URL</th>
-                        <th>Keyword</th>
-                        <th>Link</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for row in task.list %}
-                        <tr>
-                          <td>{% if row.done %}Done{% else %}Writing{% endif %}</td>
-                          <td>{{ row.url }}</td>
-                          <td>{{ row.keyword }}</td>
-                          <td>{{ row.link }}</td>
-                        </tr>
-                      {% endfor %}
-                    </tbody>
+                      <thead>
+                          <tr>
+                              <th>Status</th>
+                              <th>URL</th>
+                              <th>Keyword</th>
+                              <th>Link</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for row in task.list %}
+                          <tr>
+                              <td>{% if row.done %}Done{% else %}Writing{% endif %}</td>
+                              <td>{{ row.url }}</td>
+                              <td>{{ row.keyword }}</td>
+                              <td>{{ row.link }}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
                   </table>
                 </div>
             </div>
-          </div>
-        {% endfor %}        
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div id="linkiPrzemekData" class="row" style="margin-top: 3em; display: none;">
+        {% regroup primislao_links by task_id as primislao_task_list %}
+        {% for primislao_task in primislao_task_list %}
+        <div class="col-md-12">
+            <div style="width:fit-content; min-width:1107px;" class="card shadow">
+                <div class="card-body">
+                    <h3>Zlecenie ID: {{ primislao_task.grouper }} - {{ primislao_task.list.0.link_data }}</h3>
+                    <p>Click to see task details</p>
+                    <button class="copyButton">Copy panel note</button>
+                    <button class="copyLinks">Copy links</button>
+                </div>
+                <div class="additional-attributes">
+                    <table class="keywordsTable">
+                        <thead>
+                            <tr>
+                                <th>Zaplecze</th>
+                                <th>Linkowany Adres</th>
+                                <th>Anchor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for link in primislao_task.list %}
+                            <tr>
+                                <td>{{ link.link_domain }}</td>
+                                <td>{{ link.target_domain }}</td>
+                                <td>{{ link.anchor }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
-
 {% endblock %}
 
 
@@ -180,5 +222,22 @@ Dodaj klucz do API
           });
       });
     });
+</script>
+<script>
+  $(document).ready(function () {
+      $('#linkiPrzemekBtn').click(function () {
+          $(this).addClass('active');
+          $('#linkiZapleczaraBtn').removeClass('active');
+          $('#linkiPrzemekData').show();
+          $('#linkiZapleczaraData').hide();
+      });
+
+      $('#linkiZapleczaraBtn').click(function () {
+          $(this).addClass('active');
+          $('#linkiPrzemekBtn').removeClass('active');
+          $('#linkiPrzemekData').hide();
+          $('#linkiZapleczaraData').show();
+      });
+  });
 </script>
 {% endblock %}

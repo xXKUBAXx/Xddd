@@ -1,0 +1,303 @@
+{% extends "base.html" %}  
+{% load static %}
+
+{% block style %}
+{% endblock %}
+
+{% block h1 %}
+Klasyczny Panel Przemka
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .main-przemek-container {
+        width: 90vw;
+        margin: 20px auto 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        }
+    .take-my-tsv-row {
+        display: flex;
+        min-width: 940px;
+        position: relative;
+    }
+
+    .take-my-tsv-title-row {
+        display: flex;
+        justify-content: space-around;
+    }
+    .delete-row-btn {
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 20px;
+        margin: 0;
+        position: absolute;
+        right: -44px;
+        top: 3px;
+
+    }
+    .take-my-tsv-to-church {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.take-my-tsv-to-church button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin:0 15px;
+}
+
+.take-my-tsv-to-church button:hover {
+    background-color: #0056b3;
+}
+
+.claim-domain {
+    display: flex;
+    justify-content: center;
+}
+
+.claim-domain input{
+    max-width: 240px;
+}
+
+.group-for-domain {
+    margin-top:40px;
+}
+
+.checkmark::after {
+    content: '\2713';
+    color: #187c18;;
+}
+
+.cross::after {
+    content: '\2717';
+    color: red;
+}
+</style>
+<div class="main-przemek-container">
+    <h2>Jakie linki wariacie?</h2>
+    <h3>Obecny limit: 5 linków na zaplecze</h3>
+    <div class="take-my-tsv-container">
+        <div class="group-for-domain">
+            <div class="claim-domain">
+                <input class="form-control paste-url domain-selector" type="text" placeholder="Domain"><i class="domain-status"></i>
+            </div>
+            <div class="take-my-tsv-row">
+                <input class="form-control paste-url" type="text" placeholder="URL"><input class="form-control paste-url" type="text" placeholder="Anchor"><input class="form-control paste-url" type="text" placeholder="Nofollow"><input class="form-control paste-url" type="text" placeholder="Limit">
+            </div>
+        </div>
+    </div>
+    {% csrf_token %}
+    <div class="take-my-tsv-to-church">
+        <button>Linkuj</button>
+        <button>Dodaj kolejne zaplecze</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.take-my-tsv-container');
+        const maxRows = 6;
+
+        document.querySelector('.take-my-tsv-to-church button:nth-child(2)').addEventListener('click', () => {
+            const newGroup = document.createElement('div');
+            newGroup.classList.add('group-for-domain');
+            newGroup.innerHTML = `
+                <div class="claim-domain">
+                    <input class="form-control paste-url domain-selector" type="text" placeholder="Domain"><i class="domain-status"></i>
+                </div>
+                <div class="take-my-tsv-row">
+                    <input class="form-control paste-url" type="text" placeholder="URL">
+                    <input class="form-control paste-url" type="text" placeholder="Anchor">
+                    <input class="form-control paste-url" type="text" placeholder="Nofollow">
+                    <input class="form-control paste-url" type="text" placeholder="Limit">
+                </div>
+            `;
+            container.appendChild(newGroup);
+            attachDomainInputEvents(newGroup.querySelector('.domain-selector'));
+        });
+
+        document.querySelectorAll('.domain-selector').forEach(attachDomainInputEvents);
+
+        function attachDomainInputEvents(input) {
+            const statusIcon = input.nextElementSibling;
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('Text').trim();
+                input.value = pastedData;
+                handleDomainCheck(input, pastedData, statusIcon);
+            });
+
+            input.addEventListener('input', () => {
+                if (!input.value) {
+                    clearDomainStatus(input, statusIcon);
+                }
+            });
+        }
+
+        function handleDomainCheck(domainInput, domain, statusIcon) {
+            domainInput.disabled = true;
+            // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+            const url = (domain.startsWith('http://') || domain.startsWith('https://')) ? domain : `https://${domain}`;
+            fetch(url, { method: 'HEAD' })
+            .then(response => setStatus(domainInput, statusIcon, response.ok))
+            .catch(error => setStatus(domainInput, statusIcon, false))
+            .finally(() => domainInput.disabled = false);
+        }
+
+        function setStatus(domainInput, statusIcon, isSuccessful) {
+            if (isSuccessful) {
+                statusIcon.classList.add('checkmark');
+                statusIcon.classList.remove('cross');
+                domainInput.style.backgroundColor = 'darkgreen';
+            } else {
+                statusIcon.classList.add('cross');
+                statusIcon.classList.remove('checkmark');
+                domainInput.style.backgroundColor = 'salmon';
+            }
+        }
+
+        function clearDomainStatus(domainInput, statusIcon) {
+            statusIcon.classList.remove('checkmark', 'cross');
+            domainInput.style.backgroundColor = '';
+            domainInput.disabled = false;
+        }
+
+        const linkujButton = document.querySelector('.take-my-tsv-to-church button:first-child');
+        linkujButton.addEventListener('click', async () => {
+            const data = {};
+            const groups = container.querySelectorAll('.group-for-domain');
+
+            const takeMyTsvToChurch = document.querySelector('.take-my-tsv-to-church');
+            takeMyTsvToChurch.style.display = 'none';
+
+            container.style.pointerEvents = 'none';
+            container.style.opacity = '0.5';
+
+            groups.forEach(group => {
+                const domainInput = group.querySelector('.domain-selector');
+                const domain = domainInput.value;
+                const rowInputs = group.querySelectorAll('.take-my-tsv-row input');
+
+                if (domain) {
+                    data[domain] = [];
+                    rowInputs.forEach((input, index) => {
+                        if (index % 4 === 0) {
+                            data[domain].push({
+                                url: input.value,
+                                anchor: rowInputs[index + 1].value,
+                                nofollow: rowInputs[index + 2].value,
+                                limit: rowInputs[index + 3].value,
+                            });
+                        }
+                    });
+                }
+            });
+            
+            try {
+                const response = await fetch('/api/panel_primislao/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('Data sent successfully!', responseData.data);
+                } else {
+                    console.error('Error sending data:', response.status);
+                }
+            } catch (error) {
+                console.error('Error sending data:', error);
+            }
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = $.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('paste', (e) => {
+            const activeElement = document.activeElement;
+            if (activeElement.classList.contains('paste-url')) {
+                e.stopPropagation();
+                e.preventDefault();
+                const targetContainer = activeElement.closest('.group-for-domain');
+                const pastedData = e.clipboardData.getData('Text');
+                const pastedRows = pastedData.split(/\r?\n/);
+                pastedRows.forEach(row => {
+                    if (row.trim() && targetContainer.querySelectorAll('.take-my-tsv-row').length < maxRows) {
+                        createTexts(row, targetContainer);
+                    }
+                });
+            }
+        });
+
+        function createTexts(dataRow, targetContainer) {
+            const inputs = document.createElement('div');
+            inputs.classList.add('take-my-tsv-row');
+            inputs.style.display = 'flex';
+
+            const dataComponents = dataRow.split(/\t+/);
+            inputs.appendChild(createInput('URL', dataComponents[0]));
+            inputs.appendChild(createInput('Anchor', dataComponents[1]));
+            inputs.appendChild(createInput('Nofollow', dataComponents[2]));
+            inputs.appendChild(createInput('Limit', dataComponents[3]));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'x';
+            deleteButton.classList.add('delete-row-btn');
+            deleteButton.onclick = function() { inputs.remove(); };
+            inputs.appendChild(deleteButton);
+
+            targetContainer.appendChild(inputs);
+        }
+
+        function createInput(placeholder, value) {
+            const input = document.createElement('input');
+            input.classList.add('form-control', 'paste-url');
+            input.type = 'text';
+            input.placeholder = placeholder;
+            input.value = value || '';
+            return input;
+        }
+    });
+</script>
+    
+
+{% endblock %}
