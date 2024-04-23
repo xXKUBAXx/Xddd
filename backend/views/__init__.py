@@ -7,6 +7,7 @@ from .zaplecze_classic import *
 from .zaplecze_comp import *
 from .zaplecze_ceneo import *
 from .zaplecze_vis import *
+from .panel_primislao import *
 from .front import *
 
 from django.contrib.auth import logout

@@ -15,6 +15,25 @@ class CeneoFiles(models.Model):
     def __str__(self):
         return self.name
 
+class vdTarget(models.Model):
+    plugin_domain = models.CharField(max_length=256, unique=True)
+    server_name = models.CharField(max_length=256, unique=True)
+
+class primislaoDomains(models.Model):
+    domain_name = models.CharField(max_length=256, unique=True)
+    server_name = models.CharField(max_length=256, unique=False)
+
+class primislaoLinks(models.Model):
+    task_id = models.IntegerField(default=0)
+    user = models.CharField(max_length=256, unique=False)
+    link_domain = models.CharField(max_length=256, unique=False)
+    target_domain = models.CharField(max_length=256, unique=False)
+    anchor = models.CharField(max_length=256, unique=False)
+    nofollow = models.BooleanField(null=True, blank=True)
+    limit = models.IntegerField(default=0)
+    link_id = models.IntegerField(default=0)
+    link_data = models.DateField(blank=True, null=True)
+
 
 class Zaplecze(models.Model):
     #basic

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles
+from .models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles, vdTarget, primislaoDomains, primislaoLinks
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 # Register your models here.
@@ -7,6 +7,19 @@ from django.contrib.auth.admin import UserAdmin
 admin.site.register(ZapleczeCategory)
 
 admin.site.register(CeneoFiles)
+
+
+class vdTargetAdmin(admin.ModelAdmin):
+    list_display = ['server_name', 'plugin_domain']
+admin.site.register(vdTarget, vdTargetAdmin)
+
+class primislaoDomainsAdmin(admin.ModelAdmin):
+    list_display = ['domain_name', 'server_name']
+admin.site.register(primislaoDomains, primislaoDomainsAdmin)
+
+class primislaoOutgoingLinks(admin.ModelAdmin):
+    list_display = ['task_id', 'user', 'link_domain', 'target_domain', 'anchor', 'nofollow', 'limit', 'link_id', 'link_data']
+admin.site.register(primislaoLinks, primislaoOutgoingLinks)
 
 class ZapleczeAdmin(admin.ModelAdmin):
     list_display = ['domain', 'email', 'url', 'login', 'password', 'topic']
