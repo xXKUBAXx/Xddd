@@ -14,7 +14,7 @@ class vdTargetAdmin(admin.ModelAdmin):
 admin.site.register(vdTarget, vdTargetAdmin)
 
 class primislaoDomainsAdmin(admin.ModelAdmin):
-    list_display = ['domain_name', 'server_name']
+    list_display = ['domain_name', 'server_name', 'domain_category']
 admin.site.register(primislaoDomains, primislaoDomainsAdmin)
 
 class primislaoOutgoingLinks(admin.ModelAdmin):

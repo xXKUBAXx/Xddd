@@ -21,6 +21,7 @@ class vdTarget(models.Model):
 
 class primislaoDomains(models.Model):
     domain_name = models.CharField(max_length=256, unique=True)
+    domain_category = models.CharField(max_length=256, unique=False, null=True)
     server_name = models.CharField(max_length=256, unique=False)
 
 class primislaoLinks(models.Model):
