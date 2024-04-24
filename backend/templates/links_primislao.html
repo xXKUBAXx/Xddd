@@ -54,6 +54,7 @@ Klasyczny Panel Przemka
     margin: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    position: relative;
 }
 
 .take-my-tsv-to-church button {
@@ -66,6 +67,7 @@ Klasyczny Panel Przemka
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin:0 15px;
+    
 }
 
 .take-my-tsv-to-church button:hover {
@@ -83,6 +85,16 @@ Klasyczny Panel Przemka
 
 .group-for-domain {
     margin-top:40px;
+    position: relative;
+}
+
+.delete-group-button {
+    position: absolute;
+    background-color: #ff0000;
+}
+
+.delete-group-button:hover {
+    background-color: #c20000;
 }
 
 .checkmark::after {
@@ -94,18 +106,46 @@ Klasyczny Panel Przemka
     content: '\2717';
     color: red;
 }
+.warning-message {
+    color: red;
+    margin-top: 10px;
+    position: absolute;
+    bottom: -25px;
+}
 </style>
 <div class="main-przemek-container">
     <h2>Jakie linki wariacie?</h2>
-    <h3>Obecny limit: 5 linków na zaplecze</h3>
+    <h3>Obecny limit: tylko rozsądek jest limitem</h3>
     <div class="take-my-tsv-container">
         <div class="group-for-domain">
-            <div class="claim-domain">
-                <input class="form-control paste-url domain-selector" type="text" placeholder="Domain"><i class="domain-status"></i>
+       
+            <div class="claim-domain-selector">
+                <div class="row" style="margin-top: 3em;">
+                    <div class="col-md-12">
+                        <div style="display:flex; justify-content: center; width:100%" class="btn-group" role="group">
+                            <button style="max-width:200px; margin:5px" type="button" class="btn btn-primary active" id="domain_from_list">Domena z listy</button>
+                            <button style="max-width:200px; margin:5px" type="button" class="btn btn-primary" id="domain_manually">Wklejanie domeny</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:none;" class="claim-domain chad-manual">
+                    <input class="form-control paste-url domain-selector" type="text" placeholder="Domain"><i class="domain-status"></i>
+                </div>
+                <div class="claim-domain virgin-semiautomatic">
+                    <select style="max-width:240px" class="form-control paste-url category-changer">
+                        {% for category in domain_categories %}
+                          <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                      </select>
+                    <select style="max-width:240px"  class="form-control paste-url domain-dropdown-selector"></select>
+                </div>
             </div>
             <div class="take-my-tsv-row">
-                <input class="form-control paste-url" type="text" placeholder="URL"><input class="form-control paste-url" type="text" placeholder="Anchor"><input class="form-control paste-url" type="text" placeholder="Nofollow"><input class="form-control paste-url" type="text" placeholder="Limit">
-            </div>
+                <input class="form-control paste-url paste-data" type="text" placeholder="URL">
+                <input class="form-control paste-url paste-data" type="text" placeholder="Anchor">
+                <input class="form-control paste-url paste-data" type="number" min="0" max="1" placeholder="Nofollow">
+                <input class="form-control paste-url paste-data" type="number" min="0" max="5" placeholder="Limit">
+              </div>
         </div>
     </div>
     {% csrf_token %}
@@ -115,189 +155,394 @@ Klasyczny Panel Przemka
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const container = document.querySelector('.take-my-tsv-container');
-        const maxRows = 6;
+<script id="queryset-data" type="application/json">
+    {{ queryset_json|safe }}
+  </script>
+  <script>
+    const takeMyCsvContainer = document.querySelector('.take-my-tsv-container');
+        const claim_button = document.querySelector('.take-my-tsv-to-church button:first-child');
+        const warningMessage = document.createElement('div');
+        warningMessage.classList.add('warning-message');
+        warningMessage.textContent = 'Jedna z domen nie występuje w bazie. Popraw zlecenie.';
+        warningMessage.style.color = 'red';
+        warningMessage.style.marginTop = '10px';
 
-        document.querySelector('.take-my-tsv-to-church button:nth-child(2)').addEventListener('click', () => {
-            const newGroup = document.createElement('div');
-            newGroup.classList.add('group-for-domain');
-            newGroup.innerHTML = `
-                <div class="claim-domain">
-                    <input class="form-control paste-url domain-selector" type="text" placeholder="Domain"><i class="domain-status"></i>
-                </div>
-                <div class="take-my-tsv-row">
-                    <input class="form-control paste-url" type="text" placeholder="URL">
-                    <input class="form-control paste-url" type="text" placeholder="Anchor">
-                    <input class="form-control paste-url" type="text" placeholder="Nofollow">
-                    <input class="form-control paste-url" type="text" placeholder="Limit">
-                </div>
-            `;
-            container.appendChild(newGroup);
-            attachDomainInputEvents(newGroup.querySelector('.domain-selector'));
-        });
-
-        document.querySelectorAll('.domain-selector').forEach(attachDomainInputEvents);
-
-        function attachDomainInputEvents(input) {
-            const statusIcon = input.nextElementSibling;
-
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pastedData = e.clipboardData.getData('Text').trim();
-                input.value = pastedData;
-                handleDomainCheck(input, pastedData, statusIcon);
-            });
-
-            input.addEventListener('input', () => {
-                if (!input.value) {
-                    clearDomainStatus(input, statusIcon);
-                }
-            });
-        }
-
-        function handleDomainCheck(domainInput, domain, statusIcon) {
-            domainInput.disabled = true;
-            // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-            const url = (domain.startsWith('http://') || domain.startsWith('https://')) ? domain : `https://${domain}`;
-            fetch(url, { method: 'HEAD' })
-            .then(response => setStatus(domainInput, statusIcon, response.ok))
-            .catch(error => setStatus(domainInput, statusIcon, false))
-            .finally(() => domainInput.disabled = false);
-        }
-
-        function setStatus(domainInput, statusIcon, isSuccessful) {
-            if (isSuccessful) {
-                statusIcon.classList.add('checkmark');
-                statusIcon.classList.remove('cross');
-                domainInput.style.backgroundColor = 'darkgreen';
-            } else {
-                statusIcon.classList.add('cross');
-                statusIcon.classList.remove('checkmark');
-                domainInput.style.backgroundColor = 'salmon';
+        function checkFalseStatement() {
+        const hasFalseStatement = takeMyCsvContainer.querySelector('.false-statement');
+        if (hasFalseStatement) {
+            claim_button.disabled = true;
+            claim_button.parentNode.insertBefore(warningMessage, claim_button.nextSibling);
+        } else {
+            claim_button.disabled = false;
+            if (warningMessage.parentNode) {
+            warningMessage.parentNode.removeChild(warningMessage);
             }
         }
+        }
+
+        takeMyCsvContainer.addEventListener('input', checkFalseStatement);
+        takeMyCsvContainer.addEventListener('click', checkFalseStatement);
+
+    function handleDomainCheck(domainInput, domain, statusIcon) {
+    domainInput.disabled = true;
+    const domainsData = JSON.parse(document.getElementById('queryset-data').textContent);
+    const isDomainValid = domainsData.some(item => item.domain_name === domain);
+    setStatus(domainInput, statusIcon, isDomainValid);
+    domainInput.disabled = false;
+    }
+
+    function setStatus(domainInput, statusIcon, isValid) {
+    if (isValid) {
+        statusIcon.classList.add('checkmark');
+        statusIcon.classList.remove('cross');
+        domainInput.style.backgroundColor = 'darkgreen';
+        domainInput.classList.remove('false-statement');
+    } else {
+        statusIcon.classList.add('cross');
+        statusIcon.classList.remove('checkmark');
+        domainInput.style.backgroundColor = 'salmon';
+        domainInput.classList.add('false-statement');
+    }
+    checkFalseStatement();
+    }
 
         function clearDomainStatus(domainInput, statusIcon) {
-            statusIcon.classList.remove('checkmark', 'cross');
-            domainInput.style.backgroundColor = '';
-            domainInput.disabled = false;
+        statusIcon.classList.remove('checkmark', 'cross');
+        domainInput.style.backgroundColor = '';
+        domainInput.disabled = false;
         }
 
-        const linkujButton = document.querySelector('.take-my-tsv-to-church button:first-child');
-        linkujButton.addEventListener('click', async () => {
-            const data = {};
-            const groups = container.querySelectorAll('.group-for-domain');
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.querySelector('.take-my-tsv-container');
+      const maxRows = 100;
 
-            const takeMyTsvToChurch = document.querySelector('.take-my-tsv-to-church');
-            takeMyTsvToChurch.style.display = 'none';
+      function attachDeleteButtonEvent(deleteButton) {
+        deleteButton.addEventListener('click', () => {
+            const groupForDomain = deleteButton.closest('.group-for-domain');
+            if (groupForDomain) {
+            groupForDomain.remove();
+            }
+        });
+        }
 
-            container.style.pointerEvents = 'none';
-            container.style.opacity = '0.5';
+        document.querySelectorAll('.delete-group-button').forEach(attachDeleteButtonEvent);
 
-            groups.forEach(group => {
-                const domainInput = group.querySelector('.domain-selector');
-                const domain = domainInput.value;
-                const rowInputs = group.querySelectorAll('.take-my-tsv-row input');
-
-                if (domain) {
-                    data[domain] = [];
-                    rowInputs.forEach((input, index) => {
-                        if (index % 4 === 0) {
-                            data[domain].push({
-                                url: input.value,
-                                anchor: rowInputs[index + 1].value,
-                                nofollow: rowInputs[index + 2].value,
-                                limit: rowInputs[index + 3].value,
-                            });
-                        }
-                    });
+      function attachDomainInputEvents(input) {
+        const statusIcon = input.nextElementSibling;
+        if (statusIcon) {
+          input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = cleanDomainName(e.clipboardData.getData('Text').trim());
+            function cleanDomainName(domain) {
+                if (domain.startsWith('https://')) {
+                    domain = domain.slice(8);
+                } else if (domain.startsWith('http://')) {
+                    domain = domain.slice(7);
                 }
+                if (domain.startsWith('www.')) {
+                    domain = domain.slice(4);
+                }
+                if (domain.endsWith('/')) {
+                    domain = domain.slice(0, -1);
+                }
+                return domain;
+            }
+            input.value = pastedData;
+            if (pastedData !== '') {
+            handleDomainCheck(input, pastedData, statusIcon);
+            } else {
+                clearDomainStatus(input, statusIcon);
+            }
             });
-            
-            try {
-                const response = await fetch('/api/panel_primislao/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                    body: JSON.stringify(data),
-                });
-
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log('Data sent successfully!', responseData.data);
-                } else {
-                    console.error('Error sending data:', response.status);
-                }
-            } catch (error) {
-                console.error('Error sending data:', error);
+            input.addEventListener('input', () => {
+            if (input.value !== '') {
+                handleDomainCheck(input, input.value, statusIcon);
+            } else {
+                clearDomainStatus(input, statusIcon);
             }
-        });
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = $.trim(cookies[i]);
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
+            });
             }
-            return cookieValue;
+      }
+
+      document.querySelectorAll('.domain-selector').forEach(attachDomainInputEvents);
+  
+      document.querySelector('.take-my-tsv-to-church button:nth-child(2)').addEventListener('click', () => {
+        const newGroup = document.createElement('div');
+        newGroup.classList.add('group-for-domain');
+  
+        const pickMeMasterDiv = document.querySelector('.claim-domain-selector .pick-me-master');
+        if (pickMeMasterDiv) {
+        newGroup.innerHTML = `
+        <button class="delete-group-button">Usuń</button>
+        <div class="${pickMeMasterDiv.classList}">${pickMeMasterDiv.innerHTML}</div>
+        <div class="take-my-tsv-row">
+            <input class="form-control paste-url paste-data" type="text" placeholder="URL">
+            <input class="form-control paste-url paste-data" type="text" placeholder="Anchor">
+            <input class="form-control paste-url paste-data" type="number" min="0" max="1" placeholder="Nofollow">
+            <input class="form-control paste-url paste-data" type="number" min="0" max="5" placeholder="Limit">
+        </div>`;
+        
+        if (pickMeMasterDiv.classList.contains('chad-manual')) {
+            const domainSelector = newGroup.querySelector('.domain-selector');
+            attachDomainInputEvents(domainSelector);
+            clearDomainStatus(domainSelector, domainSelector.nextElementSibling);
+        } else {
+            attachCategoryChangerEvent(newGroup.querySelector('.category-changer'));
+          }
+        } else {
+          console.warn('No claim domain div with pick-me-master class found.');
         }
 
-        document.addEventListener('paste', (e) => {
-            const activeElement = document.activeElement;
-            if (activeElement.classList.contains('paste-url')) {
-                e.stopPropagation();
-                e.preventDefault();
-                const targetContainer = activeElement.closest('.group-for-domain');
-                const pastedData = e.clipboardData.getData('Text');
-                const pastedRows = pastedData.split(/\r?\n/);
-                pastedRows.forEach(row => {
-                    if (row.trim() && targetContainer.querySelectorAll('.take-my-tsv-row').length < maxRows) {
-                        createTexts(row, targetContainer);
-                    }
-                });
-            }
-        });
-
-        function createTexts(dataRow, targetContainer) {
-            const inputs = document.createElement('div');
-            inputs.classList.add('take-my-tsv-row');
-            inputs.style.display = 'flex';
-
-            const dataComponents = dataRow.split(/\t+/);
-            inputs.appendChild(createInput('URL', dataComponents[0]));
-            inputs.appendChild(createInput('Anchor', dataComponents[1]));
-            inputs.appendChild(createInput('Nofollow', dataComponents[2]));
-            inputs.appendChild(createInput('Limit', dataComponents[3]));
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'x';
-            deleteButton.classList.add('delete-row-btn');
-            deleteButton.onclick = function() { inputs.remove(); };
-            inputs.appendChild(deleteButton);
-
-            targetContainer.appendChild(inputs);
-        }
-
-        function createInput(placeholder, value) {
-            const input = document.createElement('input');
-            input.classList.add('form-control', 'paste-url');
-            input.type = 'text';
-            input.placeholder = placeholder;
-            input.value = value || '';
-            return input;
-        }
+        const deleteButton = newGroup.querySelector('.delete-group-button');
+        attachDeleteButtonEvent(deleteButton);
+  
+        container.appendChild(newGroup);
+      });
     });
-</script>
+  
+    function attachCategoryChangerEvent(categoryChanger) {
+      const domainDropdownSelector = categoryChanger.nextElementSibling;
+  
+      const domainsData = JSON.parse(document.getElementById('queryset-data').textContent);
+  
+      categoryChanger.addEventListener('change', () => {
+        const selectedCategory = categoryChanger.value;
+  
+        const filteredDomains = domainsData.filter(domain => domain.domain_category === selectedCategory);
+  
+        domainDropdownSelector.innerHTML = '';
+  
+        filteredDomains.forEach(domain => {
+          const option = document.createElement('option');
+          option.value = domain.domain_name;
+          option.textContent = domain.domain_name;
+          domainDropdownSelector.appendChild(option);
+        });
+      });
+  
+      categoryChanger.dispatchEvent(new Event('change'));
+    
+    };
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.category-changer').forEach(attachCategoryChangerEvent);
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const linkujButton = document.querySelector('.take-my-tsv-to-church button:first-child');
+      const container = document.querySelector('.take-my-tsv-container');
+
+    const messageContainer = document.createElement('div');
+    messageContainer.style.position = 'absolute';
+    messageContainer.style.top = '50%';
+    messageContainer.style.left = '50%';
+    messageContainer.style.transform = 'translate(-50%, -50%)';
+    messageContainer.style.backgroundColor = '#7e7e7e';
+    messageContainer.style.padding = '20px';
+    messageContainer.style.textAlign = 'center';
+    messageContainer.style.zIndex = '9999';
+    messageContainer.style.display = 'none';
+    messageContainer.style.color = 'white';
+
+    const messageText = document.createElement('p');
+    messageText.textContent = 'Linki zostały zlecone pomyślnie. Znajdziesz je tutaj:';
+
+    const button = document.createElement('a');
+    button.href = '/user';
+    button.textContent = 'Przejdź do linków';
+    button.style.display = 'inline-block';
+    button.style.marginTop = '10px';
+    button.style.padding = '10px 20px';
+    button.style.backgroundColor = '#007BFF';
+    button.style.color = 'white';
+    button.style.textDecoration = 'none';
+    button.style.borderRadius = '4px';
+
+    messageContainer.appendChild(messageText);
+    messageContainer.appendChild(button);
+
+    document.body.appendChild(messageContainer);
+  
+      linkujButton.addEventListener('click', async () => {
+        const data = {};
+        groups = container.querySelectorAll('.group-for-domain');
+  
+        const takeMyTsvToChurch = document.querySelector('.take-my-tsv-to-church');
+        takeMyTsvToChurch.style.display = 'none';
+  
+        container.style.pointerEvents = 'none';
+        container.style.opacity = '0.5';
+  
+        groups.forEach(group => {
+                
+            if(group.querySelector('.domain-selector') == null){
+                domainInput = group.querySelector('.domain-dropdown-selector');
+            }else{
+          if(group.querySelector('.domain-selector').parentElement.style.display != 'none'){
+            domainInput = group.querySelector('.domain-selector');
+          }else{
+            domainInput = group.querySelector('.domain-dropdown-selector');
+            console.log('select: '+domainInput);
+          }
+        }
+          console.log('end: '+domainInput);
+          domain = domainInput.value;
+          
+          
+          const rowInputs = group.querySelectorAll('.take-my-tsv-row input');
+  
+          if (domain) {
+            data[domain] = [];
+            rowInputs.forEach((input, index) => {
+              if (index % 4 === 0) {
+                data[domain].push({
+                  url: input.value,
+                  anchor: rowInputs[index + 1].value,
+                  nofollow: rowInputs[index + 2].value,
+                  limit: rowInputs[index + 3].value,
+                });
+              }
+            });
+          }
+        });
+  
+        try {
+          const response = await fetch('/api/panel_primislao/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data),
+          });
+  
+          if (response.ok) {
+            const responseData = await response.json();
+            messageContainer.style.display = 'block';
+            console.log('Data sent successfully!', responseData.data);
+          } else {
+            console.error('Error sending data:', response.status);
+          }
+        } catch (error) {
+          console.error('Error sending data:', error);
+        }
+      });
+  
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = $.trim(cookies[i]);
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const maxRows = 100;
+  
+      document.addEventListener('paste', (e) => {
+        const activeElement = document.activeElement;
+        if (activeElement.classList.contains('paste-data')) {
+          e.stopPropagation();
+          e.preventDefault();
+          const targetContainer = activeElement.closest('.group-for-domain');
+          const pastedData = e.clipboardData.getData('Text');
+          const pastedRows = pastedData.split(/\r?\n/);
+          pastedRows.forEach(row => {
+            if (row.trim() && targetContainer.querySelectorAll('.take-my-tsv-row').length < maxRows) {
+              createTexts(row, targetContainer);
+            }
+          });
+        }
+      });
+  
+      function createTexts(dataRow, targetContainer) {
+        const inputs = document.createElement('div');
+        inputs.classList.add('take-my-tsv-row');
+        inputs.style.display = 'flex';
+        
+        const dataComponents = dataRow.split(/\t+/);
+        if(dataComponents[3] > 5){dataComponents[3]=5;};
+        if(dataComponents[2] != 1 && dataComponents[2] != 0){dataComponents[2]=1;};
+        inputs.appendChild(createInput('URL', dataComponents[0], 'text'));
+        inputs.appendChild(createInput('Anchor', dataComponents[1], 'text'));
+        inputs.appendChild(createInput('Nofollow', dataComponents[2], 'number', 0, 1));
+        inputs.appendChild(createInput('Limit', dataComponents[3], 'number', 0, 5));
+  
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'x';
+        deleteButton.classList.add('delete-row-btn');
+        deleteButton.onclick = function() { inputs.remove(); };
+        inputs.appendChild(deleteButton);
+  
+        targetContainer.appendChild(inputs);
+      }
+  
+      function createInput(placeholder, value, type, min, max) {
+        const input = document.createElement('input');
+        input.classList.add('form-control', 'paste-url');
+        input.type = type;
+        input.placeholder = placeholder;
+        input.value = value || '';
+        if (min !== undefined) {
+          input.min = min;
+        }
+        if (max !== undefined) {
+          input.max = max;
+        }
+        return input;
+      }
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const domainFromListBtn = document.getElementById('domain_from_list');
+      const domainManuallyBtn = document.getElementById('domain_manually');
+      const chadManualDomain = document.querySelector('.claim-domain.chad-manual');
+      const virginSemiautomatic = document.querySelector('.claim-domain.virgin-semiautomatic');
+  
+      function switchSelector(showManual) {
+        if (showManual) {
+          chadManualDomain.style.display = 'flex';
+          virginSemiautomatic.style.display = 'none';
+          chadManualDomain.classList.add('pick-me-master');
+          virginSemiautomatic.classList.remove('pick-me-master');
+        } else {
+          chadManualDomain.style.display = 'none';
+          virginSemiautomatic.style.display = 'flex';
+          chadManualDomain.classList.remove('pick-me-master');
+          virginSemiautomatic.classList.add('pick-me-master');
+        }
+      }
+  
+      domainFromListBtn.addEventListener('click', function() {
+        switchSelector(false);
+        domainFromListBtn.classList.add('active');
+        domainManuallyBtn.classList.remove('active');
+      });
+  
+      domainManuallyBtn.addEventListener('click', function() {
+        switchSelector(true);
+        domainFromListBtn.classList.remove('active');
+        domainManuallyBtn.classList.add('active');
+      });
+  
+      switchSelector(false);
+    });
+  </script>
     
 
 {% endblock %}

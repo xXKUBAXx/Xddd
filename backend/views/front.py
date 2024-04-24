@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles, primislaoLinks
+from ..models import Zaplecze, Account, Link, Banner, ZapleczeCategory, CeneoFiles, primislaoLinks, primislaoDomains
 from ..serializers import ZapleczeSerializer, AccountSerializer
 from rest_framework.views import APIView
 from django.views.generic import View, edit
@@ -53,7 +53,15 @@ class ZapleczaTable(View):
 @method_decorator(log_user(), name='dispatch')
 class Panel_Primislao(View):
     def get(self, request):
-        return render(request, "links_primislao.html", {"queryset": Zaplecze.objects.order_by("-id").values()})
+        domains_queryset = primislaoDomains.objects.values('domain_name', 'domain_category')
+        domain_categories = primislaoDomains.objects.values_list('domain_category', flat=True).distinct()
+        queryset_json = json.dumps(list(domains_queryset))
+        return render(request, "links_primislao.html", {
+            "queryset_json": queryset_json,
+            "domain_categories": domain_categories,
+        })
+
+
     
 @method_decorator(log_user(), name='dispatch')
 class CreateZaplecze(View):

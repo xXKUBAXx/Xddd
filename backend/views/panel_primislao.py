@@ -8,6 +8,7 @@ from ..models import primislaoDomains, vdTarget, primislaoLinks
 from asgiref.sync import sync_to_async
 import json
 from datetime import date
+import re
 
 @method_decorator(csrf_exempt, name='dispatch')
 class PanelPrimislao(View):
@@ -18,7 +19,8 @@ class PanelPrimislao(View):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
         
-        user_id, user_mail = await sync_to_async(check_user)(request)     
+        user_id, user_mail = await sync_to_async(check_user)(request)
+             
 
         response_data = {}
         
@@ -40,6 +42,7 @@ class PanelPrimislao(View):
 
         async def process_domain(domain_name, domain_data_list):
             # print(f"Processing domain: {domain_name}")
+            domain_name = await clean_domain_name(domain_name)
             domain = await sync_to_async(primislaoDomains.objects.filter(domain_name=domain_name).first, thread_sensitive=False)()
             # print(f"Domain object for {domain_name}: {domain}")
             if domain:
@@ -157,3 +160,14 @@ def parse_links_data(content):
     except json.JSONDecodeError:
         pass
     return links_data
+
+async def clean_domain_name(domain):
+    if domain.startswith("https://"):
+        domain = domain[8:]
+    elif domain.startswith("http://"):
+        domain = domain[7:]
+    if domain.startswith("www."):
+        domain = domain[4:]
+    if domain.endswith("/"):
+        domain = domain[:-1]
+    return domain
